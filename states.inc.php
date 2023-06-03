@@ -83,17 +83,18 @@ $playerActionsGameStates = [
 
     ST_PLAYER_USE_PRIVILEGE => [
         "name" => "usePrivilege",
-        "description" => clienttranslate('${actplayer} can use privilege(s) to take Gem or Pearl'),
-        "descriptionmyturn" => clienttranslate('${you} can use privilege(s) to take Gem or Pearl'),
+        "description" => clienttranslate('${actplayer} can take up to ${number} Gem(s) or Pearl(s) with privileges'),
+        "descriptionmyturn" => clienttranslate('${you} can take up to ${number} Gem(s) or Pearl(s) with privileges'),
         "type" => "activeplayer",
         "args" => "argUsePrivilege",
         "action" => "stUsePrivilege",
         "possibleactions" => [ 
-            "chooseNewCard",
+            "takeTokens",
             "skip",
         ],
         "transitions" => [
             "next" => ST_PLAYER_REFILL_BOARD,
+            "skipBoth" => ST_PLAYER_PLAY_ACTION,
         ]
     ],
 
@@ -105,7 +106,7 @@ $playerActionsGameStates = [
         "args" => "argRefillBoard",
         "action" => "stRefillBoard",
         "possibleactions" => [ 
-            "refill",
+            "refillBoard",
             "skip",
         ],
         "transitions" => [
@@ -117,6 +118,18 @@ $playerActionsGameStates = [
         "name" => "playAction",
         "description" => clienttranslate('${actplayer} must take tokens, reserve a card or buy a card'),
         "descriptionmyturn" => clienttranslate('${you} must take tokens, reserve a card or buy a card'),
+        "descriptionOnlyTokensAndReserve" => clienttranslate('${actplayer} must take tokens or reserve a card'),
+        "descriptionmyturnOnlyTokensAndReserve" => clienttranslate('${you} must take tokens or reserve a card'),
+        "descriptionOnlyTokensAndBuy" => clienttranslate('${actplayer} must take tokens or buy a card'),
+        "descriptionmyturnOnlyTokensAndBuy" => clienttranslate('${you} must take tokens or buy a card'),
+        "descriptionOnlyBuyAndReserve" => clienttranslate('${actplayer} must reserve a card or buy a card'),
+        "descriptionmyturnOnlyBuyAndReserve" => clienttranslate('${you} must reserve a card or buy a card'),
+        "descriptionOnlyTokens" => clienttranslate('${actplayer} must take tokens'),
+        "descriptionmyturnOnlyTokens" => clienttranslate('${you} must take tokens'),
+        "descriptionOnlyBuy" => clienttranslate('${actplayer} must buy a card'),
+        "descriptionmyturnOnlyBuy" => clienttranslate('${you} must buy a card'),
+        "descriptionOnlyReserve" => clienttranslate('${actplayer} must reserve a card'),
+        "descriptionmyturnOnlyReserve" => clienttranslate('${you} must reserve a card'),
         "type" => "activeplayer",
         "args" => "argPlayAction",
         "possibleactions" => [ 
@@ -182,7 +195,7 @@ $playerActionsGameStates = [
         "description" => clienttranslate('${actplayer} must discard down to 10 tokens'),
         "descriptionmyturn" => clienttranslate('${you} must discard down to 10 tokens'),
         "type" => "activeplayer",
-        "action" => "stDiscardTokens",
+        "arg" => "argDiscardTokens",
         "possibleactions" => [ 
             "discardTokens",
         ],

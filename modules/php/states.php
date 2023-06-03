@@ -14,10 +14,21 @@ trait StateTrait {
     function stUsePrivilege() {
         $playerId = intval($this->getActivePlayerId());
 
-        // TODO check if player can play
-        $canUsePrivilege = true;
+        $canUsePrivilege = $this->getPlayerPrivileges($playerId) > 0;
+
+        if ($canUsePrivilege && count($this->getBoard()) == 0) {
+            $canUsePrivilege = false;
+        }
         
         if (!$canUsePrivilege) {
+            $this->gamestate->nextState('next');
+        }
+    }
+
+    function stRefillBoard() {
+        $args = $this->argRefillBoard();
+        
+        if (!$args['canRefill']) {
             $this->gamestate->nextState('next');
         }
     }

@@ -2016,7 +2016,7 @@ var CardsManager = /** @class */ (function (_super) {
         return _this;
     }
     CardsManager.prototype.getTooltip = function (card) {
-        var message = "\n        <strong>".concat(_("Color:"), "</strong> ").concat(this.game.getTooltipColor(card.color), "\n        <br>\n        <strong>").concat(_("Gain:"), "</strong> <strong>1</strong> ").concat(this.game.getTooltipGain(card.gain), "\n        ");
+        var message = "\n        <strong>".concat(_("Color:"), "</strong> ").concat(this.game.getTooltipColor(card.color), "\n        <br>\n        <strong>").concat(_("Gain:"), "</strong> <strong>1</strong> ").concat(card.gain, "\n        ");
         return message;
     };
     return CardsManager;
@@ -2028,11 +2028,13 @@ var TokensManager = /** @class */ (function (_super) {
             getId: function (card) { return "token-".concat(card.id); },
             setupDiv: function (card, div) {
                 div.classList.add('token');
-                div.dataset.cardId = '' + card.id;
+                div.dataset.type = '' + card.type;
+                if (card.type == 2) {
+                    div.dataset.color = '' + card.color;
+                }
             },
             setupFrontDiv: function (card, div) {
                 div.id = "".concat(_this.getId(card), "-front");
-                div.dataset.type = '' + card.type;
                 game.setTooltip(div.id, _this.getType(card.type));
             },
         }) || this;
@@ -2062,91 +2064,49 @@ var TokensManager = /** @class */ (function (_super) {
     };
     return TokensManager;
 }(CardManager));
-var POINT_CASE_SIZE_LEFT = 38.8;
-var POINT_CASE_SIZE_TOP = 37.6;
 var TableCenter = /** @class */ (function () {
     function TableCenter(game, gamedatas) {
-        this.game = game;
-        this.destinationsDecks = [];
-        this.destinations = [];
-        /*['A', 'B'].forEach(letter => {
-            this.destinationsDecks[letter] = new Deck<Token>(game.tokensManager, document.getElementById(`table-destinations-${letter}-deck`), {
-                cardNumber: gamedatas.centerDestinationsDeckCount[letter],
-                topCard: gamedatas.centerDestinationsDeckTop[letter],
-                counter: {
-                    position: 'right',
-                },
-            });
-
-            this.destinations[letter] = new SlotStock<Token>(game.tokensManager, document.getElementById(`table-destinations-${letter}`), {
-                slotsIds: [1, 2, 3],
-                mapCardToSlot: card => card.locationArg,
-            });
-            this.destinations[letter].addCards(gamedatas.centerDestinations[letter]);
-            this.destinations[letter].onCardClick = (card: Token) => this.game.onTableDestinationClick(card);
-        })
-
-        const cardDeckDiv = document.getElementById(`card-deck`);
-        this.cardDeck = new Deck<Card>(game.cardsManager, cardDeckDiv, {
-            cardNumber: gamedatas.cardDeckCount,
-            topCard: gamedatas.cardDeckTop,
-            counter: {
-                counterId: 'deck-counter',
-            },
-        });
-        cardDeckDiv.insertAdjacentHTML('beforeend', `
-            <div id="discard-counter" class="bga-cards_deck-counter round">${gamedatas.cardDiscardCount}</div>
-        `);
-        const deckCounterDiv = document.getElementById('deck-counter');
-        const discardCounterDiv = document.getElementById('discard-counter');
-        this.game.setTooltip(deckCounterDiv.id, _('Deck size'));
-        this.game.setTooltip(discardCounterDiv.id, _('Discard size'));
-        this.cardDiscard = new VoidStock<Card>(game.cardsManager, discardCounterDiv);
-
-        this.cards = new SlotStock<Card>(game.cardsManager, document.getElementById(`table-cards`), {
-            slotsIds: [1, 2, 3, 4, 5],
-            mapCardToSlot: card => card.locationArg,
-            gap: '12px',
-        });
-        this.cards.onCardClick = card => this.game.onTableCardClick(card);
-        this.cards.addCards(gamedatas.centerCards);
-*/
-    }
-    TableCenter.prototype.newTableCard = function (card) {
-        return this.cards.addCard(card);
-    };
-    TableCenter.prototype.newTableDestination = function (token, letter, destinationDeckCount, destinationDeckTop) {
-        var promise = this.destinations[letter].addCard(token);
-        this.destinationsDecks[letter].setCardNumber(destinationDeckCount, destinationDeckTop);
-        return promise;
-    };
-    TableCenter.prototype.setDestinationsSelectable = function (selectable, selectableCards) {
         var _this = this;
-        if (selectableCards === void 0) { selectableCards = null; }
-        ['A', 'B'].forEach(function (letter) {
-            _this.destinations[letter].setSelectionMode(selectable ? 'single' : 'none');
-            _this.destinations[letter].setSelectableCards(selectableCards);
-        });
-    };
-    TableCenter.prototype.setCardsSelectable = function (selectable, freeColor, recruits) {
-        if (freeColor === void 0) { freeColor = null; }
-        if (recruits === void 0) { recruits = null; }
-        this.cards.setSelectionMode(selectable ? 'single' : 'none');
-        if (selectable) {
-            var selectableCards = this.cards.getCards().filter(function (card) { return freeColor === null || card.locationArg == freeColor || recruits >= 1; });
-            this.cards.setSelectableCards(selectableCards);
+        this.game = game;
+        this.cardsDecks = [];
+        this.cards = [];
+        this.bag = new VoidStock(game.tokensManager, document.getElementById('bag'));
+        var slotsIds = [];
+        for (var row = 1; row <= 5; row++) {
+            for (var column = 1; column <= 5; column++) {
+                slotsIds.push(JSON.stringify([row, column]));
+            }
         }
-    };
-    TableCenter.prototype.getVisibleDestinations = function () {
-        return __spreadArray(__spreadArray([], this.destinations['A'].getCards(), true), this.destinations['B'].getCards(), true);
-    };
-    TableCenter.prototype.highlightPlayerTokens = function (playerId) {
-        document.querySelectorAll('#board .marker').forEach(function (elem) { return elem.classList.toggle('highlight', Number(elem.dataset.playerId) === playerId); });
-    };
-    TableCenter.prototype.setDiscardCount = function (cardDiscardCount) {
-        var discardCounterDiv = document.getElementById('discard-counter');
-        discardCounterDiv.innerHTML = '' + cardDiscardCount;
-    };
+        this.board = new SlotStock(game.tokensManager, document.getElementById("board"), {
+            slotsIds: slotsIds,
+            mapCardToSlot: function (card) { return JSON.stringify([card.row, card.column]); },
+        });
+        this.board.addCards(gamedatas.board);
+        this.board.onCardClick = function (card) { return _this.game.onTableDestinationClick(card); };
+        for (var level = 3; level >= 1; level--) {
+            document.getElementById('table-cards').insertAdjacentHTML('beforeend', "\n                <div id=\"card-deck-".concat(level, "\"></div>\n                <div id=\"table-cards-").concat(level, "\"></div>\n            "));
+            this.cardsDecks[level] = new Deck(game.cardsManager, document.getElementById("card-deck-".concat(level)), {
+                cardNumber: gamedatas.cardDeckCount[level],
+                topCard: gamedatas.cardDeckTop[level],
+            });
+            var slotsIds_1 = [];
+            for (var i = 1; i <= 6 - level; i++) {
+                slotsIds_1.push(i);
+            }
+            this.cards[level] = new SlotStock(game.cardsManager, document.getElementById("table-cards-".concat(level)), {
+                slotsIds: slotsIds_1,
+                mapCardToSlot: function (card) { return card.locationArg; },
+                gap: '12px',
+            });
+            this.cards[level].onCardClick = function (card) { return _this.game.onTableCardClick(card); };
+            this.cards[level].addCards(gamedatas.tableCards[level]);
+        }
+        /*this.royalCards = new LineStock<Card>(game.cardsManager, document.getElementById(`royal-cards`), {
+            center: true,
+        });
+        this.royalCards.onCardClick = card => this.game.onRoyalCardClick(card);
+        this.royalCards.addCards(gamedatas.royalCards);*/
+    }
     return TableCenter;
 }());
 var isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;
@@ -2159,7 +2119,7 @@ var PlayerTable = /** @class */ (function () {
         this.limitSelection = null;
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.getPlayerId();
-        var html = "\n        <div id=\"player-table-".concat(this.playerId, "\" class=\"player-table\" style=\"--player-color: #").concat(player.color, ";\">\n            <div id=\"player-table-").concat(this.playerId, "-name\" class=\"name-wrapper\">").concat(player.name, "</div>\n            <div class=\"cols\">\n            <div class=\"col col1\">\n        ");
+        var html = "\n        <div id=\"player-table-".concat(this.playerId, "\" class=\"player-table\" style=\"--player-color: #").concat(player.color, ";\">\n            <div id=\"player-table-").concat(this.playerId, "-name\" class=\"name-wrapper\">").concat(player.name, "</div>\n        ");
         if (this.currentPlayer) {
             html += "\n            <div class=\"block-with-text hand-wrapper\">\n                <div class=\"block-label\">".concat(_('Your hand'), "</div>\n                <div id=\"player-table-").concat(this.playerId, "-hand\" class=\"hand cards\"></div>\n            </div>");
         }
@@ -2167,7 +2127,7 @@ var PlayerTable = /** @class */ (function () {
         for (var i = 1; i <= 5; i++) {
             html += "\n                <div id=\"player-table-".concat(this.playerId, "-played-").concat(i, "\" class=\"cards\"></div>\n                ");
         }
-        html += "\n            </div>\n            \n            </div>\n            \n            <div class=\"col col2\"></div>\n            </div>\n        </div>\n        ";
+        html += "\n            </div>\n            \n        </div>\n        ";
         dojo.place(html, document.getElementById('tables'));
         /*if (this.currentPlayer) {
             const handDiv = document.getElementById(`player-table-${this.playerId}-hand`);
@@ -2283,27 +2243,6 @@ var PlayerTable = /** @class */ (function () {
             this.played[i].setSelectableCards(selectableCards);
         }
     };
-    PlayerTable.prototype.setDoubleColumn = function (isDoublePlayerColumn) {
-        var destinations = document.getElementById("player-table-".concat(this.playerId, "-destinations"));
-        var boat = document.getElementById("player-table-".concat(this.playerId, "-boat"));
-        var reservedDestinations = document.getElementById("player-table-".concat(this.playerId, "-reserved-destinations-wrapper"));
-        if (isDoublePlayerColumn) {
-            var col2 = document.getElementById("player-table-".concat(this.playerId)).querySelector('.col2');
-            col2.appendChild(destinations);
-            col2.appendChild(boat);
-            if (reservedDestinations) {
-                col2.appendChild(reservedDestinations);
-            }
-        }
-        else {
-            var visibleCards = document.getElementById("player-table-".concat(this.playerId)).querySelector('.visible-cards');
-            visibleCards.insertAdjacentElement('beforebegin', destinations);
-            visibleCards.insertAdjacentElement('beforebegin', boat);
-            if (reservedDestinations) {
-                visibleCards.insertAdjacentElement('afterend', reservedDestinations);
-            }
-        }
-    };
     return PlayerTable;
 }());
 var ANIMATION_MS = 500;
@@ -2322,8 +2261,6 @@ var SplendorDuel = /** @class */ (function () {
         this.playersTables = [];
         //private handCounters: Counter[] = [];
         this.privilegeCounters = [];
-        this.recruitCounters = [];
-        this.braceletCounters = [];
         this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
     }
     /*
@@ -2367,18 +2304,9 @@ var SplendorDuel = /** @class */ (function () {
             onDimensionsChange: function () {
                 var tablesAndCenter = document.getElementById('tables-and-center');
                 var clientWidth = tablesAndCenter.clientWidth;
-                tablesAndCenter.classList.toggle('double-column', clientWidth > 1478);
-                var wasDoublePlayerColumn = tablesAndCenter.classList.contains('double-player-column');
-                var isDoublePlayerColumn = clientWidth > 1798;
-                if (wasDoublePlayerColumn != isDoublePlayerColumn) {
-                    tablesAndCenter.classList.toggle('double-player-column', isDoublePlayerColumn);
-                    _this.playersTables.forEach(function (table) { return table.setDoubleColumn(isDoublePlayerColumn); });
-                }
+                tablesAndCenter.classList.toggle('double-column', clientWidth > 1478); // TODO
             },
         });
-        if (gamedatas.lastTurn) {
-            this.notif_lastTurn(false);
-        }
         new HelpManager(this, {
             buttons: [
                 new BgaHelpPopinButton({
@@ -2386,13 +2314,6 @@ var SplendorDuel = /** @class */ (function () {
                     html: this.getHelpHtml(),
                     onPopinCreated: function () { return _this.populateHelp(); },
                     buttonBackground: '#5890a9',
-                }),
-                new BgaHelpExpandableButton({
-                    unfoldedHtml: this.getColorAddHtml(),
-                    foldedContentExtraClasses: 'color-help-folded-content',
-                    unfoldedContentExtraClasses: 'color-help-unfolded-content',
-                    expandedWidth: '120px',
-                    expandedHeight: '210px',
                 }),
             ]
         });
@@ -2411,18 +2332,6 @@ var SplendorDuel = /** @class */ (function () {
             case 'playAction':
                 this.onEnteringPlayAction(args.args);
                 break;
-            case 'chooseNewCard':
-                this.onEnteringChooseNewCard(args.args);
-                break;
-            case 'payDestination':
-                this.onEnteringPayDestination(args.args);
-                break;
-            case 'discardTableCard':
-                this.onEnteringDiscardTableCard();
-                break;
-            case 'reserveDestination':
-                this.onEnteringReserveDestination();
-                break;
         }
     };
     SplendorDuel.prototype.setGamestateDescription = function (property) {
@@ -2433,53 +2342,33 @@ var SplendorDuel = /** @class */ (function () {
         this.updatePageTitle();
     };
     SplendorDuel.prototype.onEnteringPlayAction = function (args) {
-        var _a, _b;
-        if (!args.canExplore && !args.canRecruit) {
-            this.setGamestateDescription('TradeOnly');
+        if (!args.canTakeTokens) {
+            if (!args.canBuyCard) {
+                this.setGamestateDescription('OnlyReserve');
+            }
+            else if (!args.canReserve) {
+                this.setGamestateDescription('OnlyBuy');
+            }
+            else {
+                this.setGamestateDescription('OnlyBuyAndReserve');
+            }
         }
-        else if (!args.canExplore) {
-            this.setGamestateDescription('RecruitOnly');
-        }
-        else if (!args.canRecruit) {
-            this.setGamestateDescription('ExploreOnly');
+        else {
+            if (!args.canBuyCard) {
+                this.setGamestateDescription('OnlyTokensAndReserve');
+            }
+            else if (!args.canReserve) {
+                this.setGamestateDescription('OnlyTokensAndBuy');
+            }
         }
         if (this.isCurrentPlayerActive()) {
-            if (args.canExplore) {
+            /* TODO if (args.canExplore) {
                 this.tableCenter.setDestinationsSelectable(true, args.possibleDestinations);
-                (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setDestinationsSelectable(true, args.possibleDestinations);
+                this.getCurrentPlayerTable()?.setDestinationsSelectable(true, args.possibleDestinations);
             }
             if (args.canRecruit) {
-                (_b = this.getCurrentPlayerTable()) === null || _b === void 0 ? void 0 : _b.setHandSelectable(true);
-            }
-        }
-    };
-    SplendorDuel.prototype.onEnteringChooseNewCard = function (args) {
-        if (this.isCurrentPlayerActive()) {
-            this.tableCenter.setCardsSelectable(true, args.allFree ? null : args.freeColor, args.recruits);
-        }
-    };
-    SplendorDuel.prototype.onEnteringDiscardTableCard = function () {
-        if (this.isCurrentPlayerActive()) {
-            this.tableCenter.setCardsSelectable(true, null, 0);
-        }
-    };
-    SplendorDuel.prototype.onEnteringDiscardCard = function (args) {
-        var _a;
-        if (this.isCurrentPlayerActive()) {
-            (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setCardsSelectable(true, [0]);
-        }
-    };
-    SplendorDuel.prototype.onEnteringPayDestination = function (args) {
-        var _a;
-        var selectedCardDiv = this.tokensManager.getCardElement(args.selectedDestination);
-        selectedCardDiv.classList.add('selected-pay-token');
-        if (this.isCurrentPlayerActive()) {
-            (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setCardsSelectable(true, args.selectedDestination.cost);
-        }
-    };
-    SplendorDuel.prototype.onEnteringReserveDestination = function () {
-        if (this.isCurrentPlayerActive()) {
-            this.tableCenter.setDestinationsSelectable(true, this.tableCenter.getVisibleDestinations());
+                this.getCurrentPlayerTable()?.setHandSelectable(true);
+            }*/
         }
     };
     SplendorDuel.prototype.onLeavingState = function (stateName) {
@@ -2488,69 +2377,12 @@ var SplendorDuel = /** @class */ (function () {
             case 'playAction':
                 this.onLeavingPlayAction();
                 break;
-            case 'chooseNewCard':
-                this.onLeavingChooseNewCard();
-                break;
-            case 'payDestination':
-                this.onLeavingPayDestination();
-                break;
-            case 'discardTableCard':
-                this.onLeavingDiscardTableCard();
-                break;
-            case 'discardCard':
-                this.onLeavingDiscardCard();
-                break;
-            case 'reserveDestination':
-                this.onLeavingReserveDestination();
-                break;
         }
     };
     SplendorDuel.prototype.onLeavingPlayAction = function () {
-        var _a, _b;
-        this.tableCenter.setDestinationsSelectable(false);
-        (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setHandSelectable(false);
-        (_b = this.getCurrentPlayerTable()) === null || _b === void 0 ? void 0 : _b.setDestinationsSelectable(false);
-    };
-    SplendorDuel.prototype.onLeavingChooseNewCard = function () {
-        this.tableCenter.setCardsSelectable(false);
-    };
-    SplendorDuel.prototype.onLeavingPayDestination = function () {
-        var _a;
-        document.querySelectorAll('.selected-pay-token').forEach(function (elem) { return elem.classList.remove('selected-pay-token'); });
-        (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setCardsSelectable(false);
-    };
-    SplendorDuel.prototype.onLeavingDiscardTableCard = function () {
-        this.tableCenter.setCardsSelectable(false);
-    };
-    SplendorDuel.prototype.onLeavingDiscardCard = function () {
-        var _a;
-        (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setCardsSelectable(false);
-    };
-    SplendorDuel.prototype.onLeavingReserveDestination = function () {
-        this.tableCenter.setDestinationsSelectable(false);
-    };
-    SplendorDuel.prototype.setPayDestinationLabelAndState = function (args) {
-        if (!args) {
-            args = this.gamedatas.gamestate.args;
-        }
-        var selectedCards = this.getCurrentPlayerTable().getSelectedCards();
-        var button = document.getElementById("payDestination_button");
-        var total = Object.values(args.selectedDestination.cost).reduce(function (a, b) { return a + b; }, 0);
-        var cards = selectedCards.length;
-        var recruits = total - cards;
-        var message = '';
-        if (recruits > 0 && cards > 0) {
-            message = _("Pay the ${cards} selected card(s) and ${recruits} recruit(s)");
-        }
-        else if (cards > 0) {
-            message = _("Pay the ${cards} selected card(s)");
-        }
-        else if (recruits > 0) {
-            message = _("Pay ${recruits} recruit(s)");
-        }
-        button.innerHTML = message.replace('${recruits}', '' + recruits).replace('${cards}', '' + cards);
-        button.classList.toggle('disabled', args.recruits < recruits);
-        button.dataset.recruits = '' + recruits;
+        /*this.tableCenter.setDestinationsSelectable(false);
+        this.getCurrentPlayerTable()?.setHandSelectable(false);
+        this.getCurrentPlayerTable()?.setDestinationsSelectable(false);*/
     };
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
     //                        action status bar (ie: the HTML links in the status bar).
@@ -2559,49 +2391,25 @@ var SplendorDuel = /** @class */ (function () {
         var _this = this;
         if (this.isCurrentPlayerActive()) {
             switch (stateName) {
-                case 'playAction':
-                    var playActionArgs = args;
-                    this.addActionButton("goTrade_button", _("Trade"), function () { return _this.goTrade(); });
-                    if (!playActionArgs.canTrade) {
-                        document.getElementById("goTrade_button").classList.add('disabled');
+                case 'usePrivilege':
+                    var usePrivilegeArgs = args;
+                    this.addActionButton("takeSelectedTokens_button", _("Take selected tokens"), function () { return _this.takeSelectedTokens(); });
+                    document.getElementById("takeSelectedTokens_button").classList.add('disabled');
+                    this.addActionButton("skip_button", _("Skip"), function () { return _this.skip(); });
+                    if (usePrivilegeArgs.canSkipBoth) {
+                        this.addActionButton("skipBoth_button", _("Skip & skip replenish"), function () { return _this.skipBoth(); });
                     }
-                    if (!playActionArgs.canExplore || !playActionArgs.canRecruit) {
-                        this.addActionButton("endTurn_button", _("End turn"), function () { return _this.endTurn(); });
+                    break;
+                case 'refillBoard':
+                    var refillBoardArgs = args;
+                    this.addActionButton("refillBoard_button", _("Replenish the board"), function () { return _this.refillBoard(); });
+                    this.addActionButton("skip_button", _("Skip"), function () { return _this.skip(); });
+                    if (refillBoardArgs.mustRefill) {
+                        document.getElementById("skip_button").classList.add('disabled');
                     }
                     break;
-                case 'chooseNewCard':
-                    var chooseNewCardArgs_1 = args;
-                    [1, 2, 3, 4, 5].forEach(function (color) {
-                        var free = chooseNewCardArgs_1.allFree || color == chooseNewCardArgs_1.freeColor;
-                        _this.addActionButton("chooseNewCard".concat(color, "_button"), _("Take ${color}").replace('${color}', "<div class=\"color\" data-color=\"".concat(color, "\"></div>")) + " (".concat(free ? _('free') : "1 <div class=\"recruit icon\"></div>", ")"), function () { return _this.chooseNewCard(chooseNewCardArgs_1.centerCards.find(function (card) { return card.locationArg == color; }).id); }, null, null, free ? undefined : 'gray');
-                        if (!free && chooseNewCardArgs_1.recruits < 1) {
-                            document.getElementById("chooseNewCard".concat(color, "_button")).classList.add('disabled');
-                        }
-                    });
-                    break;
-                case 'payDestination':
-                    this.addActionButton("payDestination_button", '', function () { return _this.payDestination(); });
-                    this.setPayDestinationLabelAndState(args);
-                    this.addActionButton("cancel_button", _("Cancel"), function () { return _this.cancel(); }, null, null, 'gray');
-                    break;
-                case 'trade':
-                    var tradeArgs_1 = args;
-                    [1, 2, 3].forEach(function (number) {
-                        _this.addActionButton("trade".concat(number, "_button"), _("Trade ${number} bracelet(s)").replace('${number}', number), function () { return _this.trade(number, tradeArgs_1.gainsByBracelets); });
-                        var button = document.getElementById("trade".concat(number, "_button"));
-                        if (tradeArgs_1.bracelets < number) {
-                            button.classList.add('disabled');
-                        }
-                        else {
-                            button.addEventListener('mouseenter', function () { return _this.getCurrentPlayerTable().showColumns(number); });
-                            button.addEventListener('mouseleave', function () { return _this.getCurrentPlayerTable().showColumns(0); });
-                        }
-                    });
-                    this.addActionButton("cancel_button", _("Cancel"), function () { return _this.cancel(); }, null, null, 'gray');
-                    break;
-                // multiplayer state    
-                case 'discardCard':
-                    this.onEnteringDiscardCard(args);
+                case 'discardTokens':
+                    this.addActionButton("discardSelectedTokens_button", _("Discard selected tokens"), function () { return _this.discardSelectedTokens(); });
                     break;
             }
         }
@@ -2673,16 +2481,8 @@ var SplendorDuel = /** @class */ (function () {
             _this.privilegeCounters[playerId] = new ebg.counter();
             _this.privilegeCounters[playerId].create("privilege-counter-".concat(playerId));
             _this.privilegeCounters[playerId].setValue(player.privileges);
-            _this.recruitCounters[playerId] = new ebg.counter();
-            _this.recruitCounters[playerId].create("recruit-counter-".concat(playerId));
-            _this.recruitCounters[playerId].setValue(player.recruit);
-            _this.braceletCounters[playerId] = new ebg.counter();
-            _this.braceletCounters[playerId].create("bracelet-counter-".concat(playerId));
-            _this.braceletCounters[playerId].setValue(player.bracelet);
         });
         this.setTooltipToClass('privilege-counter', _('Privilege scrolls'));
-        this.setTooltipToClass('recruit-counter', _('Recruits'));
-        this.setTooltipToClass('bracelet-counter', _('Bracelets'));
     };
     SplendorDuel.prototype.createPlayerTables = function (gamedatas) {
         var _this = this;
@@ -2695,52 +2495,9 @@ var SplendorDuel = /** @class */ (function () {
         var table = new PlayerTable(this, gamedatas.players[playerId], gamedatas.reservePossible);
         this.playersTables.push(table);
     };
-    SplendorDuel.prototype.updateGains = function (playerId, gains) {
-        var _this = this;
-        Object.entries(gains).forEach(function (entry) {
-            var type = Number(entry[0]);
-            var amount = entry[1];
-            if (amount != 0) {
-                switch (type) {
-                    case VP:
-                        _this.setScore(playerId, _this.scoreCtrl[playerId].getValue() + amount);
-                        break;
-                    case BRACELET:
-                        _this.setBracelets(playerId, _this.braceletCounters[playerId].getValue() + amount);
-                        break;
-                    case RECRUIT:
-                        _this.setRecruits(playerId, _this.recruitCounters[playerId].getValue() + amount);
-                        break;
-                    case REPUTATION:
-                        _this.setReputation(playerId, _this.tableCenter.getReputation(playerId) + amount);
-                        break;
-                }
-            }
-        });
-    };
     SplendorDuel.prototype.setScore = function (playerId, score) {
         var _a;
         (_a = this.scoreCtrl[playerId]) === null || _a === void 0 ? void 0 : _a.toValue(score);
-        this.tableCenter.setScore(playerId, score);
-    };
-    SplendorDuel.prototype.setReputation = function (playerId, count) {
-        this.privilegeCounters[playerId].toValue(count);
-        this.tableCenter.setReputation(playerId, count);
-    };
-    SplendorDuel.prototype.setRecruits = function (playerId, count) {
-        this.recruitCounters[playerId].toValue(count);
-        this.getPlayerTable(playerId).updateCounter('recruits', count);
-    };
-    SplendorDuel.prototype.setBracelets = function (playerId, count) {
-        this.braceletCounters[playerId].toValue(count);
-        this.getPlayerTable(playerId).updateCounter('bracelets', count);
-    };
-    SplendorDuel.prototype.highlightPlayerTokens = function (playerId) {
-        this.tableCenter.highlightPlayerTokens(playerId);
-    };
-    SplendorDuel.prototype.getColorAddHtml = function () {
-        var _this = this;
-        return [1, 2, 3, 4, 5].map(function (number) { return "\n            <div class=\"color\" data-color=\"".concat(number, "\"></div>\n            <span class=\"label\"> ").concat(_this.getColor(number), "</span>\n        "); }).join('');
     };
     SplendorDuel.prototype.getHelpHtml = function () {
         var html = "\n        <div id=\"help-popin\">\n            <h1>".concat(_("Assets"), "</h2>\n            <div class=\"help-section\">\n                <div class=\"icon vp\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Victory Point</strong>. The player moves their token forward 1 space on the Score Track."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon recruit\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Recruit</strong>: The player adds 1 Recruit token to their ship."), " ").concat(_("It is not possible to have more than 3."), " ").concat(_("A recruit allows a player to draw the Viking card of their choice when Recruiting or replaces a Viking card during Exploration."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon bracelet\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Silver Bracelet</strong>: The player adds 1 Silver Bracelet token to their ship."), " ").concat(_("It is not possible to have more than 3."), " ").concat(_("They are used for Trading."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon reputation\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Reputation Point</strong>: The player moves their token forward 1 space on the Reputation Track."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon take-card\"></div>\n                <div class=\"help-label\">").concat(_("Draw <strong>the first Viking card</strong> from the deck: It is placed in the player’s Crew Zone (without taking any assets)."), "</div>\n            </div>\n\n            <h1>").concat(_("Powers of the artifacts (variant option)"), "</h1>\n        ");
@@ -2782,104 +2539,35 @@ var SplendorDuel = /** @class */ (function () {
             this.setPayDestinationLabelAndState();
         }
     };
-    SplendorDuel.prototype.goTrade = function () {
-        if (!this.checkAction('goTrade')) {
+    SplendorDuel.prototype.takeSelectedTokens = function () {
+        if (!this.checkAction('takeTokens')) {
             return;
         }
-        this.takeAction('goTrade');
+        this.takeAction('takeTokens'); // TODO
     };
-    SplendorDuel.prototype.playCard = function (id) {
-        if (!this.checkAction('playCard')) {
+    SplendorDuel.prototype.skip = function () {
+        if (!this.checkAction('skip')) {
             return;
         }
-        this.takeAction('playCard', {
-            id: id
-        });
+        this.takeAction('skip');
     };
-    SplendorDuel.prototype.takeDestination = function (id) {
-        if (!this.checkAction('takeDestination')) {
+    SplendorDuel.prototype.skipBoth = function () {
+        if (!this.checkAction('skipBoth')) {
             return;
         }
-        this.takeAction('takeDestination', {
-            id: id
-        });
+        this.takeAction('skipBoth');
     };
-    SplendorDuel.prototype.reserveDestination = function (id) {
-        if (!this.checkAction('reserveDestination')) {
+    SplendorDuel.prototype.refillBoard = function () {
+        if (!this.checkAction('refillBoard')) {
             return;
         }
-        this.takeAction('reserveDestination', {
-            id: id
-        });
+        this.takeAction('refillBoard');
     };
-    SplendorDuel.prototype.chooseNewCard = function (id) {
-        if (!this.checkAction('chooseNewCard')) {
+    SplendorDuel.prototype.discardSelectedTokens = function () {
+        if (!this.checkAction('discardTokens')) {
             return;
         }
-        this.takeAction('chooseNewCard', {
-            id: id
-        });
-    };
-    SplendorDuel.prototype.payDestination = function () {
-        if (!this.checkAction('payDestination')) {
-            return;
-        }
-        var ids = this.getCurrentPlayerTable().getSelectedCards().map(function (card) { return card.id; });
-        var recruits = Number(document.getElementById("payDestination_button").dataset.recruits);
-        this.takeAction('payDestination', {
-            ids: ids.join(','),
-            recruits: recruits
-        });
-    };
-    SplendorDuel.prototype.trade = function (number, gainsByBracelets) {
-        var _this = this;
-        if (!this.checkAction('trade')) {
-            return;
-        }
-        var warning = null;
-        if (gainsByBracelets != null) {
-            if (gainsByBracelets[number] == 0) {
-                warning = _("Are you sure you want to trade ${bracelets} bracelet(s) ?").replace('${bracelets}', number) + ' ' + _("There is nothing to gain yet with this number of bracelet(s)");
-            }
-            else if (number > 1 && gainsByBracelets[number] == gainsByBracelets[number - 1]) {
-                warning = _("Are you sure you want to trade ${bracelets} bracelet(s) ?").replace('${bracelets}', number) + ' ' + _("You would gain the same with one less bracelet");
-            }
-        }
-        if (warning != null) {
-            this.confirmationDialog(warning, function () { return _this.trade(number, null); });
-            return;
-        }
-        this.takeAction('trade', {
-            number: number
-        });
-    };
-    SplendorDuel.prototype.cancel = function () {
-        if (!this.checkAction('cancel')) {
-            return;
-        }
-        this.takeAction('cancel');
-    };
-    SplendorDuel.prototype.endTurn = function () {
-        if (!this.checkAction('endTurn')) {
-            return;
-        }
-        this.takeAction('endTurn');
-    };
-    SplendorDuel.prototype.discardTableCard = function (id) {
-        if (!this.checkAction('discardTableCard')) {
-            return;
-        }
-        this.takeAction('discardTableCard', {
-            id: id
-        });
-    };
-    SplendorDuel.prototype.discardCard = function (id) {
-        if (!this.checkAction('discardCard')) {
-            return;
-        }
-        this.takeAction('discardCard', {
-            id: id
-        });
+        this.takeAction('discardTokens'); // TODO
     };
     SplendorDuel.prototype.takeAction = function (action, data) {
         data = data || {};
@@ -2901,21 +2589,7 @@ var SplendorDuel = /** @class */ (function () {
         //log( 'notifications subscriptions setup' );
         var _this = this;
         var notifs = [
-            ['playCard', undefined],
-            ['takeCard', undefined],
-            ['newTableCard', undefined],
-            ['takeDestination', undefined],
-            ['discardCards', undefined],
-            ['newTableDestination', undefined],
-            ['trade', ANIMATION_MS],
-            ['takeDeckCard', undefined],
-            ['discardTableCard', undefined],
-            ['reserveDestination', undefined],
-            ['score', ANIMATION_MS],
-            ['bracelet', ANIMATION_MS],
-            ['recruit', ANIMATION_MS],
-            ['cardDeckReset', undefined],
-            ['lastTurn', 1],
+            ['refill', undefined],
         ];
         notifs.forEach(function (notif) {
             dojo.subscribe(notif[0], _this, function (notifDetails) {
@@ -2926,91 +2600,27 @@ var SplendorDuel = /** @class */ (function () {
             });
             _this.notifqueue.setSynchronous(notif[0], notif[1]);
         });
-    };
-    SplendorDuel.prototype.notif_playCard = function (args) {
-        var playerId = args.playerId;
-        var playerTable = this.getPlayerTable(playerId);
-        var promise = playerTable.playCard(args.card);
-        this.updateGains(playerId, args.effectiveGains);
-        return promise;
-    };
-    SplendorDuel.prototype.notif_takeCard = function (args) {
-        var playerId = args.playerId;
-        var currentPlayer = this.getPlayerId() == playerId;
-        var playerTable = this.getPlayerTable(playerId);
-        return (currentPlayer ? playerTable.hand : playerTable.voidStock).addCard(args.card);
-    };
-    SplendorDuel.prototype.notif_newTableCard = function (args) {
-        this.tableCenter.cardDeck.setCardNumber(args.cardDeckCount, args.cardDeckTop);
-        return this.tableCenter.newTableCard(args.card);
-    };
-    SplendorDuel.prototype.notif_takeDestination = function (args) {
-        var playerId = args.playerId;
-        var promise = this.getPlayerTable(playerId).destinations.addCard(args.token);
-        this.updateGains(playerId, args.effectiveGains);
-        return promise;
-    };
-    SplendorDuel.prototype.notif_discardCards = function (args) {
-        var _this = this;
-        return this.tableCenter.cardDiscard.addCards(args.cards, undefined, undefined, 50).then(function () { return _this.tableCenter.setDiscardCount(args.cardDiscardCount); });
-    };
-    SplendorDuel.prototype.notif_newTableDestination = function (args) {
-        return this.tableCenter.newTableDestination(args.token, args.letter, args.destinationDeckCount, args.destinationDeckTop);
-    };
-    SplendorDuel.prototype.notif_score = function (args) {
-        this.setScore(args.playerId, +args.newScore);
-    };
-    SplendorDuel.prototype.notif_bracelet = function (args) {
-        this.setBracelets(args.playerId, +args.newScore);
-    };
-    SplendorDuel.prototype.notif_recruit = function (args) {
-        this.setRecruits(args.playerId, +args.newScore);
-    };
-    SplendorDuel.prototype.notif_trade = function (args) {
-        var playerId = args.playerId;
-        this.updateGains(playerId, args.effectiveGains);
-    };
-    SplendorDuel.prototype.notif_takeDeckCard = function (args) {
-        var playerId = args.playerId;
-        var playerTable = this.getPlayerTable(playerId);
-        var promise = playerTable.playCard(args.card, document.getElementById('board'));
-        this.tableCenter.cardDeck.setCardNumber(args.cardDeckCount, args.cardDeckTop);
-        return promise;
-    };
-    SplendorDuel.prototype.notif_discardTableCard = function (args) {
-        return this.tableCenter.cardDiscard.addCard(args.card);
-    };
-    SplendorDuel.prototype.notif_reserveDestination = function (args) {
-        var playerId = args.playerId;
-        var playerTable = this.getPlayerTable(playerId);
-        return playerTable.reserveDestination(args.token);
-    };
-    SplendorDuel.prototype.notif_cardDeckReset = function (args) {
-        this.tableCenter.cardDeck.setCardNumber(args.cardDeckCount, args.cardDeckTop);
-        this.tableCenter.setDiscardCount(args.cardDiscardCount);
-        return this.tableCenter.cardDeck.shuffle();
-    };
-    /**
-     * Show last turn banner.
-     */
-    SplendorDuel.prototype.notif_lastTurn = function (animate) {
-        if (animate === void 0) { animate = true; }
-        dojo.place("<div id=\"last-round\">\n            <span class=\"last-round-text ".concat(animate ? 'animate' : '', "\">").concat(_("This is the final round!"), "</span>\n        </div>"), 'page-title');
-    };
-    SplendorDuel.prototype.getGain = function (type) {
-        switch (type) {
-            case 1: return _("Victory Point");
-            case 2: return _("Bracelet");
-            case 3: return _("Recruit");
-            case 4: return _("Reputation");
-            case 5: return _("Card");
+        if (isDebug) {
+            notifs.forEach(function (notif) {
+                if (!_this["notif_".concat(notif[0])]) {
+                    console.warn("notif_".concat(notif[0], " function is not declared, but listed in setupNotifications"));
+                }
+            });
+            Object.getOwnPropertyNames(SplendorDuel.prototype).filter(function (item) { return item.startsWith('notif_'); }).map(function (item) { return item.slice(6); }).forEach(function (item) {
+                if (!notifs.some(function (notif) { return notif[0] == item; })) {
+                    console.warn("notif_".concat(item, " function is declared, but not listed in setupNotifications"));
+                }
+            });
         }
     };
-    SplendorDuel.prototype.getTooltipGain = function (type) {
-        return "".concat(this.getGain(type), " (<div class=\"icon\" data-type=\"").concat(type, "\"></div>)");
+    SplendorDuel.prototype.notif_refill = function (args) {
+        var playerId = args.playerId;
+        var playerTable = this.getPlayerTable(playerId);
+        var promise = playerTable.playCard(args.card); // TODO
+        return promise;
     };
     SplendorDuel.prototype.getColor = function (color) {
-        switch (color) {
+        switch (color) { // TODO
             case 1: return _("Red");
             case 2: return _("Yellow");
             case 3: return _("Green");

@@ -407,10 +407,16 @@ trait ActionTrait {
         $this->redirectAfterAction($playerId, false);
     }
 
-    public function cancel() {
-        self::checkAction('cancel');
+    public function skip() {
+        self::checkAction('skip');
 
-        $this->gamestate->nextState('cancel');
+        $this->gamestate->nextState('skip');
+    }
+
+    public function skipBoth() {
+        self::checkAction('skipBoth');
+
+        $this->gamestate->nextState('skipBoth');
     }
 
     public function endTurn() {

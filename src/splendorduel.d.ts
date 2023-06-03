@@ -4,14 +4,10 @@
 
 interface SplendorDuelPlayer extends Player {
     playerNo: number;
+    tokens: Token[];
     privileges: number;
-    recruit: number;
-    bracelet: number;
-    //handCount: number;
-    hand?: Card[];
-    playedCards: { [color: number]: Card[] };
-    destinations: Token[];
-    reservedDestinations?: Token[];
+    reservedCount: number;
+    reserved?: Card[];
 }
 
 interface SplendorDuelGamedatas {
@@ -27,16 +23,10 @@ interface SplendorDuelGamedatas {
     tablespeed: string;
 
     // Add here variables you set up in getAllDatas
-    cardDeckTop?: Card;
-    cardDeckCount: number;
-    cardDiscardCount: number;
-    centerCards: Card[];
-    centerDestinationsDeckTop: { [letter: string]: Token };
-    centerDestinationsDeckCount: { [letter: string]: number };
-    centerDestinations: { [letter: string]: Token[] };
-    firstPlayerId: number;
-    lastTurn: boolean;
-    reservePossible: boolean;
+    board: Token[];
+    cardDeckCount: { [level: number]: number };
+    cardDeckTop: { [level: number]: Card };
+    tableCards: { [level: number]: Card[] };
 }
 
 interface SplendorDuelGame extends Game {
@@ -54,102 +44,28 @@ interface SplendorDuelGame extends Game {
     getCurrentPlayerTable(): PlayerTable | null;
 
     setTooltip(id: string, html: string): void;
-    highlightPlayerTokens(playerId: number | null): void;
     onTableDestinationClick(token: Token): void;
     onHandCardClick(card: Card): void;
     onTableCardClick(card: Card): void;
     onPlayedCardClick(card: Card): void;
 }
 
+interface EnteringUsePrivilegeArgs {
+    privileges: number;
+    canSkipBoth: boolean;
+}
+
+interface EnteringRefillBoardArgs {
+    mustRefill: boolean;
+}
+
 interface EnteringPlayActionArgs {
-    canRecruit: boolean;
-    canExplore: boolean;
-    canTrade: boolean;
-    possibleDestinations: Token[];
+    canTakeTokens: boolean;
+    canReserve: boolean;
+    canBuyCard: boolean;
 }
 
-interface EnteringChooseNewCardArgs {
-    centerCards: Card[];
-    freeColor: number;
-    recruits: number;
-    allFree: boolean;
-}
-
-interface EnteringPayDestinationArgs {
-    selectedDestination: Token;
-    recruits: number;
-}
-
-interface EnteringTradeArgs {
-    bracelets: number;
-    gainsByBracelets: { [bracelets: number]: number };
-}
-
-// playCard
-interface NotifPlayCardArgs {
-    playerId: number;
-    card: Card;
-    newHandCard: Card;
-    effectiveGains: { [type: number]: number };
-}
-
-// card
-interface NotifNewCardArgs {
-    playerId: number;
-    card: Card;
-    cardDeckTop?: Card;
-    cardDeckCount: number;
-}
-
-// takeDestination
-interface NotifTakeDestinationArgs {
-    playerId: number;
-    token: Token;
-    effectiveGains: { [type: number]: number };
-}
-
-// newTableDestination
-interface NotifNewTableDestinationArgs {
-    token: Token;
-    letter: string;    
-    destinationDeckTop?: Token;
-    destinationDeckCount: number;
-}
-
-// trade
-interface NotifTradeArgs {
-    playerId: number;
-    effectiveGains: { [type: number]: number };
-}
-
-// discardCards
-interface NotifDiscardCardsArgs {
-    playerId: number;
-    cards: Card[];
-    cardDiscardCount: number;
-}
-
-// discardTableCard
-interface NotifDiscardTableCardArgs {
-    card: Card;
-}
-
-// reserveDestination
-interface NotifReserveDestinationArgs {
-    playerId: number;
-    token: Token;
-}
-
-// score
-interface NotifScoreArgs {
-    playerId: number;
-    newScore: number;
-    incScore: number;
-}
-
-// cardDeckReset
-interface NotifCardDeckResetArgs {  
-    cardDeckTop?: Card;
-    cardDeckCount: number;
-    cardDiscardCount: number;
+// refill
+interface NotifRefillArgs {
+    refilledTokens: Token[];
 }

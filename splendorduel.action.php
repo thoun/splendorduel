@@ -39,10 +39,36 @@
       }
   	} 
 
-    public function goTrade() {
-        self::setAjaxMode();     
+    public function takeTokens() {
+        self::setAjaxMode();   
 
-        $this->game->goTrade();
+        $idsStr = self::getArg( "ids", AT_numberlist, true );
+        $ids = array_map(fn($str) => intval($str), explode(',', $idsStr));
+        $this->game->takeTokens($ids);
+
+        self::ajaxResponse();
+    }
+
+    public function skip() {
+        self::setAjaxMode();
+
+        $this->game->skip();
+
+        self::ajaxResponse();
+    } 
+
+    public function skipBoth() {
+        self::setAjaxMode();
+
+        $this->game->skipBoth();
+
+        self::ajaxResponse();
+    } 
+
+    public function refillBoard() {
+        self::setAjaxMode();
+
+        $this->game->refillBoard();
 
         self::ajaxResponse();
     } 

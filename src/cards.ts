@@ -29,7 +29,7 @@ class CardsManager extends CardManager<Card> {
         let message = `
         <strong>${_("Color:")}</strong> ${this.game.getTooltipColor(card.color)}
         <br>
-        <strong>${_("Gain:")}</strong> <strong>1</strong> ${this.game.getTooltipGain(card.gain)}
+        <strong>${_("Gain:")}</strong> <strong>1</strong> ${card.gain}
         `;
  
         return message;

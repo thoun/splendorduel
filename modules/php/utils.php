@@ -83,12 +83,12 @@ trait UtilTrait {
         return array_keys($this->loadPlayersBasicInfos());
     }
 
-    function getRoundCardCount() {
-        return count($this->getPlayersIds()) + 2;
-    }
-
     function getPlayerName(int $playerId) {
         return self::getUniqueValueFromDB("SELECT player_name FROM player WHERE player_id = $playerId");
+    }
+
+    function getPlayerPrivileges(int $playerId) {
+        return intval(self::getUniqueValueFromDB("SELECT player_privileges FROM player WHERE player_id = $playerId"));
     }
 
     function getPlayer(int $id) {
@@ -170,16 +170,20 @@ trait UtilTrait {
         return array_map(fn($dbCard) => $this->getCardFromDb($dbCard), array_values($dbResults));
     }
 
-    function setupCards() { // TODO
-        $playerCount = 2;
-        foreach ($this->CARDS as $cardType) {
-            $cards[] = [ 'type' => $cardType->color, 'type_arg' => $cardType->gain, 'nbr' => $cardType->number[$playerCount] ];
-        }
-        $this->cards->createCards($cards, 'deck');
-        $this->cards->shuffle('deck');
+    function setupCards() {     
+        for ($level = 1; $level <= 3; $level++) {
+            $cards = [];
 
-        foreach ([1,2,3,4,5] as $slot) {
-            $this->cards->pickCardForLocation('deck', 'slot', $slot);
+            foreach ($this->CARDS as $cardType) {// TODO    
+                $cards[] = [ 'type' => $cardType->color, 'type_arg' => $cardType->gain, 'nbr' => 2 ];
+            }
+
+            $this->cards->createCards($cards, 'deck'.$level);
+            $this->cards->shuffle('deck'.$level);
+
+            for ($i = 1; $i <= 6 - $level; $i++) {
+                $this->cards->pickCardForLocation('deck'.$level, 'table'.$level, $i);
+            }
         }
     }
 
@@ -210,6 +214,10 @@ trait UtilTrait {
         return array_map(fn($dbCard) => $this->getTokenFromDb($dbCard), array_values($dbResults));
     }
 
+    function getBoard() {
+        return $this->getTokensByLocation('board');
+    }
+
     function setupTokens() {
         $cards = [
             [ 'type' => 1, 'type_arg' => 0, 'nbr' => 3 ], // gold
@@ -219,8 +227,40 @@ trait UtilTrait {
             $cards[] = [ 'type' => 2, 'type_arg' => $i, 'nbr' => 4 ];
         }
 
-        $this->tokens->createCards($cards, 'deck');
-        $this->tokens->shuffle('deck');
+        $this->tokens->createCards($cards, 'bag');
+
+        $this->refillBag();
+    }
+
+    function refillBag() {
+        $this->tokens->shuffle('bag');
+        $bagCount = intval($this->tokens->countCardInLocation('bag'));
+
+        $board = $this->getBoard();
+
+        $refilledTokens = [];
+
+        for ($i = 1; $i <= 25; $i++) {
+            if ($bagCount > 0 && !$this->array_some($board, fn($token) => $token->locationArg == $i)) {
+                $refilledTokens[] = $this->getTokenFromDb($this->tokens->pickCardForLocation('bag', 'board', $i));
+                // TODO notif
+
+                $bagCount--;
+                if ($bagCount == 0) {
+                    break;
+                }
+            }
+        }
+
+        self::notifyAllPlayers('refill', '', [
+            'refilledTokens' => $refilledTokens,
+        ]);
+    }
+
+    function mustRefill(int $playerId) {
+        $args = $this->argPlayAction();
+
+        return !$args['canTakeTokens'] && !$args['canReserve'] && !$args['canBuyCard'];
     }
     
     function redirectAfterAction(int $playerId) {

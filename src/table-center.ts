@@ -1,96 +1,55 @@
-const POINT_CASE_SIZE_LEFT = 38.8;
-const POINT_CASE_SIZE_TOP = 37.6;
-
 class TableCenter {
-    public destinationsDecks: Deck<Token>[] = [];
-    public cardDeck: Deck<Card>;
-    public cardDiscard: VoidStock<Card>;
-    public destinations: SlotStock<Token>[] = [];
-    public cards: SlotStock<Card>;
+    public bag: VoidStock<Token>;
+    public board: SlotStock<Token>;
+
+    public cardsDecks: Deck<Card>[] = [];
+    public cards: SlotStock<Card>[] = [];
+    public royalCards: LineStock<Card>[];
         
     constructor(private game: SplendorDuelGame, gamedatas: SplendorDuelGamedatas) {
-        /*['A', 'B'].forEach(letter => {
-            this.destinationsDecks[letter] = new Deck<Token>(game.tokensManager, document.getElementById(`table-destinations-${letter}-deck`), {
-                cardNumber: gamedatas.centerDestinationsDeckCount[letter],
-                topCard: gamedatas.centerDestinationsDeckTop[letter],
-                counter: {
-                    position: 'right',
-                },
-            });
+        this.bag = new VoidStock<Token>(game.tokensManager, document.getElementById('bag'));
 
-            this.destinations[letter] = new SlotStock<Token>(game.tokensManager, document.getElementById(`table-destinations-${letter}`), {
-                slotsIds: [1, 2, 3],
-                mapCardToSlot: card => card.locationArg,
-            });
-            this.destinations[letter].addCards(gamedatas.centerDestinations[letter]);
-            this.destinations[letter].onCardClick = (card: Token) => this.game.onTableDestinationClick(card);
-        })
-
-        const cardDeckDiv = document.getElementById(`card-deck`);
-        this.cardDeck = new Deck<Card>(game.cardsManager, cardDeckDiv, {
-            cardNumber: gamedatas.cardDeckCount,
-            topCard: gamedatas.cardDeckTop,
-            counter: {
-                counterId: 'deck-counter',
-            },
-        });
-        cardDeckDiv.insertAdjacentHTML('beforeend', `
-            <div id="discard-counter" class="bga-cards_deck-counter round">${gamedatas.cardDiscardCount}</div>
-        `);
-        const deckCounterDiv = document.getElementById('deck-counter');
-        const discardCounterDiv = document.getElementById('discard-counter');
-        this.game.setTooltip(deckCounterDiv.id, _('Deck size'));
-        this.game.setTooltip(discardCounterDiv.id, _('Discard size'));
-        this.cardDiscard = new VoidStock<Card>(game.cardsManager, discardCounterDiv);
-
-        this.cards = new SlotStock<Card>(game.cardsManager, document.getElementById(`table-cards`), {
-            slotsIds: [1, 2, 3, 4, 5],
-            mapCardToSlot: card => card.locationArg,
-            gap: '12px',
-        });
-        this.cards.onCardClick = card => this.game.onTableCardClick(card);
-        this.cards.addCards(gamedatas.centerCards);
-*/
-    }
-    
-    public newTableCard(card: Card): Promise<boolean> {
-        return this.cards.addCard(card);
-    }
-    
-    public newTableDestination(token: Token, letter: string, destinationDeckCount: number, destinationDeckTop?: Token): Promise<boolean> {
-        const promise = this.destinations[letter].addCard(token);
-        this.destinationsDecks[letter].setCardNumber(destinationDeckCount, destinationDeckTop);
-        return promise;
-    } 
-    
-    public setDestinationsSelectable(selectable: boolean, selectableCards: Token[] | null = null) {
-        ['A', 'B'].forEach(letter => {
-            this.destinations[letter].setSelectionMode(selectable ? 'single' : 'none');
-            this.destinations[letter].setSelectableCards(selectableCards);
-        });
-    }
-
-    public setCardsSelectable(selectable: boolean, freeColor: number | null = null, recruits: number | null = null) {
-        this.cards.setSelectionMode(selectable ? 'single' : 'none');
-        if (selectable) {
-            const selectableCards = this.cards.getCards().filter(card => freeColor === null || card.locationArg == freeColor || recruits >= 1);
-            this.cards.setSelectableCards(selectableCards);
+        const slotsIds = [];
+        for (let row = 1; row <= 5; row++) {
+            for (let column = 1; column <= 5; column++) {
+                slotsIds.push(JSON.stringify([row, column]));
+            }
         }
-    }
-    
-    public getVisibleDestinations(): Token[] {
-        return [
-            ...this.destinations['A'].getCards(),
-            ...this.destinations['B'].getCards(),
-        ];
-    }
+        this.board = new SlotStock<Token>(game.tokensManager, document.getElementById(`board`), {
+            slotsIds,
+            mapCardToSlot: card => JSON.stringify([card.row, card.column]),
+        });
+        this.board.addCards(gamedatas.board);
+        this.board.onCardClick = (card: Token) => this.game.onTableDestinationClick(card);
 
-    public highlightPlayerTokens(playerId: number | null) {
-        document.querySelectorAll('#board .marker').forEach((elem: HTMLElement) => elem.classList.toggle('highlight', Number(elem.dataset.playerId) === playerId));
-    }
-    
-    public setDiscardCount(cardDiscardCount: number) {
-        const discardCounterDiv = document.getElementById('discard-counter');
-        discardCounterDiv.innerHTML = ''+cardDiscardCount;
+        
+        for (let level = 3; level >= 1; level--) {
+            document.getElementById('table-cards').insertAdjacentHTML('beforeend', `
+                <div id="card-deck-${level}"></div>
+                <div id="table-cards-${level}"></div>
+            `);
+            this.cardsDecks[level] = new Deck<Card>(game.cardsManager, document.getElementById(`card-deck-${level}`), {
+                cardNumber: gamedatas.cardDeckCount[level],
+                topCard: gamedatas.cardDeckTop[level],
+            });
+
+            const slotsIds = [];
+            for (let i = 1; i <= 6 - level; i++) {
+                slotsIds.push(i);
+            }
+            this.cards[level] = new SlotStock<Card>(game.cardsManager, document.getElementById(`table-cards-${level}`), {
+                slotsIds,
+                mapCardToSlot: card => card.locationArg,
+                gap: '12px',
+            });
+            this.cards[level].onCardClick = card => this.game.onTableCardClick(card);
+            this.cards[level].addCards(gamedatas.tableCards[level]);
+        }
+
+        /*this.royalCards = new LineStock<Card>(game.cardsManager, document.getElementById(`royal-cards`), {
+            center: true,
+        });
+        this.royalCards.onCardClick = card => this.game.onRoyalCardClick(card);
+        this.royalCards.addCards(gamedatas.royalCards);*/
     }
 }

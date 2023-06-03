@@ -178,7 +178,7 @@ class SplendorDuel extends Table {
   
         // Gather all information about current game situation (visible by player $current_player_id).
 
-        /*$firstPlayerId = null;
+        $firstPlayerId = null;
         $isEndScore = intval($this->gamestate->state_id()) >= ST_END_SCORE;
         
         foreach($result['players'] as $playerId => &$player) {
@@ -187,35 +187,29 @@ class SplendorDuel extends Table {
                 $firstPlayerId = $playerId;
             }
 
+            $player['tokens'] = $this->getTokensByLocation('player', $playerId);
             $player['privileges'] = intval($player['privileges']);
-            $player['playedCards'] = [];
-            foreach ([1,2,3,4,5] as $color) {
-                $player['playedCards'][$color] = $this->getCardsByLocation('played'.$playerId.'-'.$color);
-            }
-            $player['destinations'] = $this->getTokensByLocation('played'.$playerId);
-            //$player['handCount'] = intval($this->cards->countCardInLocation('hand', $playerId));
+
+            $player['reservedCount'] = intval($this->cards->countCardInLocation('reserved', $playerId));
 
             if ($currentPlayerId == $playerId) {
-                $player['hand'] = $this->getCardsByLocation('hand', $playerId);
+                $player['reserved'] = $this->getCardsByLocation('reserved', $playerId);
             }
         }
 
-        $result['cardDeckTop'] = Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck')));
-        $result['cardDeckCount'] = intval($this->cards->countCardInLocation('deck'));
-        $result['cardDiscardCount'] = intval($this->cards->countCardInLocation('discard'));
-        $result['centerCards'] = $this->getCardsByLocation('slot');
-        $result['centerDestinationsDeckTop'] = [];
-        $result['centerDestinationsDeckCount'] = [];
-        $result['centerDestinations'] = [];
+        $result['board'] = $this->getBoard();
 
-        foreach (['A', 'B'] as $letter) {
-            $result['centerDestinationsDeckTop'][$letter] = Token::onlyId($this->getTokenFromDb($this->tokens->getCardOnTop('deck'.$letter)));
-            $result['centerDestinationsDeckCount'][$letter] = intval($this->tokens->countCardInLocation('deck'.$letter));
-            $result['centerDestinations'][$letter] = $this->getTokensByLocation('slot'.$letter);
+        $result['cardDeckCount'] = [];
+        $result['cardDeckTop'] = [];
+        $result['tableCards'] = [];
+
+        foreach ([1,2,3] as $level) {
+            $result['cardDeckCount'][$level] = intval($this->cards->countCardInLocation('deck'.$level));
+            $result['cardDeckTop'][$level] = Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'.$level)));
+            $result['tableCards'][$level] = $this->getCardsByLocation('table'.$level);
         }
 
         $result['firstPlayerId'] = $firstPlayerId;
-        $result['lastTurn'] = !$isEndScore && boolval($this->getGameStateValue(LAST_TURN));*/
   
         return $result;
     }

@@ -32,8 +32,6 @@ class SplendorDuel implements SplendorDuelGame {
     private playersTables: PlayerTable[] = [];
     //private handCounters: Counter[] = [];
     private privilegeCounters: Counter[] = [];
-    private recruitCounters: Counter[] = [];
-    private braceletCounters: Counter[] = [];
     
     private TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
 
@@ -86,19 +84,9 @@ class SplendorDuel implements SplendorDuelGame {
             onDimensionsChange: () => {
                 const tablesAndCenter = document.getElementById('tables-and-center');
                 const clientWidth = tablesAndCenter.clientWidth;
-                tablesAndCenter.classList.toggle('double-column', clientWidth > 1478);
-                const wasDoublePlayerColumn = tablesAndCenter.classList.contains('double-player-column');
-                const isDoublePlayerColumn = clientWidth > 1798;
-                if (wasDoublePlayerColumn != isDoublePlayerColumn) {
-                    tablesAndCenter.classList.toggle('double-player-column', isDoublePlayerColumn);
-                    this.playersTables.forEach(table => table.setDoubleColumn(isDoublePlayerColumn));
-                }
+                tablesAndCenter.classList.toggle('double-column', clientWidth > 1478); // TODO
             },
         });
-
-        if (gamedatas.lastTurn) {
-            this.notif_lastTurn(false);
-        }
 
         new HelpManager(this, { 
             buttons: [
@@ -107,13 +95,6 @@ class SplendorDuel implements SplendorDuelGame {
                     html: this.getHelpHtml(),
                     onPopinCreated: () => this.populateHelp(),
                     buttonBackground: '#5890a9',
-                }),
-                new BgaHelpExpandableButton({
-                    unfoldedHtml: this.getColorAddHtml(),
-                    foldedContentExtraClasses: 'color-help-folded-content',
-                    unfoldedContentExtraClasses: 'color-help-unfolded-content',
-                    expandedWidth: '120px',
-                    expandedHeight: '210px',
                 }),
             ]
         });
@@ -136,18 +117,6 @@ class SplendorDuel implements SplendorDuelGame {
             case 'playAction':
                 this.onEnteringPlayAction(args.args);
                 break;
-            case 'chooseNewCard':
-                this.onEnteringChooseNewCard(args.args);
-                break;
-            case 'payDestination':
-                this.onEnteringPayDestination(args.args);
-                break;
-            case 'discardTableCard':
-                this.onEnteringDiscardTableCard();
-                break;
-            case 'reserveDestination':
-                this.onEnteringReserveDestination();
-                break;
         }
     }
     
@@ -159,55 +128,30 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     private onEnteringPlayAction(args: EnteringPlayActionArgs) {
-        if (!args.canExplore && !args.canRecruit) {
-            this.setGamestateDescription('TradeOnly');
-        } else if (!args.canExplore) {
-            this.setGamestateDescription('RecruitOnly');
-        } else if (!args.canRecruit) {
-            this.setGamestateDescription('ExploreOnly');
+        if (!args.canTakeTokens) {
+            if (!args.canBuyCard) {
+                this.setGamestateDescription('OnlyReserve');
+            } else if (!args.canReserve) {
+                this.setGamestateDescription('OnlyBuy');
+            } else {
+                this.setGamestateDescription('OnlyBuyAndReserve');
+            }
+        } else {
+            if (!args.canBuyCard) {
+                this.setGamestateDescription('OnlyTokensAndReserve');
+            } else if (!args.canReserve) {
+                this.setGamestateDescription('OnlyTokensAndBuy');
+            }
         }
 
         if ((this as any).isCurrentPlayerActive()) {
-            if (args.canExplore) {
+            /* TODO if (args.canExplore) {
                 this.tableCenter.setDestinationsSelectable(true, args.possibleDestinations);
                 this.getCurrentPlayerTable()?.setDestinationsSelectable(true, args.possibleDestinations);
             }
             if (args.canRecruit) {
                 this.getCurrentPlayerTable()?.setHandSelectable(true);
-            }
-        }
-    }
-
-    private onEnteringChooseNewCard(args: EnteringChooseNewCardArgs) {
-        if ((this as any).isCurrentPlayerActive()) {
-            this.tableCenter.setCardsSelectable(true, args.allFree ? null : args.freeColor, args.recruits);
-        }
-    }
-
-    private onEnteringDiscardTableCard() {
-        if ((this as any).isCurrentPlayerActive()) {
-            this.tableCenter.setCardsSelectable(true, null, 0);
-        }
-    }
-
-    private onEnteringDiscardCard(args: EnteringPayDestinationArgs) {
-        if ((this as any).isCurrentPlayerActive()) {
-            this.getCurrentPlayerTable()?.setCardsSelectable(true, [0]);
-        }
-    }
-
-    private onEnteringPayDestination(args: EnteringPayDestinationArgs) {
-        const selectedCardDiv = this.tokensManager.getCardElement(args.selectedDestination);
-        selectedCardDiv.classList.add('selected-pay-token');
-
-        if ((this as any).isCurrentPlayerActive()) {
-            this.getCurrentPlayerTable()?.setCardsSelectable(true, args.selectedDestination.cost);
-        }
-    }
-
-    private onEnteringReserveDestination() {
-        if ((this as any).isCurrentPlayerActive()) {
-            this.tableCenter.setDestinationsSelectable(true, this.tableCenter.getVisibleDestinations());
+            }*/
         }
     }
 
@@ -218,75 +162,13 @@ class SplendorDuel implements SplendorDuelGame {
             case 'playAction':
                 this.onLeavingPlayAction();
                 break;
-            case 'chooseNewCard':
-                this.onLeavingChooseNewCard();
-                break;
-            case 'payDestination':
-                this.onLeavingPayDestination();
-                break;
-            case 'discardTableCard':
-                this.onLeavingDiscardTableCard();
-                break;
-            case 'discardCard':
-                this.onLeavingDiscardCard();
-                break;
-            case 'reserveDestination':
-                this.onLeavingReserveDestination();
-                break;
         }
     }
 
     private onLeavingPlayAction() {
-        this.tableCenter.setDestinationsSelectable(false);
+        /*this.tableCenter.setDestinationsSelectable(false);
         this.getCurrentPlayerTable()?.setHandSelectable(false);
-        this.getCurrentPlayerTable()?.setDestinationsSelectable(false);
-    }
-    
-    private onLeavingChooseNewCard() {
-        this.tableCenter.setCardsSelectable(false);
-    }
-
-    private onLeavingPayDestination() {
-        document.querySelectorAll('.selected-pay-token').forEach(elem => elem.classList.remove('selected-pay-token'));
-        this.getCurrentPlayerTable()?.setCardsSelectable(false);
-    }
-    
-    private onLeavingDiscardTableCard() {
-        this.tableCenter.setCardsSelectable(false);
-    }
-
-    private onLeavingDiscardCard() {
-        this.getCurrentPlayerTable()?.setCardsSelectable(false);
-    }
-
-    private onLeavingReserveDestination() {
-        this.tableCenter.setDestinationsSelectable(false);
-    }
-
-    private setPayDestinationLabelAndState(args?: EnteringPayDestinationArgs) {
-        if (!args) {
-            args = this.gamedatas.gamestate.args;
-        }
-
-        const selectedCards = this.getCurrentPlayerTable().getSelectedCards();
-
-        const button = document.getElementById(`payDestination_button`);
-
-        const total = Object.values(args.selectedDestination.cost).reduce((a, b) => a + b, 0);
-        const cards = selectedCards.length;
-        const recruits = total - cards;
-        let message = '';
-        if (recruits > 0 && cards > 0) {
-            message = _("Pay the ${cards} selected card(s) and ${recruits} recruit(s)")
-        } else if (cards > 0) {
-            message = _("Pay the ${cards} selected card(s)");
-        } else if (recruits > 0) {
-            message = _("Pay ${recruits} recruit(s)");
-        }
-
-        button.innerHTML = message.replace('${recruits}', ''+recruits).replace('${cards}', ''+cards);
-        button.classList.toggle('disabled', args.recruits < recruits);
-        button.dataset.recruits = ''+recruits;
+        this.getCurrentPlayerTable()?.setDestinationsSelectable(false);*/
     }
 
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
@@ -296,50 +178,25 @@ class SplendorDuel implements SplendorDuelGame {
         
         if ((this as any).isCurrentPlayerActive()) {
             switch (stateName) {
-                case 'playAction':
-                    const playActionArgs = args as EnteringPlayActionArgs;
-                    (this as any).addActionButton(`goTrade_button`, _("Trade"), () => this.goTrade());
-                    if (!playActionArgs.canTrade) {
-                        document.getElementById(`goTrade_button`).classList.add('disabled');
+                case 'usePrivilege':
+                    const usePrivilegeArgs = args as EnteringUsePrivilegeArgs;
+                    (this as any).addActionButton(`takeSelectedTokens_button`, _("Take selected tokens"), () => this.takeSelectedTokens());
+                    document.getElementById(`takeSelectedTokens_button`).classList.add('disabled');
+                    (this as any).addActionButton(`skip_button`, _("Skip"), () => this.skip());
+                    if (usePrivilegeArgs.canSkipBoth) {
+                        (this as any).addActionButton(`skipBoth_button`, _("Skip & skip replenish"), () => this.skipBoth());
                     }
-                    if (!playActionArgs.canExplore || !playActionArgs.canRecruit) {
-                        (this as any).addActionButton(`endTurn_button`, _("End turn"), () => this.endTurn());
+                    break;
+                case 'refillBoard':
+                    const refillBoardArgs = args as EnteringRefillBoardArgs;
+                    (this as any).addActionButton(`refillBoard_button`, _("Replenish the board"), () => this.refillBoard());                    
+                    (this as any).addActionButton(`skip_button`, _("Skip"), () => this.skip());
+                    if (refillBoardArgs.mustRefill) {
+                        document.getElementById(`skip_button`).classList.add('disabled');
                     }
                     break;
-                case 'chooseNewCard':
-                    const chooseNewCardArgs = args as EnteringChooseNewCardArgs;
-                    [1, 2, 3, 4, 5].forEach(color => {
-                        const free = chooseNewCardArgs.allFree || color == chooseNewCardArgs.freeColor;
-                        (this as any).addActionButton(`chooseNewCard${color}_button`, _("Take ${color}").replace('${color}', `<div class="color" data-color="${color}"></div>`) + ` (${free ? _('free') : `1 <div class="recruit icon"></div>`})`, () => this.chooseNewCard(chooseNewCardArgs.centerCards.find(card => card.locationArg == color).id), null, null, free ? undefined : 'gray');
-                        if (!free && chooseNewCardArgs.recruits < 1) {
-                            document.getElementById(`chooseNewCard${color}_button`).classList.add('disabled');
-                        }
-                    });
-                    break;
-                case 'payDestination':
-                    (this as any).addActionButton(`payDestination_button`, '', () => this.payDestination());
-                    this.setPayDestinationLabelAndState(args);
-
-                    (this as any).addActionButton(`cancel_button`, _("Cancel"), () => this.cancel(), null, null, 'gray');
-                    break;
-                case 'trade':
-                    const tradeArgs = args as EnteringTradeArgs;
-                    [1, 2, 3].forEach(number => {
-                        (this as any).addActionButton(`trade${number}_button`, _("Trade ${number} bracelet(s)").replace('${number}', number), () => this.trade(number, tradeArgs.gainsByBracelets));
-                        const button = document.getElementById(`trade${number}_button`);
-                        if (tradeArgs.bracelets < number) {
-                            button.classList.add('disabled');
-                        } else {
-                            button.addEventListener('mouseenter', () => this.getCurrentPlayerTable().showColumns(number));
-                            button.addEventListener('mouseleave', () => this.getCurrentPlayerTable().showColumns(0));
-                        }
-                    });
-                    (this as any).addActionButton(`cancel_button`, _("Cancel"), () => this.cancel(), null, null, 'gray');
-                    break;
-
-                // multiplayer state    
-                case 'discardCard':
-                    this.onEnteringDiscardCard(args);
+                case 'discardTokens':
+                    (this as any).addActionButton(`discardSelectedTokens_button`, _("Discard selected tokens"), () => this.discardSelectedTokens());
                     break;
                     
             }
@@ -450,19 +307,9 @@ class SplendorDuel implements SplendorDuelGame {
             this.privilegeCounters[playerId] = new ebg.counter();
             this.privilegeCounters[playerId].create(`privilege-counter-${playerId}`);
             this.privilegeCounters[playerId].setValue(player.privileges);
-
-            this.recruitCounters[playerId] = new ebg.counter();
-            this.recruitCounters[playerId].create(`recruit-counter-${playerId}`);
-            this.recruitCounters[playerId].setValue(player.recruit);
-
-            this.braceletCounters[playerId] = new ebg.counter();
-            this.braceletCounters[playerId].create(`bracelet-counter-${playerId}`);
-            this.braceletCounters[playerId].setValue(player.bracelet);
         });
 
         this.setTooltipToClass('privilege-counter', _('Privilege scrolls'));
-        this.setTooltipToClass('recruit-counter', _('Recruits'));
-        this.setTooltipToClass('bracelet-counter', _('Bracelets'));
     }
 
     private createPlayerTables(gamedatas: SplendorDuelGamedatas) {
@@ -478,59 +325,8 @@ class SplendorDuel implements SplendorDuelGame {
         this.playersTables.push(table);
     }
 
-    private updateGains(playerId: number, gains: { [type: number]: number }) {
-        Object.entries(gains).forEach(entry => {
-            const type = Number(entry[0]);
-            const amount = entry[1];
-
-            if (amount != 0) {
-                switch (type) {
-                    case VP:
-                        this.setScore(playerId, (this as any).scoreCtrl[playerId].getValue() + amount);
-                        break;
-                    case BRACELET:
-                        this.setBracelets(playerId, this.braceletCounters[playerId].getValue() + amount);
-                        break;
-                    case RECRUIT:
-                        this.setRecruits(playerId, this.recruitCounters[playerId].getValue() + amount);
-                        break;
-                    case REPUTATION:
-                        this.setReputation(playerId, this.tableCenter.getReputation(playerId) + amount);
-                        break;
-                }
-            }
-        });
-    }
-
     private setScore(playerId: number, score: number) {
         (this as any).scoreCtrl[playerId]?.toValue(score);
-        this.tableCenter.setScore(playerId, score);
-    }
-
-    private setReputation(playerId: number, count: number) {
-        this.privilegeCounters[playerId].toValue(count);
-        this.tableCenter.setReputation(playerId, count);
-    }
-
-    private setRecruits(playerId: number, count: number) {
-        this.recruitCounters[playerId].toValue(count);
-        this.getPlayerTable(playerId).updateCounter('recruits', count);
-    }
-
-    private setBracelets(playerId: number, count: number) {
-        this.braceletCounters[playerId].toValue(count);
-        this.getPlayerTable(playerId).updateCounter('bracelets', count);
-    }
-
-    public highlightPlayerTokens(playerId: number | null): void {
-        this.tableCenter.highlightPlayerTokens(playerId);
-    }
-
-    private getColorAddHtml() {
-        return [1, 2, 3, 4, 5].map(number => `
-            <div class="color" data-color="${number}"></div>
-            <span class="label"> ${this.getColor(number)}</span>
-        `).join('');
     }
 
     private getHelpHtml() {
@@ -607,126 +403,44 @@ class SplendorDuel implements SplendorDuelGame {
         }
     }
   	
-    public goTrade() {
-        if(!(this as any).checkAction('goTrade')) {
+    public takeSelectedTokens() {
+        if(!(this as any).checkAction('takeTokens')) {
             return;
         }
 
-        this.takeAction('goTrade');
+        this.takeAction('takeTokens'); // TODO
     }
   	
-    public playCard(id: number) {
-        if(!(this as any).checkAction('playCard')) {
+    public skip() {
+        if(!(this as any).checkAction('skip')) {
             return;
         }
 
-        this.takeAction('playCard', {
-            id
-        });
+        this.takeAction('skip');
     }
   	
-    public takeDestination(id: number) {
-        if(!(this as any).checkAction('takeDestination')) {
+    public skipBoth() {
+        if(!(this as any).checkAction('skipBoth')) {
             return;
         }
 
-        this.takeAction('takeDestination', {
-            id
-        });
+        this.takeAction('skipBoth');
     }
   	
-    public reserveDestination(id: number) {
-        if(!(this as any).checkAction('reserveDestination')) {
+    public refillBoard() {
+        if(!(this as any).checkAction('refillBoard')) {
             return;
         }
 
-        this.takeAction('reserveDestination', {
-            id
-        });
+        this.takeAction('refillBoard');
     }
   	
-    public chooseNewCard(id: number) {
-        if(!(this as any).checkAction('chooseNewCard')) {
+    public discardSelectedTokens() {
+        if(!(this as any).checkAction('discardTokens')) {
             return;
         }
 
-        this.takeAction('chooseNewCard', {
-            id
-        });
-    }
-  	
-    public payDestination() {
-        if(!(this as any).checkAction('payDestination')) {
-            return;
-        }
-
-        const ids = this.getCurrentPlayerTable().getSelectedCards().map(card => card.id);
-        const recruits = Number(document.getElementById(`payDestination_button`).dataset.recruits);
-
-        this.takeAction('payDestination', {
-            ids: ids.join(','),
-            recruits
-        });
-    }
-  	
-    public trade(number: number, gainsByBracelets: { [bracelets: number]: number } | null) {
-        if(!(this as any).checkAction('trade')) {
-            return;
-        }
-
-        let warning = null;
-        if (gainsByBracelets != null) {
-            if (gainsByBracelets[number] == 0) {
-                warning = _("Are you sure you want to trade ${bracelets} bracelet(s) ?").replace('${bracelets}', number) + ' '+ _("There is nothing to gain yet with this number of bracelet(s)");
-            } else if (number > 1 && gainsByBracelets[number] == gainsByBracelets[number - 1]) {
-                warning = _("Are you sure you want to trade ${bracelets} bracelet(s) ?").replace('${bracelets}', number) + ' '+ _("You would gain the same with one less bracelet");
-            }
-        }
-
-        if (warning != null) {
-            (this as any).confirmationDialog(warning, () => this.trade(number, null));
-            return;
-        }
-
-        this.takeAction('trade', {
-            number
-        });
-    }
-  	
-    public cancel() {
-        if(!(this as any).checkAction('cancel')) {
-            return;
-        }
-
-        this.takeAction('cancel');
-    }
-  	
-    public endTurn() {
-        if(!(this as any).checkAction('endTurn')) {
-            return;
-        }
-
-        this.takeAction('endTurn');
-    }
-  	
-    public discardTableCard(id: number) {
-        if(!(this as any).checkAction('discardTableCard')) {
-            return;
-        }
-
-        this.takeAction('discardTableCard', {
-            id
-        });
-    }
-  	
-    public discardCard(id: number) {
-        if(!(this as any).checkAction('discardCard')) {
-            return;
-        }
-
-        this.takeAction('discardCard', {
-            id
-        });
+        this.takeAction('discardTokens'); // TODO
     }
 
     public takeAction(action: string, data?: any) {
@@ -751,21 +465,7 @@ class SplendorDuel implements SplendorDuelGame {
         //log( 'notifications subscriptions setup' );
 
         const notifs = [
-            ['playCard', undefined],
-            ['takeCard', undefined],
-            ['newTableCard', undefined],
-            ['takeDestination', undefined],
-            ['discardCards', undefined],
-            ['newTableDestination', undefined],
-            ['trade', ANIMATION_MS],
-            ['takeDeckCard', undefined],
-            ['discardTableCard', undefined],
-            ['reserveDestination', undefined],
-            ['score', ANIMATION_MS],
-            ['bracelet', ANIMATION_MS],
-            ['recruit', ANIMATION_MS],
-            ['cardDeckReset', undefined],
-            ['lastTurn', 1],
+            ['refill', undefined],
         ];
     
         notifs.forEach((notif) => {
@@ -779,123 +479,33 @@ class SplendorDuel implements SplendorDuelGame {
             });
             (this as any).notifqueue.setSynchronous(notif[0], notif[1]);
         });
-    }
 
-    notif_playCard(args: NotifPlayCardArgs) {
-        const playerId = args.playerId;
-        const playerTable = this.getPlayerTable(playerId);
+        if (isDebug) {
+            notifs.forEach((notif) => {
+                if (!this[`notif_${notif[0]}`]) {
+                    console.warn(`notif_${notif[0]} function is not declared, but listed in setupNotifications`);
+                }
+            });
 
-        const promise = playerTable.playCard(args.card);
-
-        this.updateGains(playerId, args.effectiveGains);
-
-        return promise;
-    }
-
-    notif_takeCard(args: NotifNewCardArgs) {
-        const playerId = args.playerId;
-        const currentPlayer = this.getPlayerId() == playerId;
-        const playerTable = this.getPlayerTable(playerId);
-        
-        return (currentPlayer ? playerTable.hand : playerTable.voidStock).addCard(args.card);
-    }
-
-    notif_newTableCard(args: NotifNewCardArgs) {
-        this.tableCenter.cardDeck.setCardNumber(args.cardDeckCount, args.cardDeckTop);
-        return this.tableCenter.newTableCard(args.card);
-    }
-
-    notif_takeDestination(args: NotifTakeDestinationArgs) {
-        const playerId = args.playerId;
-        const promise = this.getPlayerTable(playerId).destinations.addCard(args.token);
-
-        this.updateGains(playerId, args.effectiveGains);
-
-        return promise;
-    }
-
-    notif_discardCards(args: NotifDiscardCardsArgs) {
-        return this.tableCenter.cardDiscard.addCards(args.cards, undefined, undefined, 50).then(
-            () => this.tableCenter.setDiscardCount(args.cardDiscardCount)
-        );
-    }
-
-    notif_newTableDestination(args: NotifNewTableDestinationArgs) {
-        return this.tableCenter.newTableDestination(args.token, args.letter, args.destinationDeckCount, args.destinationDeckTop);
-    }
-
-    notif_score(args: NotifScoreArgs) {
-        this.setScore(args.playerId, +args.newScore);
-    }
-
-    notif_bracelet(args: NotifScoreArgs) {
-        this.setBracelets(args.playerId, +args.newScore);
-    }
-
-    notif_recruit(args: NotifScoreArgs) {
-        this.setRecruits(args.playerId, +args.newScore);
-    }
-
-    notif_trade(args: NotifTradeArgs) {
-        const playerId = args.playerId;
-
-        this.updateGains(playerId, args.effectiveGains);
-    }
-
-    notif_takeDeckCard(args: NotifNewCardArgs) {
-        const playerId = args.playerId;
-        const playerTable = this.getPlayerTable(playerId);
-
-        const promise = playerTable.playCard(args.card, document.getElementById('board'));
-
-        this.tableCenter.cardDeck.setCardNumber(args.cardDeckCount, args.cardDeckTop);
-
-        return promise;
-    }
-
-    notif_discardTableCard(args: NotifDiscardTableCardArgs) {
-        return this.tableCenter.cardDiscard.addCard(args.card);
-    }
-
-    notif_reserveDestination(args: NotifReserveDestinationArgs) {
-        const playerId = args.playerId;
-        const playerTable = this.getPlayerTable(playerId);
-
-        return playerTable.reserveDestination(args.token);
-    }
-
-    notif_cardDeckReset(args: NotifCardDeckResetArgs) {
-        this.tableCenter.cardDeck.setCardNumber(args.cardDeckCount, args.cardDeckTop);
-        this.tableCenter.setDiscardCount(args.cardDiscardCount);
-
-        return this.tableCenter.cardDeck.shuffle();
-    }
-    
-    /** 
-     * Show last turn banner.
-     */ 
-    notif_lastTurn(animate: boolean = true) {
-        dojo.place(`<div id="last-round">
-            <span class="last-round-text ${animate ? 'animate' : ''}">${_("This is the final round!")}</span>
-        </div>`, 'page-title');
-    }
-
-    public getGain(type: number): string {
-        switch (type) {
-            case 1: return _("Victory Point");
-            case 2: return _("Bracelet");
-            case 3: return _("Recruit");
-            case 4: return _("Reputation");
-            case 5: return _("Card");
+            Object.getOwnPropertyNames(SplendorDuel.prototype).filter(item => item.startsWith('notif_')).map(item => item.slice(6)).forEach(item => {
+                if (!notifs.some(notif => notif[0] == item)) {
+                    console.warn(`notif_${item} function is declared, but not listed in setupNotifications`);
+                }
+            });
         }
     }
 
-    public getTooltipGain(type: number): string {
-        return `${this.getGain(type)} (<div class="icon" data-type="${type}"></div>)`;
+    notif_refill(args: NotifRefillArgs) {
+        const playerId = args.playerId;
+        const playerTable = this.getPlayerTable(playerId);
+
+        const promise = playerTable.playCard(args.card); // TODO
+
+        return promise;
     }
 
     public getColor(color: number): string {
-        switch (color) {
+        switch (color) { // TODO
             case 1: return _("Red");
             case 2: return _("Yellow");
             case 3: return _("Green");

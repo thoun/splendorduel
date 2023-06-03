@@ -1,15 +1,15 @@
-.splendorduel-token {
+.token {
   display: inline-block;
   position: relative;
-  width: 221px;
-  height: 120px;
-  border-radius: 8px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
 
   .card-sides {
       .card-side {
-          border-radius: 8px;
-          background-size: 200% auto;
-          background-image: url('img/destinations.jpg');
+          border-radius: 50%;
+          background-size: auto 100%;
+          background-image: url('img/tokens.png');
 
           &>* {
               pointer-events: none;
@@ -44,20 +44,13 @@
       }
   }
 
-  @for $type from 1 through 2 {
-    &[data-type="#{$type}"] .card-side {
-        background-position-x: #{($type - 1) * 100%};
+    &[data-type="1"] .card-side {
+        background-position-x: 0;
     }
-  }
 
-    @for $number from 1 through 20 {
-        &[data-type="1"] .front[data-number="#{$number}"] {
-            background-position-y: #{$number * 100% / 20};
-        }
-    }
-    @for $number from 21 through 35 {
-        &[data-type="2"] .front[data-number="#{$number}"] {
-            background-position-y: #{($number - 20) * 100% / 20};
+    @for $color from 0 through 5 {
+        &[data-type="2"][data-color="#{$color}"] .card-side {
+            background-position-x: #{$color * 100% / 5};
         }
     }
 }

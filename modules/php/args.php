@@ -14,28 +14,44 @@ trait ArgsTrait {
    
     function argUsePrivilege() {
         $playerId = intval($this->getActivePlayerId());
+
+        $privileges = $this->getPlayerPrivileges($playerId);
+        $mustRefill = $this->mustRefill($playerId);
+
+        return [
+            'number' => $privileges, // for title
+            'privileges' => $privileges,
+            'canSkipBoth' => !$mustRefill,
+        ];
+    }
+   
+    function argRefillBoard() {
+        $playerId = intval($this->getActivePlayerId());
         
-        // TODO
+        $bagEmpty = intval($this->tokens->countCardInLocation('bag')) == 0;
+        $boardFull = count($this->getBoard()) == 25;
+        $canRefill = !$bagEmpty && !$boardFull;
+        $mustRefill = $canRefill && $this->mustRefill($playerId);
 
         return [        
-            // TODO
+            'canRefill' => $canRefill,
+            'mustRefill' => $mustRefill,
         ];
     }
 
-    function argChooseNewCard() {
+    function argPlayAction() {
         $playerId = intval($this->getActivePlayerId());
-        $player = $this->getPlayer($playerId);
 
-        $freeColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
-        $centerCards = $this->getCardsByLocation('slot');
-
-        $allFree = false;
+        $canTakeTokens = count($this->getBoard()) > 0;
+        $canReserve = true; // TODO
+        $canBuyCard = true; // TODO
+        
+        // TODO set possibilities
 
         return [
-            'centerCards' => $centerCards,
-            'freeColor' => $freeColor,
-            'recruits' => $player->recruit,
-            'allFree' => $allFree,
+            'canTakeTokens' => $canTakeTokens,
+            'canReserve' => $canReserve,
+            'canBuyCard' => $canBuyCard,
         ];
     }
 

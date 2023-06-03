@@ -593,150 +593,60 @@ body > .card {
     box-shadow: 0 0 5px 3px rgb(255, 212, 131);
   }
 }
-.splendorduel-token {
+.token {
   display: inline-block;
   position: relative;
-  width: 221px;
-  height: 120px;
-  border-radius: 8px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
 }
-.splendorduel-token .card-sides .card-side {
-  border-radius: 8px;
-  background-size: 200% auto;
-  background-image: url("img/destinations.jpg");
+.token .card-sides .card-side {
+  border-radius: 50%;
+  background-size: auto 100%;
+  background-image: url("img/tokens.png");
 }
-.splendorduel-token .card-sides .card-side > * {
+.token .card-sides .card-side > * {
   pointer-events: none;
   user-select: none;
 }
-.splendorduel-token.bga-cards_selectable-card:not(.bga-cards_disabled-card):not(.bga-cards_selected-card) {
+.token.bga-cards_selectable-card:not(.bga-cards_disabled-card):not(.bga-cards_selected-card) {
   animation: selectable-card-animation 1s alternate infinite ease-in-out;
 }
-.splendorduel-token.bga-cards_selectable-card:not(.bga-cards_disabled-card) .card-side {
+.token.bga-cards_selectable-card:not(.bga-cards_disabled-card) .card-side {
   box-shadow: unset;
 }
-.splendorduel-token.bga-cards_selected-card:not(.bga-cards_disabled-card) {
+.token.bga-cards_selected-card:not(.bga-cards_disabled-card) {
   box-shadow: 0 0 5px 5px orange;
 }
-.splendorduel-token.bga-cards_selected-card:not(.bga-cards_disabled-card) .card-side {
+.token.bga-cards_selected-card:not(.bga-cards_disabled-card) .card-side {
   box-shadow: unset;
 }
-.splendorduel-token.selected-pay-token {
+.token.selected-pay-token {
   outline: 5px solid orange;
 }
-.splendorduel-token.selected-pay-token .card-side {
+.token.selected-pay-token .card-side {
   box-shadow: unset;
 }
-.splendorduel-token[data-type="1"] .card-side {
+.token[data-type="1"] .card-side {
+  background-position-x: 0;
+}
+.token[data-type="2"][data-color="0"] .card-side {
   background-position-x: 0%;
 }
-.splendorduel-token[data-type="2"] .card-side {
+.token[data-type="2"][data-color="1"] .card-side {
+  background-position-x: 20%;
+}
+.token[data-type="2"][data-color="2"] .card-side {
+  background-position-x: 40%;
+}
+.token[data-type="2"][data-color="3"] .card-side {
+  background-position-x: 60%;
+}
+.token[data-type="2"][data-color="4"] .card-side {
+  background-position-x: 80%;
+}
+.token[data-type="2"][data-color="5"] .card-side {
   background-position-x: 100%;
-}
-.splendorduel-token[data-type="1"] .front[data-number="1"] {
-  background-position-y: 5%;
-}
-.splendorduel-token[data-type="1"] .front[data-number="2"] {
-  background-position-y: 10%;
-}
-.splendorduel-token[data-type="1"] .front[data-number="3"] {
-  background-position-y: 15%;
-}
-.splendorduel-token[data-type="1"] .front[data-number="4"] {
-  background-position-y: 20%;
-}
-.splendorduel-token[data-type="1"] .front[data-number="5"] {
-  background-position-y: 25%;
-}
-.splendorduel-token[data-type="1"] .front[data-number="6"] {
-  background-position-y: 30%;
-}
-.splendorduel-token[data-type="1"] .front[data-number="7"] {
-  background-position-y: 35%;
-}
-.splendorduel-token[data-type="1"] .front[data-number="8"] {
-  background-position-y: 40%;
-}
-.splendorduel-token[data-type="1"] .front[data-number="9"] {
-  background-position-y: 45%;
-}
-.splendorduel-token[data-type="1"] .front[data-number="10"] {
-  background-position-y: 50%;
-}
-.splendorduel-token[data-type="1"] .front[data-number="11"] {
-  background-position-y: 55%;
-}
-.splendorduel-token[data-type="1"] .front[data-number="12"] {
-  background-position-y: 60%;
-}
-.splendorduel-token[data-type="1"] .front[data-number="13"] {
-  background-position-y: 65%;
-}
-.splendorduel-token[data-type="1"] .front[data-number="14"] {
-  background-position-y: 70%;
-}
-.splendorduel-token[data-type="1"] .front[data-number="15"] {
-  background-position-y: 75%;
-}
-.splendorduel-token[data-type="1"] .front[data-number="16"] {
-  background-position-y: 80%;
-}
-.splendorduel-token[data-type="1"] .front[data-number="17"] {
-  background-position-y: 85%;
-}
-.splendorduel-token[data-type="1"] .front[data-number="18"] {
-  background-position-y: 90%;
-}
-.splendorduel-token[data-type="1"] .front[data-number="19"] {
-  background-position-y: 95%;
-}
-.splendorduel-token[data-type="1"] .front[data-number="20"] {
-  background-position-y: 100%;
-}
-.splendorduel-token[data-type="2"] .front[data-number="21"] {
-  background-position-y: 5%;
-}
-.splendorduel-token[data-type="2"] .front[data-number="22"] {
-  background-position-y: 10%;
-}
-.splendorduel-token[data-type="2"] .front[data-number="23"] {
-  background-position-y: 15%;
-}
-.splendorduel-token[data-type="2"] .front[data-number="24"] {
-  background-position-y: 20%;
-}
-.splendorduel-token[data-type="2"] .front[data-number="25"] {
-  background-position-y: 25%;
-}
-.splendorduel-token[data-type="2"] .front[data-number="26"] {
-  background-position-y: 30%;
-}
-.splendorduel-token[data-type="2"] .front[data-number="27"] {
-  background-position-y: 35%;
-}
-.splendorduel-token[data-type="2"] .front[data-number="28"] {
-  background-position-y: 40%;
-}
-.splendorduel-token[data-type="2"] .front[data-number="29"] {
-  background-position-y: 45%;
-}
-.splendorduel-token[data-type="2"] .front[data-number="30"] {
-  background-position-y: 50%;
-}
-.splendorduel-token[data-type="2"] .front[data-number="31"] {
-  background-position-y: 55%;
-}
-.splendorduel-token[data-type="2"] .front[data-number="32"] {
-  background-position-y: 60%;
-}
-.splendorduel-token[data-type="2"] .front[data-number="33"] {
-  background-position-y: 65%;
-}
-.splendorduel-token[data-type="2"] .front[data-number="34"] {
-  background-position-y: 70%;
-}
-.splendorduel-token[data-type="2"] .front[data-number="35"] {
-  background-position-y: 75%;
 }
 
 @keyframes selectable-card-animation {
@@ -754,40 +664,20 @@ body > .card {
 
 #table-center {
   min-width: 818px;
-  display: grid;
-  grid-template-columns: 120px 690px;
-  gap: 8px;
-}
-#table-center .table-destinations-deck {
-  margin-left: -102px;
-}
-#table-center #table-destinations-A .slot, #table-center #table-destinations-B .slot {
-  width: 221px;
-  height: 120px;
 }
 #table-center #board {
-  position: relative;
-  width: 690px;
-  height: 256px;
-  background: url("img/board.jpg");
+  display: grid;
+  grid-template-rows: repeat(5, 1fr);
+  grid-template-columns: repeat(5, 1fr);
 }
-#table-center #table-cards .slot {
-  width: 120px;
-  height: 221px;
+#table-center #board .slot {
+  width: 80px;
+  height: 80px;
 }
-#table-center #card-deck[data-empty=true] {
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 8px;
-}
-#table-center .bga-cards_deck-counter {
-  pointer-events: all;
-}
-#table-center .bga-cards_deck-counter#deck-counter {
-  --bga-cards-deck-left: 25%;
-}
-#table-center .bga-cards_deck-counter#discard-counter {
-  background-color: #aaaaaa;
-  --bga-cards-deck-left: 75%;
+#table-center #table-cards {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 10px;
 }
 
 .player-board {

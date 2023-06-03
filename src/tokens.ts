@@ -4,6 +4,8 @@ interface Token {
     locationArg: number;
     type: number;
     color: number;
+    row?: number;
+    column?: number;
 }
 
 class TokensManager extends CardManager<Token> {
@@ -12,11 +14,13 @@ class TokensManager extends CardManager<Token> {
             getId: (card) => `token-${card.id}`,
             setupDiv: (card: Token, div: HTMLElement) => {
                 div.classList.add('token');
-                div.dataset.cardId = ''+card.id;
+                div.dataset.type = ''+card.type;
+                if (card.type == 2) {
+                    div.dataset.color = ''+card.color;
+                }
             },
             setupFrontDiv: (card: Token, div: HTMLElement) => { 
                 div.id = `${this.getId(card)}-front`;
-                div.dataset.type = ''+card.type;                
                 game.setTooltip(div.id, this.getType(card.type));
             },
         });
