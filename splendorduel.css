@@ -631,19 +631,19 @@ body > .card {
   background-position-x: 0;
 }
 .token[data-type="2"][data-color="0"] .card-side {
-  background-position-x: 0%;
+  background-position-x: 16.6666666667%;
 }
 .token[data-type="2"][data-color="1"] .card-side {
-  background-position-x: 20%;
+  background-position-x: 33.3333333333%;
 }
 .token[data-type="2"][data-color="2"] .card-side {
-  background-position-x: 40%;
+  background-position-x: 50%;
 }
 .token[data-type="2"][data-color="3"] .card-side {
-  background-position-x: 60%;
+  background-position-x: 66.6666666667%;
 }
 .token[data-type="2"][data-color="4"] .card-side {
-  background-position-x: 80%;
+  background-position-x: 83.3333333333%;
 }
 .token[data-type="2"][data-color="5"] .card-side {
   background-position-x: 100%;

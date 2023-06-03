@@ -12,7 +12,7 @@ class PlayerTable {
 
     private currentPlayer: boolean;
 
-    constructor(private game: SplendorDuelGame, player: SplendorDuelPlayer, reservePossible: boolean) {
+    constructor(private game: SplendorDuelGame, player: SplendorDuelPlayer) {
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.getPlayerId();
 

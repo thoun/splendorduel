@@ -30,8 +30,8 @@ class SplendorDuel implements SplendorDuelGame {
     private gamedatas: SplendorDuelGamedatas;
     private tableCenter: TableCenter;
     private playersTables: PlayerTable[] = [];
-    //private handCounters: Counter[] = [];
     private privilegeCounters: Counter[] = [];
+    private reservedCounters: Counter[] = [];
     
     private TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
 
@@ -66,7 +66,7 @@ class SplendorDuel implements SplendorDuelGame {
             topEntries: [
                 new JumpToEntry(_('Main board'), 'table-center', { 'color': '#224757' })
             ],
-            entryClasses: 'triangle-point',
+            entryClasses: 'round-point',
             defaultFolded: true,
         });
 
@@ -129,29 +129,18 @@ class SplendorDuel implements SplendorDuelGame {
 
     private onEnteringPlayAction(args: EnteringPlayActionArgs) {
         if (!args.canTakeTokens) {
-            if (!args.canBuyCard) {
-                this.setGamestateDescription('OnlyReserve');
-            } else if (!args.canReserve) {
-                this.setGamestateDescription('OnlyBuy');
-            } else {
-                this.setGamestateDescription('OnlyBuyAndReserve');
-            }
-        } else {
-            if (!args.canBuyCard) {
-                this.setGamestateDescription('OnlyTokensAndReserve');
-            } else if (!args.canReserve) {
-                this.setGamestateDescription('OnlyTokensAndBuy');
-            }
+            this.setGamestateDescription('OnlyBuy');
+        } else if (!args.canBuyCard) {
+            this.setGamestateDescription('OnlyTokens');
         }
 
         if ((this as any).isCurrentPlayerActive()) {
-            /* TODO if (args.canExplore) {
-                this.tableCenter.setDestinationsSelectable(true, args.possibleDestinations);
-                this.getCurrentPlayerTable()?.setDestinationsSelectable(true, args.possibleDestinations);
+            if (args.canTakeTokens) {
+                this.tableCenter.setBoardSelectable('play');
             }
-            if (args.canRecruit) {
-                this.getCurrentPlayerTable()?.setHandSelectable(true);
-            }*/
+            if (args.canBuyCard) {
+                this.tableCenter.setCardsSelectable(true, args.buyableCards);
+            }
         }
     }
 
@@ -194,6 +183,9 @@ class SplendorDuel implements SplendorDuelGame {
                     if (refillBoardArgs.mustRefill) {
                         document.getElementById(`skip_button`).classList.add('disabled');
                     }
+                    break;
+                case 'playAction':
+                    (this as any).addActionButton(`takeSelectedTokens_button`, _("Take selected tokens"), () => this.takeSelectedTokens());
                     break;
                 case 'discardTokens':
                     (this as any).addActionButton(`discardSelectedTokens_button`, _("Discard selected tokens"), () => this.discardSelectedTokens());
@@ -271,10 +263,7 @@ class SplendorDuel implements SplendorDuelGame {
             const playerId = Number(player.id);
 
             /*
-                <div id="playerhand-counter-wrapper-${player.id}" class="playerhand-counter">
-                    <div class="player-hand-card"></div> 
-                    <span id="playerhand-counter-${player.id}"></span>
-                </div>*/
+                */
             let html = `<div class="counters">
             
                 <div id="privilege-counter-wrapper-${player.id}" class="privilege-counter">
@@ -282,27 +271,18 @@ class SplendorDuel implements SplendorDuelGame {
                     <span id="privilege-counter-${player.id}"></span>
                 </div>
 
-            </div><div class="counters">
-            
-                <div id="recruit-counter-wrapper-${player.id}" class="recruit-counter">
-                    <div class="recruit icon"></div>
-                    <span id="recruit-counter-${player.id}"></span>
+                <div id="reserved-counter-wrapper-${player.id}" class="reserved-counter">
+                    <div class="player-hand-card"></div> 
+                    <span id="reserved-counter-${player.id}"></span>
                 </div>
-            
-                <div id="bracelet-counter-wrapper-${player.id}" class="bracelet-counter">
-                    <div class="bracelet icon"></div>
-                    <span id="bracelet-counter-${player.id}"></span>
-                </div>
-                
-            </div>
-            <div>${playerId == gamedatas.firstPlayerId ? `<div id="first-player">${_('First player')}</div>` : ''}</div>`;
+            </div>`;
 
             dojo.place(html, `player_board_${player.id}`);
 
-            /*const handCounter = new ebg.counter();
-            handCounter.create(`playerhand-counter-${playerId}`);
-            handCounter.setValue(player.handCount);
-            this.handCounters[playerId] = handCounter;*/
+            const reservedCounter = new ebg.counter();
+            reservedCounter.create(`reserved-counter-${playerId}`);
+            reservedCounter.setValue(player.reservedCount);
+            this.reservedCounters[playerId] = reservedCounter;
 
             this.privilegeCounters[playerId] = new ebg.counter();
             this.privilegeCounters[playerId].create(`privilege-counter-${playerId}`);
@@ -310,6 +290,7 @@ class SplendorDuel implements SplendorDuelGame {
         });
 
         this.setTooltipToClass('privilege-counter', _('Privilege scrolls'));
+        this.setTooltipToClass('reserved-counter', _('Reserved cards'));
     }
 
     private createPlayerTables(gamedatas: SplendorDuelGamedatas) {
@@ -321,7 +302,7 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     private createPlayerTable(gamedatas: SplendorDuelGamedatas, playerId: number) {
-        const table = new PlayerTable(this, gamedatas.players[playerId], gamedatas.reservePossible);
+        const table = new PlayerTable(this, gamedatas.players[playerId]);
         this.playersTables.push(table);
     }
 
@@ -375,32 +356,24 @@ class SplendorDuel implements SplendorDuelGame {
         }
     }
     
-    public onTableDestinationClick(token: Token): void {
-        if (this.gamedatas.gamestate.name == 'reserveDestination') {
-            this.reserveDestination(token.id);
-        } else {
-            this.takeDestination(token.id);
-        }
-    }
-
-    public onHandCardClick(card: Card): void {
-        this.playCard(card.id);
+    public onTokenSelectionChange(tokens: Token[], valid: boolean): void {
+        document.getElementById('takeSelectedTokens_button')?.classList.toggle('disabled', !valid);
     }
 
     public onTableCardClick(card: Card): void {
-        if (this.gamedatas.gamestate.name == 'discardTableCard') {
+        /*if (this.gamedatas.gamestate.name == 'discardTableCard') {
             this.discardTableCard(card.id);
         } else {
             this.chooseNewCard(card.id);
-        }
+        }*/
     }
 
-    public onPlayedCardClick(card: Card): void {
-        if (this.gamedatas.gamestate.name == 'discardCard') {
+    public onReservedCardClick(card: Card): void {
+        /*if (this.gamedatas.gamestate.name == 'discardCard') {
             this.discardCard(card.id);
         } else {
             this.setPayDestinationLabelAndState();
-        }
+        }*/
     }
   	
     public takeSelectedTokens() {
@@ -465,6 +438,7 @@ class SplendorDuel implements SplendorDuelGame {
         //log( 'notifications subscriptions setup' );
 
         const notifs = [
+            ['privileges', ANIMATION_MS],
             ['refill', undefined],
         ];
     
@@ -495,27 +469,23 @@ class SplendorDuel implements SplendorDuelGame {
         }
     }
 
+    notif_privileges(args: NotifPrivilegesArgs) {
+        Object.entries(args.privileges).forEach(entry => this.privilegeCounters[entry[0]].setValue(entry[1]));
+    }
+
     notif_refill(args: NotifRefillArgs) {
-        const playerId = args.playerId;
-        const playerTable = this.getPlayerTable(playerId);
-
-        const promise = playerTable.playCard(args.card); // TODO
-
-        return promise;
+        return this.tableCenter.board.addCards(args.refilledTokens, undefined, undefined, 100);
     }
 
     public getColor(color: number): string {
-        switch (color) { // TODO
-            case 1: return _("Red");
-            case 2: return _("Yellow");
+        switch (color) {
+            case 0: return _("Pearl")
+            case 1: return _("Blue");
+            case 2: return _("White");
             case 3: return _("Green");
-            case 4: return _("Blue");
-            case 5: return _("Purple");
+            case 4: return _("White");
+            case 5: return _("Red");
         }
-    }
-
-    public getTooltipColor(color: number): string {
-        return `${this.getColor(color)} (<div class="color" data-color="${color}"></div>)`;
     }
 
     /* This enable to inject translatable styled things to logs or action bar */

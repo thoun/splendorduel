@@ -18,24 +18,18 @@ class TokensManager extends CardManager<Token> {
                 if (card.type == 2) {
                     div.dataset.color = ''+card.color;
                 }
+                game.setTooltip(div.id, this.getTooltip(card));
             },
             setupFrontDiv: (card: Token, div: HTMLElement) => { 
                 div.id = `${this.getId(card)}-front`;
-                game.setTooltip(div.id, this.getType(card.type));
             },
         });
     }
 
-    public getType(type: number): string {
-        let message = '';
-        switch (type) {
-            case 1: message = _("Berry"); break;
-            case 2: message = _("Meat"); break;
-            case 3: message = _("Flint"); break;
-            case 4: message = _("Skin"); break;
-            case 5: message = _("Bone"); break;
+    public getTooltip(token: Token): string {
+        switch (token.type) {
+            case 1: return _("Gold");
+            case 2: return this.game.getColor(token.color);
         }
-
-        return message;
     }
 }

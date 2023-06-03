@@ -43,15 +43,13 @@ trait ArgsTrait {
         $playerId = intval($this->getActivePlayerId());
 
         $canTakeTokens = count($this->getBoard()) > 0;
-        $canReserve = true; // TODO
-        $canBuyCard = true; // TODO
-        
-        // TODO set possibilities
+        $canBuyCard = false; // TODO
+        $buyableCards = []; // TODO
 
         return [
             'canTakeTokens' => $canTakeTokens,
-            'canReserve' => $canReserve,
             'canBuyCard' => $canBuyCard,
+            'buyableCards' => $buyableCards,
         ];
     }
 

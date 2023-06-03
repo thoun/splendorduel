@@ -36,18 +36,14 @@ interface SplendorDuelGame extends Game {
 
     getPlayerId(): number;
     getPlayer(playerId: number): SplendorDuelPlayer;
-    //getGain(type: number): string;
-    //getColor(color: number): string;
-    getTooltipGain(type: number): string;
-    getTooltipColor(color: number): string;
+    getColor(color: number): string;
     getGameStateName(): string;
     getCurrentPlayerTable(): PlayerTable | null;
 
     setTooltip(id: string, html: string): void;
-    onTableDestinationClick(token: Token): void;
-    onHandCardClick(card: Card): void;
+    onTokenSelectionChange(tokens: Token[], valid: boolean): void;
     onTableCardClick(card: Card): void;
-    onPlayedCardClick(card: Card): void;
+    onReservedCardClick(card: Card): void;
 }
 
 interface EnteringUsePrivilegeArgs {
@@ -61,8 +57,13 @@ interface EnteringRefillBoardArgs {
 
 interface EnteringPlayActionArgs {
     canTakeTokens: boolean;
-    canReserve: boolean;
     canBuyCard: boolean;
+    buyableCards: Card[];
+}
+
+// privileges
+interface NotifPrivilegesArgs {
+    privileges: { [playerId: number]: number };
 }
 
 // refill

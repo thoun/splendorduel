@@ -116,26 +116,31 @@ $playerActionsGameStates = [
 
     ST_PLAYER_PLAY_ACTION => [
         "name" => "playAction",
-        "description" => clienttranslate('${actplayer} must take tokens, reserve a card or buy a card'),
-        "descriptionmyturn" => clienttranslate('${you} must take tokens, reserve a card or buy a card'),
-        "descriptionOnlyTokensAndReserve" => clienttranslate('${actplayer} must take tokens or reserve a card'),
-        "descriptionmyturnOnlyTokensAndReserve" => clienttranslate('${you} must take tokens or reserve a card'),
-        "descriptionOnlyTokensAndBuy" => clienttranslate('${actplayer} must take tokens or buy a card'),
-        "descriptionmyturnOnlyTokensAndBuy" => clienttranslate('${you} must take tokens or buy a card'),
-        "descriptionOnlyBuyAndReserve" => clienttranslate('${actplayer} must reserve a card or buy a card'),
-        "descriptionmyturnOnlyBuyAndReserve" => clienttranslate('${you} must reserve a card or buy a card'),
+        "description" => clienttranslate('${actplayer} must take token(s) or buy a card'),
+        "descriptionmyturn" => clienttranslate('${you} must take token(s) or buy a card'),
         "descriptionOnlyTokens" => clienttranslate('${actplayer} must take tokens'),
         "descriptionmyturnOnlyTokens" => clienttranslate('${you} must take tokens'),
         "descriptionOnlyBuy" => clienttranslate('${actplayer} must buy a card'),
         "descriptionmyturnOnlyBuy" => clienttranslate('${you} must buy a card'),
-        "descriptionOnlyReserve" => clienttranslate('${actplayer} must reserve a card'),
-        "descriptionmyturnOnlyReserve" => clienttranslate('${you} must reserve a card'),
         "type" => "activeplayer",
         "args" => "argPlayAction",
         "possibleactions" => [ 
             "takeTokens",
-            "reserveCard",
             "buyCard",
+        ],
+        "transitions" => $playedCardTransitions + [
+            "reserveCard" => ST_PLAYER_RESERVE_CARD,
+        ],
+    ],
+
+    ST_PLAYER_RESERVE_CARD => [
+        "name" => "reserveCard",
+        "description" => clienttranslate('${actplayer} must choose the card to reserve'),
+        "descriptionmyturn" => clienttranslate('${you} must choose the card to reserve'),
+        "type" => "activeplayer",
+        "args" => "argReserveCard",
+        "possibleactions" => [ 
+            "reserveCard",
         ],
         "transitions" => $playedCardTransitions,
     ],

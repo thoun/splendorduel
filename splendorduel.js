@@ -2016,7 +2016,7 @@ var CardsManager = /** @class */ (function (_super) {
         return _this;
     }
     CardsManager.prototype.getTooltip = function (card) {
-        var message = "\n        <strong>".concat(_("Color:"), "</strong> ").concat(this.game.getTooltipColor(card.color), "\n        <br>\n        <strong>").concat(_("Gain:"), "</strong> <strong>1</strong> ").concat(card.gain, "\n        ");
+        var message = "\n        <strong>".concat(_("Color:"), "</strong> ").concat(this.game.getColor(card.color), "\n        <br>\n        <strong>").concat(_("Gain:"), "</strong> <strong>1</strong> ").concat(card.gain, "\n        ");
         return message;
     };
     return CardsManager;
@@ -2032,35 +2032,20 @@ var TokensManager = /** @class */ (function (_super) {
                 if (card.type == 2) {
                     div.dataset.color = '' + card.color;
                 }
+                game.setTooltip(div.id, _this.getTooltip(card));
             },
             setupFrontDiv: function (card, div) {
                 div.id = "".concat(_this.getId(card), "-front");
-                game.setTooltip(div.id, _this.getType(card.type));
             },
         }) || this;
         _this.game = game;
         return _this;
     }
-    TokensManager.prototype.getType = function (type) {
-        var message = '';
-        switch (type) {
-            case 1:
-                message = _("Berry");
-                break;
-            case 2:
-                message = _("Meat");
-                break;
-            case 3:
-                message = _("Flint");
-                break;
-            case 4:
-                message = _("Skin");
-                break;
-            case 5:
-                message = _("Bone");
-                break;
+    TokensManager.prototype.getTooltip = function (token) {
+        switch (token.type) {
+            case 1: return _("Gold");
+            case 2: return this.game.getColor(token.color);
         }
-        return message;
     };
     return TokensManager;
 }(CardManager));
@@ -2082,7 +2067,7 @@ var TableCenter = /** @class */ (function () {
             mapCardToSlot: function (card) { return JSON.stringify([card.row, card.column]); },
         });
         this.board.addCards(gamedatas.board);
-        this.board.onCardClick = function (card) { return _this.game.onTableDestinationClick(card); };
+        this.board.onSelectionChange = function (selection, lastChange) { return _this.onTokenSelectionChange(selection, lastChange); };
         for (var level = 3; level >= 1; level--) {
             document.getElementById('table-cards').insertAdjacentHTML('beforeend', "\n                <div id=\"card-deck-".concat(level, "\"></div>\n                <div id=\"table-cards-").concat(level, "\"></div>\n            "));
             this.cardsDecks[level] = new Deck(game.cardsManager, document.getElementById("card-deck-".concat(level)), {
@@ -2107,13 +2092,173 @@ var TableCenter = /** @class */ (function () {
         this.royalCards.onCardClick = card => this.game.onRoyalCardClick(card);
         this.royalCards.addCards(gamedatas.royalCards);*/
     }
+    TableCenter.prototype.setBoardSelectable = function (selectionType, max, color) {
+        if (max === void 0) { max = 3; }
+        if (color === void 0) { color = null; }
+        this.board.setSelectionMode(selectionType ? 'multiple' : 'none');
+        this.maxSelectionToken = max;
+        this.selectionType = selectionType;
+        this.selectionColor = color;
+        if (selectionType === 'privileges') {
+            this.board.setSelectableCards(this.board.getCards().filter(function (card) { return card.type == 2; }));
+        }
+        else if (selectionType === 'effect') {
+            this.board.setSelectableCards(this.board.getCards().filter(function (card) { return card.type == 2 && card.color == color; }));
+        }
+    };
+    TableCenter.prototype.setCardsSelectable = function (selectable, selectableCards) {
+        for (var level = 3; level >= 1; level--) {
+            this.cardsDecks[level].setSelectionMode(selectable ? 'single' : 'none');
+            this.cards[level].setSelectionMode(selectable ? 'single' : 'none');
+            if (selectable) {
+                this.cardsDecks[level].setSelectableCards(selectableCards);
+                this.cards[level].setSelectableCards(selectableCards);
+            }
+        }
+    };
+    TableCenter.prototype.onTokenSelectionChange = function (selection, lastChange) {
+        var valid = selection.length > 0;
+        var tokens = this.board.getCards();
+        selection.sort(function (a, b) { return a.row == b.row ? a.column - b.column : a.row - b.row; });
+        if (selection.length > this.maxSelectionToken) {
+            valid = false;
+        }
+        else if (this.selectionType === 'privileges') {
+            valid = this.onPrivilegeTokenSelectionChange(selection, tokens, valid);
+        }
+        else if (this.selectionType === 'effect') {
+            valid = this.onEffectTokenSelectionChange(selection, tokens, valid);
+        }
+        else if (this.selectionType === 'play') {
+            var _a = this.onPlayTokenSelectionChange(selection, tokens, valid, lastChange), stop_1 = _a.stop, validUpdated = _a.validUpdated;
+            if (stop_1) {
+                return;
+            }
+            valid = validUpdated;
+        }
+        this.game.onTokenSelectionChange(selection, valid);
+    };
+    TableCenter.prototype.onPlayTokenSelectionChange = function (selection, tokens, valid, lastChange) {
+        var goldTokens = selection.filter(function (card) { return card.type == 1; });
+        var gemsTokens = selection.filter(function (card) { return card.type == 2; });
+        var goldSelection = goldTokens.length >= 1;
+        var selectionAtMax = goldSelection || gemsTokens.length >= this.maxSelectionToken;
+        var remainingSelection = selectionAtMax ? selection : tokens;
+        if (goldSelection) {
+            if (gemsTokens.length) {
+                valid = false;
+            }
+        }
+        else {
+            // select is sorted by row then column. column order might be desc if row is asc.
+            if (gemsTokens.length == 3) {
+                valid = this.onPlayTokenSelectionChange3gems(gemsTokens, valid);
+            }
+            else if (gemsTokens.length == 2) {
+                var _a = this.onPlayTokenSelectionChange2gems(gemsTokens, tokens, lastChange, valid), stop_2 = _a.stop, validUpdated = _a.validUpdated, remainingSelectionUpdated = _a.remainingSelectionUpdated;
+                if (stop_2) {
+                    return { stop: true, validUpdated: true };
+                }
+                valid = validUpdated;
+                remainingSelection = remainingSelectionUpdated;
+            }
+            else if (gemsTokens.length == 1) {
+                var remainingSelectionUpdated = this.onPlayTokenSelectionChange1gem(gemsTokens[0], tokens);
+                remainingSelection = remainingSelectionUpdated;
+            }
+        }
+        this.board.setSelectableCards(selectionAtMax ? selection : remainingSelection);
+        return { stop: false, validUpdated: valid };
+    };
+    TableCenter.prototype.onPlayTokenSelectionChange1gem = function (gemToken, tokens) {
+        var remainingSelection = [gemToken];
+        [-1, 0, 1].forEach(function (rowDirection) { return [-1, 0, 1].filter(function (colDirection) { return colDirection != 0 || rowDirection != 0; }).forEach(function (colDirection) {
+            var nextToken = tokens.find(function (token) { return token.row == gemToken.row + rowDirection && token.column == gemToken.column + colDirection; });
+            if ((nextToken === null || nextToken === void 0 ? void 0 : nextToken.type) == 2) {
+                remainingSelection.push(nextToken);
+                var nextNextToken = tokens.find(function (token) { return token.row == nextToken.row + rowDirection && token.column == nextToken.column + colDirection; });
+                if ((nextNextToken === null || nextNextToken === void 0 ? void 0 : nextNextToken.type) == 2) {
+                    remainingSelection.push(nextNextToken);
+                }
+            }
+        }); });
+        return remainingSelection;
+    };
+    TableCenter.prototype.onPlayTokenSelectionChange2gems = function (gemsTokens, tokens, lastChange, valid) {
+        var remainingSelection = gemsTokens;
+        var rowDiff = gemsTokens[0].row - gemsTokens[1].row;
+        var colDiff = gemsTokens[0].column - gemsTokens[1].column;
+        var absRowDiff = Math.abs(rowDiff);
+        var absColDiff = Math.abs(colDiff);
+        if ([0, 2].includes(absRowDiff) && [0, 2].includes(absColDiff)) {
+            var middleRow_1 = (gemsTokens[0].row + gemsTokens[1].row) / 2;
+            var middleCol_1 = (gemsTokens[0].column + gemsTokens[1].column) / 2;
+            var middleToken = tokens.find(function (token) { return token.row == middleRow_1 && token.column == middleCol_1; });
+            // if valid selection of 2 gems separated by one, autoselect the one in-between
+            if ((middleToken === null || middleToken === void 0 ? void 0 : middleToken.type) == 2) {
+                remainingSelection.push(middleToken);
+                if (lastChange.id == middleToken.id) {
+                    valid = false;
+                }
+                else {
+                    this.board.selectCard(middleToken);
+                    return { stop: true, validUpdated: true, remainingSelection: remainingSelection };
+                }
+            }
+            else {
+                valid = false;
+            }
+        }
+        else if ([0, 1].includes(absRowDiff) && [0, 1].includes(absColDiff)) {
+            [-1, 2].forEach(function (direction) {
+                var nextRow = gemsTokens[0].row - direction * rowDiff;
+                var nextCol = gemsTokens[0].column - direction * colDiff;
+                var nextToken = tokens.find(function (token) { return token.row == nextRow && token.column == nextCol; });
+                if ((nextToken === null || nextToken === void 0 ? void 0 : nextToken.type) == 2) {
+                    remainingSelection.push(nextToken);
+                }
+            });
+        }
+        else {
+            valid = false;
+        }
+        return { stop: false, validUpdated: valid, remainingSelectionUpdated: remainingSelection };
+    };
+    TableCenter.prototype.onPlayTokenSelectionChange3gems = function (gemsTokens, valid) {
+        var rowDiff = gemsTokens[0].row - gemsTokens[1].row;
+        var colDiff = gemsTokens[0].column - gemsTokens[1].column;
+        var absRowDiff = Math.abs(rowDiff);
+        var absColDiff = Math.abs(colDiff);
+        var inSameDirection = [0, 1].includes(absRowDiff) && [0, 1].includes(absColDiff) &&
+            (rowDiff == gemsTokens[1].row - gemsTokens[2].row) &&
+            (colDiff == gemsTokens[1].column - gemsTokens[2].column);
+        if (!inSameDirection) {
+            valid = false;
+        }
+        return valid;
+    };
+    TableCenter.prototype.onEffectTokenSelectionChange = function (selection, tokens, valid) {
+        var _this = this;
+        this.board.setSelectableCards(selection.length >= this.maxSelectionToken ? selection : tokens.filter(function (card) { return card.type == 2 && card.color == _this.selectionColor; }));
+        if (selection.some(function (card) { return card.type != 2 || card.color != _this.selectionColor; })) {
+            valid = false;
+        }
+        return valid;
+    };
+    TableCenter.prototype.onPrivilegeTokenSelectionChange = function (selection, tokens, valid) {
+        this.board.setSelectableCards(selection.length >= this.maxSelectionToken ? selection : tokens.filter(function (card) { return card.type == 2; }));
+        if (selection.some(function (card) { return card.type != 2; })) {
+            valid = false;
+        }
+        return valid;
+    };
     return TableCenter;
 }());
 var isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;
 ;
 var log = isDebug ? console.log.bind(window.console) : function () { };
 var PlayerTable = /** @class */ (function () {
-    function PlayerTable(game, player, reservePossible) {
+    function PlayerTable(game, player) {
         this.game = game;
         this.played = [];
         this.limitSelection = null;
@@ -2259,8 +2404,8 @@ var CARD = 5;
 var SplendorDuel = /** @class */ (function () {
     function SplendorDuel() {
         this.playersTables = [];
-        //private handCounters: Counter[] = [];
         this.privilegeCounters = [];
+        this.reservedCounters = [];
         this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
     }
     /*
@@ -2288,7 +2433,7 @@ var SplendorDuel = /** @class */ (function () {
             topEntries: [
                 new JumpToEntry(_('Main board'), 'table-center', { 'color': '#224757' })
             ],
-            entryClasses: 'triangle-point',
+            entryClasses: 'round-point',
             defaultFolded: true,
         });
         this.tableCenter = new TableCenter(this, gamedatas);
@@ -2343,32 +2488,18 @@ var SplendorDuel = /** @class */ (function () {
     };
     SplendorDuel.prototype.onEnteringPlayAction = function (args) {
         if (!args.canTakeTokens) {
-            if (!args.canBuyCard) {
-                this.setGamestateDescription('OnlyReserve');
-            }
-            else if (!args.canReserve) {
-                this.setGamestateDescription('OnlyBuy');
-            }
-            else {
-                this.setGamestateDescription('OnlyBuyAndReserve');
-            }
+            this.setGamestateDescription('OnlyBuy');
         }
-        else {
-            if (!args.canBuyCard) {
-                this.setGamestateDescription('OnlyTokensAndReserve');
-            }
-            else if (!args.canReserve) {
-                this.setGamestateDescription('OnlyTokensAndBuy');
-            }
+        else if (!args.canBuyCard) {
+            this.setGamestateDescription('OnlyTokens');
         }
         if (this.isCurrentPlayerActive()) {
-            /* TODO if (args.canExplore) {
-                this.tableCenter.setDestinationsSelectable(true, args.possibleDestinations);
-                this.getCurrentPlayerTable()?.setDestinationsSelectable(true, args.possibleDestinations);
+            if (args.canTakeTokens) {
+                this.tableCenter.setBoardSelectable('play');
             }
-            if (args.canRecruit) {
-                this.getCurrentPlayerTable()?.setHandSelectable(true);
-            }*/
+            if (args.canBuyCard) {
+                this.tableCenter.setCardsSelectable(true, args.buyableCards);
+            }
         }
     };
     SplendorDuel.prototype.onLeavingState = function (stateName) {
@@ -2407,6 +2538,9 @@ var SplendorDuel = /** @class */ (function () {
                     if (refillBoardArgs.mustRefill) {
                         document.getElementById("skip_button").classList.add('disabled');
                     }
+                    break;
+                case 'playAction':
+                    this.addActionButton("takeSelectedTokens_button", _("Take selected tokens"), function () { return _this.takeSelectedTokens(); });
                     break;
                 case 'discardTokens':
                     this.addActionButton("discardSelectedTokens_button", _("Discard selected tokens"), function () { return _this.discardSelectedTokens(); });
@@ -2468,21 +2602,19 @@ var SplendorDuel = /** @class */ (function () {
         Object.values(gamedatas.players).forEach(function (player) {
             var playerId = Number(player.id);
             /*
-                <div id="playerhand-counter-wrapper-${player.id}" class="playerhand-counter">
-                    <div class="player-hand-card"></div>
-                    <span id="playerhand-counter-${player.id}"></span>
-                </div>*/
-            var html = "<div class=\"counters\">\n            \n                <div id=\"privilege-counter-wrapper-".concat(player.id, "\" class=\"privilege-counter\">\n                    <div class=\"privilege icon\"></div>\n                    <span id=\"privilege-counter-").concat(player.id, "\"></span>\n                </div>\n\n            </div><div class=\"counters\">\n            \n                <div id=\"recruit-counter-wrapper-").concat(player.id, "\" class=\"recruit-counter\">\n                    <div class=\"recruit icon\"></div>\n                    <span id=\"recruit-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"bracelet-counter-wrapper-").concat(player.id, "\" class=\"bracelet-counter\">\n                    <div class=\"bracelet icon\"></div>\n                    <span id=\"bracelet-counter-").concat(player.id, "\"></span>\n                </div>\n                \n            </div>\n            <div>").concat(playerId == gamedatas.firstPlayerId ? "<div id=\"first-player\">".concat(_('First player'), "</div>") : '', "</div>");
+                */
+            var html = "<div class=\"counters\">\n            \n                <div id=\"privilege-counter-wrapper-".concat(player.id, "\" class=\"privilege-counter\">\n                    <div class=\"privilege icon\"></div>\n                    <span id=\"privilege-counter-").concat(player.id, "\"></span>\n                </div>\n\n                <div id=\"reserved-counter-wrapper-").concat(player.id, "\" class=\"reserved-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"reserved-counter-").concat(player.id, "\"></span>\n                </div>\n            </div>");
             dojo.place(html, "player_board_".concat(player.id));
-            /*const handCounter = new ebg.counter();
-            handCounter.create(`playerhand-counter-${playerId}`);
-            handCounter.setValue(player.handCount);
-            this.handCounters[playerId] = handCounter;*/
+            var reservedCounter = new ebg.counter();
+            reservedCounter.create("reserved-counter-".concat(playerId));
+            reservedCounter.setValue(player.reservedCount);
+            _this.reservedCounters[playerId] = reservedCounter;
             _this.privilegeCounters[playerId] = new ebg.counter();
             _this.privilegeCounters[playerId].create("privilege-counter-".concat(playerId));
             _this.privilegeCounters[playerId].setValue(player.privileges);
         });
         this.setTooltipToClass('privilege-counter', _('Privilege scrolls'));
+        this.setTooltipToClass('reserved-counter', _('Reserved cards'));
     };
     SplendorDuel.prototype.createPlayerTables = function (gamedatas) {
         var _this = this;
@@ -2492,7 +2624,7 @@ var SplendorDuel = /** @class */ (function () {
         });
     };
     SplendorDuel.prototype.createPlayerTable = function (gamedatas, playerId) {
-        var table = new PlayerTable(this, gamedatas.players[playerId], gamedatas.reservePossible);
+        var table = new PlayerTable(this, gamedatas.players[playerId]);
         this.playersTables.push(table);
     };
     SplendorDuel.prototype.setScore = function (playerId, score) {
@@ -2512,32 +2644,23 @@ var SplendorDuel = /** @class */ (function () {
             //this.cardsManager.setForHelp(i, `help-artifact-${i}`);
         }
     };
-    SplendorDuel.prototype.onTableDestinationClick = function (token) {
-        if (this.gamedatas.gamestate.name == 'reserveDestination') {
-            this.reserveDestination(token.id);
-        }
-        else {
-            this.takeDestination(token.id);
-        }
-    };
-    SplendorDuel.prototype.onHandCardClick = function (card) {
-        this.playCard(card.id);
+    SplendorDuel.prototype.onTokenSelectionChange = function (tokens, valid) {
+        var _a;
+        (_a = document.getElementById('takeSelectedTokens_button')) === null || _a === void 0 ? void 0 : _a.classList.toggle('disabled', !valid);
     };
     SplendorDuel.prototype.onTableCardClick = function (card) {
-        if (this.gamedatas.gamestate.name == 'discardTableCard') {
+        /*if (this.gamedatas.gamestate.name == 'discardTableCard') {
             this.discardTableCard(card.id);
-        }
-        else {
+        } else {
             this.chooseNewCard(card.id);
-        }
+        }*/
     };
-    SplendorDuel.prototype.onPlayedCardClick = function (card) {
-        if (this.gamedatas.gamestate.name == 'discardCard') {
+    SplendorDuel.prototype.onReservedCardClick = function (card) {
+        /*if (this.gamedatas.gamestate.name == 'discardCard') {
             this.discardCard(card.id);
-        }
-        else {
+        } else {
             this.setPayDestinationLabelAndState();
-        }
+        }*/
     };
     SplendorDuel.prototype.takeSelectedTokens = function () {
         if (!this.checkAction('takeTokens')) {
@@ -2589,6 +2712,7 @@ var SplendorDuel = /** @class */ (function () {
         //log( 'notifications subscriptions setup' );
         var _this = this;
         var notifs = [
+            ['privileges', ANIMATION_MS],
             ['refill', undefined],
         ];
         notifs.forEach(function (notif) {
@@ -2613,23 +2737,22 @@ var SplendorDuel = /** @class */ (function () {
             });
         }
     };
+    SplendorDuel.prototype.notif_privileges = function (args) {
+        var _this = this;
+        Object.entries(args.privileges).forEach(function (entry) { return _this.privilegeCounters[entry[0]].setValue(entry[1]); });
+    };
     SplendorDuel.prototype.notif_refill = function (args) {
-        var playerId = args.playerId;
-        var playerTable = this.getPlayerTable(playerId);
-        var promise = playerTable.playCard(args.card); // TODO
-        return promise;
+        return this.tableCenter.board.addCards(args.refilledTokens, undefined, undefined, 100);
     };
     SplendorDuel.prototype.getColor = function (color) {
-        switch (color) { // TODO
-            case 1: return _("Red");
-            case 2: return _("Yellow");
+        switch (color) {
+            case 0: return _("Pearl");
+            case 1: return _("Blue");
+            case 2: return _("White");
             case 3: return _("Green");
-            case 4: return _("Blue");
-            case 5: return _("Purple");
+            case 4: return _("White");
+            case 5: return _("Red");
         }
-    };
-    SplendorDuel.prototype.getTooltipColor = function (color) {
-        return "".concat(this.getColor(color), " (<div class=\"color\" data-color=\"").concat(color, "\"></div>)");
     };
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */

@@ -17,6 +17,56 @@ trait ActionTrait {
         (note: each method below must match an input method in nicodemus.action.php)
     */
 
+    public function takeTokens(array $ids) {
+        self::checkAction('takeTokens');
+
+        $playerId = intval($this->getActivePlayerId());
+        $count = count($ids);
+
+        if ($this->getPlayerPrivileges($playerId) < $count) {
+            throw new BgaUserException("Not enough privileges");
+        }
+
+        $board = $this->getBoard();
+        $tokens = array_values(array_filter($board, fn($token) => in_array($token->id, $ids)));
+        if (count($tokens) != $count) {
+            throw new BgaUserException("You must take tokens from the board");
+        }
+
+        if ($this->array_some($tokens, fn($token) => $token->id == 1)) {
+            throw new BgaUserException("You can't take gold tokens this way");
+        }
+
+        $this->applyTakeTokens($playerId, $tokens);
+        $this->spendPrivileges($playerId, $count);
+
+        $this->gamestate->nextState('next');
+    }
+    
+    public function skip() {
+        self::checkAction('skip');
+
+        $this->gamestate->nextState('next');
+    }
+
+    public function skipBoth() {
+        self::checkAction('skipBoth');
+
+        $this->gamestate->nextState('skipBoth');
+    }
+
+    public function refillBoard() {
+        self::checkAction('skipBoth');
+
+        $playerId = intval($this->getActivePlayerId());
+
+        $message = clienttranslate('${player_name} chooses to replenish the board and allow ${player_name2} to get a privilege.');
+        $this->givePrivilegeToOpponent($playerId, $message);
+        $this->game->refillBoard();
+
+        $this->gamestate->nextState('next');
+    } 
+
     public function goTrade() {
         self::checkAction('goTrade');
 
@@ -405,18 +455,6 @@ trait ActionTrait {
     public function endTrade(int $playerId) {
         $this->setGameStateValue(TRADE_DONE, 1);
         $this->redirectAfterAction($playerId, false);
-    }
-
-    public function skip() {
-        self::checkAction('skip');
-
-        $this->gamestate->nextState('skip');
-    }
-
-    public function skipBoth() {
-        self::checkAction('skipBoth');
-
-        $this->gamestate->nextState('skipBoth');
     }
 
     public function endTurn() {

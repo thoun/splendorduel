@@ -260,7 +260,7 @@ trait UtilTrait {
     function mustRefill(int $playerId) {
         $args = $this->argPlayAction();
 
-        return !$args['canTakeTokens'] && !$args['canReserve'] && !$args['canBuyCard'];
+        return !$args['canTakeTokens'] && !$args['canBuyCard'];
     }
     
     function redirectAfterAction(int $playerId) {

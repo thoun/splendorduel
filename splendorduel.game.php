@@ -177,16 +177,9 @@ class SplendorDuel extends Table {
         $result['players'] = self::getCollectionFromDb( $sql );
   
         // Gather all information about current game situation (visible by player $current_player_id).
-
-        $firstPlayerId = null;
-        $isEndScore = intval($this->gamestate->state_id()) >= ST_END_SCORE;
         
         foreach($result['players'] as $playerId => &$player) {
             $player['playerNo'] = intval($player['playerNo']);
-            if ($player['playerNo'] == 1) {
-                $firstPlayerId = $playerId;
-            }
-
             $player['tokens'] = $this->getTokensByLocation('player', $playerId);
             $player['privileges'] = intval($player['privileges']);
 
@@ -208,8 +201,6 @@ class SplendorDuel extends Table {
             $result['cardDeckTop'][$level] = Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'.$level)));
             $result['tableCards'][$level] = $this->getCardsByLocation('table'.$level);
         }
-
-        $result['firstPlayerId'] = $firstPlayerId;
   
         return $result;
     }
