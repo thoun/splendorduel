@@ -4,7 +4,7 @@
 
 interface SplendorDuelPlayer extends Player {
     playerNo: number;
-    reputation: number;
+    privileges: number;
     recruit: number;
     bracelet: number;
     //handCount: number;
@@ -34,7 +34,6 @@ interface SplendorDuelGamedatas {
     centerDestinationsDeckTop: { [letter: string]: Token };
     centerDestinationsDeckCount: { [letter: string]: number };
     centerDestinations: { [letter: string]: Token[] };
-    artifacts?: number[];
     firstPlayerId: number;
     lastTurn: boolean;
     reservePossible: boolean;

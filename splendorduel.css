@@ -1,4 +1,3 @@
-@charset "UTF-8";
 #bga-help_buttons {
   position: fixed;
   bottom: 12px;
@@ -772,70 +771,6 @@ body > .card {
   height: 256px;
   background: url("img/board.jpg");
 }
-#table-center #board .marker {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 26px;
-  height: 28px;
-  transition: transform 0.5s;
-  pointer-events: none;
-}
-#table-center #board .marker .inner {
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-}
-#table-center #board .marker .inner.vp {
-  background-image: url("img/vp-pawns.png");
-}
-#table-center #board .marker .inner.reputation {
-  background-image: url("img/reputation-pawns.png");
-}
-#table-center #board .marker[data-color="7c5654"] .inner {
-  background-position-x: 0%;
-}
-#table-center #board .marker[data-color=d6d6d7] .inner {
-  background-position-x: 33.3333333333%;
-}
-#table-center #board .marker[data-color=b79d86] .inner {
-  background-position-x: 66.6666666667%;
-}
-#table-center #board .marker[data-color="1e2c36"] .inner {
-  background-position-x: 100%;
-}
-#table-center #board .marker.color-blind .inner::after {
-  font-size: 120%;
-  display: flex;
-  align-content: center;
-  justify-content: center;
-  margin-top: -4px;
-}
-#table-center #board .marker.color-blind[data-player-no="1"] .inner::after {
-  content: "●";
-}
-#table-center #board .marker.color-blind[data-player-no="2"] .inner::after {
-  content: "▲";
-}
-#table-center #board .marker.color-blind[data-player-no="3"] .inner::after {
-  content: "■";
-}
-#table-center #board .marker.color-blind[data-player-no="4"] .inner::after {
-  content: "◆";
-}
-#table-center #board .marker.highlight::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: orange;
-  border-radius: 50%;
-  box-shadow: 0 0 5px 5px orange;
-}
 #table-center #table-cards .slot {
   width: 120px;
   height: 221px;
@@ -1288,13 +1223,6 @@ html, .mode_3d #game_play_area_background {
 }
 #tables-and-center.double-column > div {
   flex: 1;
-}
-
-.artifact-tooltip > div {
-  padding: 5px;
-}
-.artifact-tooltip > div:not(:last-child) {
-  border-bottom: 1px solid gray;
 }
 
 #last-round {

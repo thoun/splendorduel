@@ -60,13 +60,6 @@ trait ActionTrait {
         $this->setGameStateValue(PLAYED_CARD_COLOR, $card->color);
 
         $argChooseNewCard = $this->argChooseNewCard();
-        if ($argChooseNewCard['allFree']) {
-            self::notifyAllPlayers('log', clienttranslate('${player_name} can recruit any viking for free thanks to ${artifact_name} effect'), [
-                'player_name' => $this->getPlayerName($playerId),
-                'artifact_name' => $this->getArtifactName(ARTIFACT_CAULDRON), // for logs
-                'i18n' => ['artifact_name'],
-            ]);
-        }
 
         $this->incStat(1, 'playedCards');
         $this->incStat(1, 'playedCards', $playerId);
@@ -177,7 +170,7 @@ trait ActionTrait {
             throw new BgaUserException("Not enough recruits");
         }
 
-        $token = $this->getDestinationFromDb($this->tokens->getCard($this->getGameStateValue(SELECTED_DESTINATION)));
+        $token = $this->getTokenFromDb($this->tokens->getCard($this->getGameStateValue(SELECTED_DESTINATION)));
         $fromReserve = $token->location == 'reserved';
         
         // will contain only selected cards of player
@@ -264,14 +257,14 @@ trait ActionTrait {
     public function endExplore(int $playerId, bool $fromReserve, object $token, int $destinationIndex) {
         if (!$fromReserve) {
             $type = $token->type == 2 ? 'B' : 'A';
-            $newDestination = $this->getDestinationFromDb($this->tokens->pickCardForLocation('deck'.$type, 'slot'.$type, $token->locationArg));
+            $newDestination = $this->getTokenFromDb($this->tokens->pickCardForLocation('deck'.$type, 'slot'.$type, $token->locationArg));
             $newDestination->location = 'slot'.$type;
             $newDestination->locationArg = $token->locationArg;
 
             self::notifyAllPlayers('newTableDestination', '', [
                 'token' => $newDestination,
                 'letter' => $type,
-                'destinationDeckTop' => Token::onlyId($this->getDestinationFromDb($this->tokens->getCardOnTop('deck'.$type))),
+                'destinationDeckTop' => Token::onlyId($this->getTokenFromDb($this->tokens->getCardOnTop('deck'.$type))),
                 'destinationDeckCount' => intval($this->tokens->countCardInLocation('deck'.$type)),
             ]);
         }
@@ -287,7 +280,7 @@ trait ActionTrait {
 
         $playerId = intval($this->getActivePlayerId());
 
-        $token = $this->getDestinationFromDb($this->tokens->getCard($id));
+        $token = $this->getTokenFromDb($this->tokens->getCard($id));
 
         if ($token == null || !in_array($token->location, ['slotA', 'slotB'])) {
             throw new BgaUserException("You can't reserve this token");
@@ -303,14 +296,14 @@ trait ActionTrait {
             'letter' => $type, // for logs
         ]);
 
-        $newDestination = $this->getDestinationFromDb($this->tokens->pickCardForLocation('deck'.$type, 'slot'.$type, $token->locationArg));
+        $newDestination = $this->getTokenFromDb($this->tokens->pickCardForLocation('deck'.$type, 'slot'.$type, $token->locationArg));
         $newDestination->location = 'slot'.$type;
         $newDestination->locationArg = $token->locationArg;
 
         self::notifyAllPlayers('newTableDestination', '', [
             'token' => $newDestination,
             'letter' => $type,
-            'destinationDeckTop' => Token::onlyId($this->getDestinationFromDb($this->tokens->getCardOnTop('deck'.$type))),
+            'destinationDeckTop' => Token::onlyId($this->getTokenFromDb($this->tokens->getCardOnTop('deck'.$type))),
             'destinationDeckCount' => intval($this->tokens->countCardInLocation('deck'.$type)),
         ]);
 
@@ -425,9 +418,7 @@ trait ActionTrait {
 
         $playerId = intval($this->getCurrentPlayerId());
 
-        $endTurn = $this->checkEndTurnArtifacts($playerId);
-
-        $this->gamestate->nextState(!$endTurn ? 'next' : 'endTurn');
+        $this->gamestate->nextState('endTurn');
     }
 
     public function discardCard(int $id) {

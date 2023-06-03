@@ -2110,23 +2110,7 @@ var TableCenter = /** @class */ (function () {
         });
         this.cards.onCardClick = card => this.game.onTableCardClick(card);
         this.cards.addCards(gamedatas.centerCards);
-
-        const players = Object.values(gamedatas.players);
-        let html = '';
-        // points
-        players.forEach(player =>
-            html += `
-            <div id="player-${player.id}-vp-marker" class="marker" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner vp"></div></div>
-            <div id="player-${player.id}-reputation-marker" class="marker" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner reputation"></div></div>
-            `
-        );
-        dojo.place(html, 'board');
-        players.forEach(player => {
-            this.vp.set(Number(player.id), Number(player.score));
-            this.reputation.set(Number(player.id), Math.min(14, Number(player.reputation)));
-        });
-        this.moveVP();
-        this.moveReputation();*/
+*/
     }
     TableCenter.prototype.newTableCard = function (card) {
         return this.cards.addCard(card);
@@ -2337,7 +2321,7 @@ var SplendorDuel = /** @class */ (function () {
     function SplendorDuel() {
         this.playersTables = [];
         //private handCounters: Counter[] = [];
-        this.reputationCounters = [];
+        this.privilegeCounters = [];
         this.recruitCounters = [];
         this.braceletCounters = [];
         this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
@@ -2675,22 +2659,20 @@ var SplendorDuel = /** @class */ (function () {
         var _this = this;
         Object.values(gamedatas.players).forEach(function (player) {
             var playerId = Number(player.id);
-            document.getElementById("player_score_".concat(player.id)).insertAdjacentHTML('beforebegin', "<div class=\"vp icon\"></div>");
-            document.getElementById("icon_point_".concat(player.id)).remove();
             /*
                 <div id="playerhand-counter-wrapper-${player.id}" class="playerhand-counter">
                     <div class="player-hand-card"></div>
                     <span id="playerhand-counter-${player.id}"></span>
                 </div>*/
-            var html = "<div class=\"counters\">\n            \n                <div id=\"reputation-counter-wrapper-".concat(player.id, "\" class=\"reputation-counter\">\n                    <div class=\"reputation icon\"></div>\n                    <span id=\"reputation-counter-").concat(player.id, "\"></span> <span class=\"reputation-legend\"><div class=\"vp icon\"></div> / ").concat(_('round'), "</span>\n                </div>\n\n            </div><div class=\"counters\">\n            \n                <div id=\"recruit-counter-wrapper-").concat(player.id, "\" class=\"recruit-counter\">\n                    <div class=\"recruit icon\"></div>\n                    <span id=\"recruit-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"bracelet-counter-wrapper-").concat(player.id, "\" class=\"bracelet-counter\">\n                    <div class=\"bracelet icon\"></div>\n                    <span id=\"bracelet-counter-").concat(player.id, "\"></span>\n                </div>\n                \n            </div>\n            <div>").concat(playerId == gamedatas.firstPlayerId ? "<div id=\"first-player\">".concat(_('First player'), "</div>") : '', "</div>");
+            var html = "<div class=\"counters\">\n            \n                <div id=\"privilege-counter-wrapper-".concat(player.id, "\" class=\"privilege-counter\">\n                    <div class=\"privilege icon\"></div>\n                    <span id=\"privilege-counter-").concat(player.id, "\"></span>\n                </div>\n\n            </div><div class=\"counters\">\n            \n                <div id=\"recruit-counter-wrapper-").concat(player.id, "\" class=\"recruit-counter\">\n                    <div class=\"recruit icon\"></div>\n                    <span id=\"recruit-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"bracelet-counter-wrapper-").concat(player.id, "\" class=\"bracelet-counter\">\n                    <div class=\"bracelet icon\"></div>\n                    <span id=\"bracelet-counter-").concat(player.id, "\"></span>\n                </div>\n                \n            </div>\n            <div>").concat(playerId == gamedatas.firstPlayerId ? "<div id=\"first-player\">".concat(_('First player'), "</div>") : '', "</div>");
             dojo.place(html, "player_board_".concat(player.id));
             /*const handCounter = new ebg.counter();
             handCounter.create(`playerhand-counter-${playerId}`);
             handCounter.setValue(player.handCount);
             this.handCounters[playerId] = handCounter;*/
-            _this.reputationCounters[playerId] = new ebg.counter();
-            _this.reputationCounters[playerId].create("reputation-counter-".concat(playerId));
-            _this.reputationCounters[playerId].setValue(player.reputation);
+            _this.privilegeCounters[playerId] = new ebg.counter();
+            _this.privilegeCounters[playerId].create("privilege-counter-".concat(playerId));
+            _this.privilegeCounters[playerId].setValue(player.privileges);
             _this.recruitCounters[playerId] = new ebg.counter();
             _this.recruitCounters[playerId].create("recruit-counter-".concat(playerId));
             _this.recruitCounters[playerId].setValue(player.recruit);
@@ -2698,7 +2680,7 @@ var SplendorDuel = /** @class */ (function () {
             _this.braceletCounters[playerId].create("bracelet-counter-".concat(playerId));
             _this.braceletCounters[playerId].setValue(player.bracelet);
         });
-        this.setTooltipToClass('reputation-counter', _('Reputation'));
+        this.setTooltipToClass('privilege-counter', _('Privilege scrolls'));
         this.setTooltipToClass('recruit-counter', _('Recruits'));
         this.setTooltipToClass('bracelet-counter', _('Bracelets'));
     };
@@ -2742,7 +2724,7 @@ var SplendorDuel = /** @class */ (function () {
         this.tableCenter.setScore(playerId, score);
     };
     SplendorDuel.prototype.setReputation = function (playerId, count) {
-        this.reputationCounters[playerId].toValue(count);
+        this.privilegeCounters[playerId].toValue(count);
         this.tableCenter.setReputation(playerId, count);
     };
     SplendorDuel.prototype.setRecruits = function (playerId, count) {
@@ -3049,7 +3031,7 @@ var SplendorDuel = /** @class */ (function () {
                     args.gains = entries.length ? entries.map(function (entry) { return "<strong>".concat(entry[1], "</strong> <div class=\"icon\" data-type=\"").concat(entry[0], "\"></div>"); }).join(' ') : "<strong>".concat(_('nothing'), "</strong>");
                 }
                 for (var property in args) {
-                    if (['number', 'color', 'card_color', 'card_type', 'artifact_name'].includes(property) && args[property][0] != '<') {
+                    if (['number', 'color', 'card_color', 'card_type'].includes(property) && args[property][0] != '<') {
                         args[property] = "<strong>".concat(_(args[property]), "</strong>");
                     }
                 }

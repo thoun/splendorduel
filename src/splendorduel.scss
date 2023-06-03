@@ -145,16 +145,6 @@ html, .mode_3d #game_play_area_background {
   }
 }
 
-.artifact-tooltip {
-  &>div {
-    padding: 5px;
-
-    &:not(:last-child) {
-      border-bottom: 1px solid gray;
-    }
-  }
-}
-
 #last-round {
     margin: 5px -5px -5px;
     text-align: center;

@@ -27,17 +27,6 @@ define('REPUTATION', 4);
 define('CARD', 5);
 
 /*
- * Artifacts
- */
-define('ARTIFACT_MEAD_CUP', 1);
-define('ARTIFACT_SILVER_COIN', 2);
-define('ARTIFACT_CAULDRON', 3);
-define('ARTIFACT_GOLDEN_BRACELET', 4);
-define('ARTIFACT_HELMET', 5);
-define('ARTIFACT_AMULET', 6);
-define('ARTIFACT_WEATHERVANE', 7);
-
-/*
  * State constants
  */
 define('ST_BGA_GAME_SETUP', 1);
@@ -85,7 +74,6 @@ define('COMPLETED_LINES', 22);
 /*
  * Global variables
  */
-define('ARTIFACTS', 'Artifacts');
 define('REMAINING_CARDS_TO_TAKE', 'RemainingCardsToTake');
 //define('UNDO', 'undo');
 

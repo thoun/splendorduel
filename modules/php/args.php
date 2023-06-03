@@ -42,7 +42,7 @@ trait ArgsTrait {
     function argPayDestination() {
         $playerId = intval($this->getActivePlayerId());
 
-        $selectedDestination = $this->getDestinationFromDb($this->tokens->getCard(intval($this->getGameStateValue(SELECTED_DESTINATION))));
+        $selectedDestination = $this->getTokenFromDb($this->tokens->getCard(intval($this->getGameStateValue(SELECTED_DESTINATION))));
 
         return [
             'selectedDestination' => $selectedDestination,

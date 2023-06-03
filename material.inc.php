@@ -23,13 +23,6 @@ require_once(__DIR__.'/modules/php/constants.inc.php');
 require_once(__DIR__.'/modules/php/objects/token.php');
 require_once(__DIR__.'/modules/php/objects/card.php');
 
-$this->VP_BY_REPUTATION = [
-    3 => 1,
-    6 => 2,
-    10 => 3,
-    14 => 5,
-];
-
 $this->CARDS = [    
     new CardType(BLUE, VP, [2 => 2, 3 => 3, 4 => 4]),
     new CardType(BLUE, BRACELET, [2 => 1, 3 => 2, 4 => 2]),

@@ -50,23 +50,7 @@ class TableCenter {
         });
         this.cards.onCardClick = card => this.game.onTableCardClick(card);
         this.cards.addCards(gamedatas.centerCards);
-
-        const players = Object.values(gamedatas.players);
-        let html = '';
-        // points
-        players.forEach(player =>
-            html += `
-            <div id="player-${player.id}-vp-marker" class="marker" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner vp"></div></div>
-            <div id="player-${player.id}-reputation-marker" class="marker" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner reputation"></div></div>
-            `
-        );
-        dojo.place(html, 'board');
-        players.forEach(player => {
-            this.vp.set(Number(player.id), Number(player.score));
-            this.reputation.set(Number(player.id), Math.min(14, Number(player.reputation)));
-        });
-        this.moveVP();
-        this.moveReputation();*/
+*/
     }
     
     public newTableCard(card: Card): Promise<boolean> {

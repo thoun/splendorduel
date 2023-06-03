@@ -31,7 +31,7 @@ class SplendorDuel implements SplendorDuelGame {
     private tableCenter: TableCenter;
     private playersTables: PlayerTable[] = [];
     //private handCounters: Counter[] = [];
-    private reputationCounters: Counter[] = [];
+    private privilegeCounters: Counter[] = [];
     private recruitCounters: Counter[] = [];
     private braceletCounters: Counter[] = [];
     
@@ -411,10 +411,7 @@ class SplendorDuel implements SplendorDuelGame {
     private createPlayerPanels(gamedatas: SplendorDuelGamedatas) {
 
         Object.values(gamedatas.players).forEach(player => {
-            const playerId = Number(player.id);   
-
-            document.getElementById(`player_score_${player.id}`).insertAdjacentHTML('beforebegin', `<div class="vp icon"></div>`);
-            document.getElementById(`icon_point_${player.id}`).remove();
+            const playerId = Number(player.id);
 
             /*
                 <div id="playerhand-counter-wrapper-${player.id}" class="playerhand-counter">
@@ -423,9 +420,9 @@ class SplendorDuel implements SplendorDuelGame {
                 </div>*/
             let html = `<div class="counters">
             
-                <div id="reputation-counter-wrapper-${player.id}" class="reputation-counter">
-                    <div class="reputation icon"></div>
-                    <span id="reputation-counter-${player.id}"></span> <span class="reputation-legend"><div class="vp icon"></div> / ${_('round')}</span>
+                <div id="privilege-counter-wrapper-${player.id}" class="privilege-counter">
+                    <div class="privilege icon"></div>
+                    <span id="privilege-counter-${player.id}"></span>
                 </div>
 
             </div><div class="counters">
@@ -450,9 +447,9 @@ class SplendorDuel implements SplendorDuelGame {
             handCounter.setValue(player.handCount);
             this.handCounters[playerId] = handCounter;*/
 
-            this.reputationCounters[playerId] = new ebg.counter();
-            this.reputationCounters[playerId].create(`reputation-counter-${playerId}`);
-            this.reputationCounters[playerId].setValue(player.reputation);
+            this.privilegeCounters[playerId] = new ebg.counter();
+            this.privilegeCounters[playerId].create(`privilege-counter-${playerId}`);
+            this.privilegeCounters[playerId].setValue(player.privileges);
 
             this.recruitCounters[playerId] = new ebg.counter();
             this.recruitCounters[playerId].create(`recruit-counter-${playerId}`);
@@ -463,7 +460,7 @@ class SplendorDuel implements SplendorDuelGame {
             this.braceletCounters[playerId].setValue(player.bracelet);
         });
 
-        this.setTooltipToClass('reputation-counter', _('Reputation'));
+        this.setTooltipToClass('privilege-counter', _('Privilege scrolls'));
         this.setTooltipToClass('recruit-counter', _('Recruits'));
         this.setTooltipToClass('bracelet-counter', _('Bracelets'));
     }
@@ -511,7 +508,7 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     private setReputation(playerId: number, count: number) {
-        this.reputationCounters[playerId].toValue(count);
+        this.privilegeCounters[playerId].toValue(count);
         this.tableCenter.setReputation(playerId, count);
     }
 
@@ -922,7 +919,7 @@ class SplendorDuel implements SplendorDuelGame {
                 }
 
                 for (const property in args) {
-                    if (['number', 'color', 'card_color', 'card_type', 'artifact_name'].includes(property) && args[property][0] != '<') {
+                    if (['number', 'color', 'card_color', 'card_type'].includes(property) && args[property][0] != '<') {
                         args[property] = `<strong>${_(args[property])}</strong>`;
                     }
                 }

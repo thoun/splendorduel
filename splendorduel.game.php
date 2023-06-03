@@ -89,13 +89,20 @@ class SplendorDuel extends Table {
  
         // Create players
         // Note: if you added some extra field on "player" table in the database (dbmodel.sql), you can initialize it there.
-        $sql = "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar) VALUES ";
+        $sql = "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar, player_privileges) VALUES ";
         $values = [];
 
+        $firstPlayer = true;
         foreach( $players as $player_id => $player ) {
             $color = array_shift( $default_colors );
 
-            $values[] = "('".$player_id."','$color','".$player['player_canal']."','".addslashes( $player['player_name'] )."','".addslashes( $player['player_avatar'] )."')";
+            $privileges = $firstPlayer ? 0 : 1;
+
+            $values[] = "('".$player_id."','$color','".$player['player_canal']."','".addslashes( $player['player_name'] )."','".addslashes( $player['player_avatar'] )."', $privileges)";
+
+            if ($firstPlayer) {
+                $firstPlayer = false;
+            }
         }
         $sql .= implode(',', $values);
         self::DbQuery( $sql );
@@ -105,7 +112,7 @@ class SplendorDuel extends Table {
         /************ Start the game initialization *****/
 
         // Init global values with their initial values
-        /*$this->setGameStateInitialValue(LAST_TURN, 0);
+        $this->setGameStateInitialValue(LAST_TURN, 0);
         $this->setGameStateInitialValue(RECRUIT_DONE, 0);
         $this->setGameStateInitialValue(EXPLORE_DONE, 0);
         $this->setGameStateInitialValue(TRADE_DONE, 0);
@@ -138,8 +145,8 @@ class SplendorDuel extends Table {
         }
 
         // setup the initial game situation here
-        $this->setupCards(array_keys($players));
-        $this->setupTokens();*/
+        $this->setupCards();
+        $this->setupTokens();
 
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
@@ -185,7 +192,7 @@ class SplendorDuel extends Table {
             foreach ([1,2,3,4,5] as $color) {
                 $player['playedCards'][$color] = $this->getCardsByLocation('played'.$playerId.'-'.$color);
             }
-            $player['destinations'] = $this->getDestinationsByLocation('played'.$playerId);
+            $player['destinations'] = $this->getTokensByLocation('played'.$playerId);
             //$player['handCount'] = intval($this->cards->countCardInLocation('hand', $playerId));
 
             if ($currentPlayerId == $playerId) {
@@ -202,9 +209,9 @@ class SplendorDuel extends Table {
         $result['centerDestinations'] = [];
 
         foreach (['A', 'B'] as $letter) {
-            $result['centerDestinationsDeckTop'][$letter] = Token::onlyId($this->getDestinationFromDb($this->tokens->getCardOnTop('deck'.$letter)));
+            $result['centerDestinationsDeckTop'][$letter] = Token::onlyId($this->getTokenFromDb($this->tokens->getCardOnTop('deck'.$letter)));
             $result['centerDestinationsDeckCount'][$letter] = intval($this->tokens->countCardInLocation('deck'.$letter));
-            $result['centerDestinations'][$letter] = $this->getDestinationsByLocation('slot'.$letter);
+            $result['centerDestinations'][$letter] = $this->getTokensByLocation('slot'.$letter);
         }
 
         $result['firstPlayerId'] = $firstPlayerId;

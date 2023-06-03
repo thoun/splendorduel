@@ -204,13 +204,6 @@ $commonStats = [
         "id" => 70,
         "name" => totranslate("Cards gained by trade"),
         "type" => "int"
-    ],  
-
-    // artifacts
-    "activatedArtifacts" => [
-        "id" => 80,
-        "name" => totranslate("Activated artifacts"),
-        "type" => "int"
     ],
     
     //	miscellaneous
