@@ -70,3 +70,20 @@ interface NotifPrivilegesArgs {
 interface NotifRefillArgs {
     refilledTokens: Token[];
 }
+
+// takeTokens
+interface NotifTakeTokensArgs {
+    playerId: number;
+    tokens: Token[];
+}
+
+// reserveCard
+interface NotifReserveCardArgs {
+    playerId: number;
+    card: Card;
+    fromDeck: boolean;
+    newCard: Card | null;
+    cardDeckCount: number;
+    cardDeckTop: Card | null;
+    level: number;
+}

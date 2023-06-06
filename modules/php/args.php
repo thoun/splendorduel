@@ -38,44 +38,4 @@ trait ArgsTrait {
             'mustRefill' => $mustRefill,
         ];
     }
-
-    function argPlayAction() {
-        $playerId = intval($this->getActivePlayerId());
-
-        $canTakeTokens = count($this->getBoard()) > 0;
-        $canBuyCard = false; // TODO
-        $buyableCards = []; // TODO
-
-        return [
-            'canTakeTokens' => $canTakeTokens,
-            'canBuyCard' => $canBuyCard,
-            'buyableCards' => $buyableCards,
-        ];
-    }
-
-    function argPayDestination() {
-        $playerId = intval($this->getActivePlayerId());
-
-        $selectedDestination = $this->getTokenFromDb($this->tokens->getCard(intval($this->getGameStateValue(SELECTED_DESTINATION))));
-
-        return [
-            'selectedDestination' => $selectedDestination,
-            'recruits' => $this->getPlayer($playerId)->recruit,
-        ];
-    }
-
-    function argTrade() {
-        $playerId = intval($this->getActivePlayerId());
-
-        $bracelets = $this->getPlayer($playerId)->bracelet;
-        $gainsByBracelets = [];
-        for ($i = 1; $i <= 3; $i++) {
-            $gainsByBracelets[$i] = count($this->getTradeGains($playerId, $i));
-        }
-
-        return [
-            'bracelets' => $bracelets,
-            'gainsByBracelets' => $gainsByBracelets,
-        ];
-    }
 } 

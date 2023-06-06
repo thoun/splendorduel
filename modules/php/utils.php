@@ -262,138 +262,9 @@ trait UtilTrait {
 
         return !$args['canTakeTokens'] && !$args['canBuyCard'];
     }
-    
-    function redirectAfterAction(int $playerId) {
-        if (boolval($this->getGameStateValue(GO_RESERVE))) {
-            $this->incGameStateValue(GO_RESERVE, -1);
-            $reserved = $this->getTokensByLocation('reserved', $playerId);
-            if (count($reserved) >= 2) {
-                self::notifyAllPlayers('log', clienttranslate('${player_name} cannot reserve a token because he already has 2'), [
-                    'playerId' => $playerId,
-                    'player_name' => $this->getPlayerName($playerId),
-                ]);
-            } else {
-                $this->gamestate->nextState('reserve');
-                return;
-            }
-        }
-        if (boolval($this->getGameStateValue(GO_DISCARD_TABLE_CARD))) {
-            $this->incGameStateValue(GO_DISCARD_TABLE_CARD, -1);
-            $this->gamestate->nextState('discardTableCard');
-            return;
-        }
-
-        $args = $this->argPlayAction();
-
-        $canPlay = $args['canRecruit'] || $args['canExplore'] || $args['canTrade'];
-
-        if ($canPlay) {
-            $this->gamestate->nextState('next');
-        } else {
-            $this->gamestate->nextState('endTurn');
-        }
-    }
-    
-    function groupGains(array $gains) {
-        $groupGains = [];
-
-        foreach ($gains as $gain) {
-            if (array_key_exists($gain, $groupGains)) {
-                $groupGains[$gain] += 1;
-            } else {
-                $groupGains[$gain] = 1;
-            }
-        }
-
-        return $groupGains;
-    }
-    
-    function gainResources(int $playerId, array $groupGains, string $phase) {
-        $player = $this->getPlayer($playerId);
-
-        $effectiveGains = [];
-
-        foreach ($groupGains as $type => $amount) {
-            switch ($type) {
-                case VP: 
-                    $effectiveGains[VP] = $amount;
-                    $this->DbQuery("UPDATE player SET `player_score` = `player_score` + ".$effectiveGains[VP]." WHERE player_id = $playerId");
-                    break;
-                case BRACELET: 
-                    $effectiveGains[BRACELET] = min($amount, 3 - $player->bracelet);
-                    $this->DbQuery("UPDATE player SET `player_bracelet` = `player_bracelet` + ".$effectiveGains[BRACELET]." WHERE player_id = $playerId");
-
-                    if ($effectiveGains[BRACELET] < $amount) {
-                        $this->incStat($amount - $effectiveGains[BRACELET], 'braceletsMissed');
-                        $this->incStat($amount - $effectiveGains[BRACELET], 'braceletsMissed', $playerId);
-                    }
-                    break;
-                case RECRUIT:
-                    $effectiveGains[RECRUIT] = min($amount, 3 - $player->recruit);
-                    $this->DbQuery("UPDATE player SET `player_recruit` = `player_recruit` + ".$effectiveGains[RECRUIT]." WHERE player_id = $playerId");
-
-                    if ($effectiveGains[RECRUIT] < $amount) {
-                        $this->incStat($amount - $effectiveGains[RECRUIT], 'recruitsMissed');
-                        $this->incStat($amount - $effectiveGains[RECRUIT], 'recruitsMissed', $playerId);
-                    }
-                    break;
-                case REPUTATION:
-                    $effectiveGains[REPUTATION] = min($amount, 14 - $player->reputation);
-                    $this->DbQuery("UPDATE player SET `player_reputation` = `player_reputation` + ".$effectiveGains[REPUTATION]." WHERE player_id = $playerId");
-                    break;
-                case CARD: 
-                    $available = $this->getAvailableDeckCards();
-                    $effectiveGains[CARD] = min($amount, $available);
-                    for ($i = 0; $i < $effectiveGains[CARD]; $i++) {
-                        $this->powerTakeCard($playerId);
-                    }
-                    if ($effectiveGains[CARD] < $amount) {
-                        $this->setGlobalVariable(REMAINING_CARDS_TO_TAKE, [
-                            'playerId' => $playerId,
-                            'phase' => $phase,
-                            'remaining' => $amount - $effectiveGains[CARD],
-                        ]);
-                    }
-                    break;
-            }
-        }
-
-        return $effectiveGains;
-    }
-
-    function canTakeDestination(Token $token, array $playedCardsColors, int $recruits, bool $strict) {
-        $missingCards = 0;
-
-        foreach ($token->cost as $color => $required) {
-            $available = 0;
-            if ($color == EQUAL) {
-                $available = max($playedCardsColors);
-            } else if ($color == DIFFERENT) {
-                $available = count(array_filter($playedCardsColors, fn($count) => $count > 0));
-            } else {
-                $available = $playedCardsColors[$color]; 
-            }
-
-            if ($available < $required) {
-                $missingCards += ($required - $available);
-            }
-        }
-
-        return $strict ? $recruits == $missingCards : $recruits >= $missingCards;
-    }
-
-    function getGainName(int $gain) {
-        switch ($gain) {
-            case VP: return clienttranslate("Victory Point");
-            case BRACELET: return clienttranslate("Bracelet");
-            case RECRUIT: return clienttranslate("Recruit");
-            case REPUTATION: return clienttranslate("Reputation");
-            case CARD: return clienttranslate("Card");
-        }
-    }
 
     function getColorName(int $color) {
-        switch ($color) {
+        switch ($color) { // TODO
             case BLUE: return clienttranslate("Blue");
             case YELLOW: return clienttranslate("Yellow");
             case GREEN: return clienttranslate("Green");
@@ -401,81 +272,89 @@ trait UtilTrait {
             case PURPLE: return clienttranslate("Purple");
         }
     }
-
-    function powerTakeCard(int $playerId) {
-        $card = $this->getCardFromDb($this->cards->pickCardForLocation('deck', 'played'));
-        $this->cards->moveCard($card->id, 'played'.$playerId.'-'.$card->color, intval($this->cards->countCardInLocation('played'.$playerId.'-'.$card->color)));
-
-        self::notifyAllPlayers('takeDeckCard', clienttranslate('${player_name} takes a ${card_color} ${card_type} card from the deck'), [
-            'playerId' => $playerId,
-            'player_name' => $this->getPlayerName($playerId),
-            'card' => $card,
-            'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'))),
-            'cardDeckCount' => intval($this->cards->countCardInLocation('deck')),
-            'card_type' => $this->getGainName($card->gain), // for logs
-            'card_color' => $this->getColorName($card->color), // for logs
-        ]);
-
-    }
-
-    function getPlayedCardsByColor(int $playerId) {
-        $playedCardsByColor = [];
-        foreach ([1,2,3,4,5] as $color) {
-            $playedCardsByColor[$color] = $this->getCardsByLocation('played'.$playerId.'-'.$color);
+    
+    function checkUsePrivilege(int $playerId, array $tokens)  {
+        if ($this->getPlayerPrivileges($playerId) < count($tokens)) {
+            throw new BgaUserException("Not enough privileges");
         }
-        return $playedCardsByColor;
-    }
 
-    function getPlayedCardsColor(int $playerId, /*array | null*/ $playedCardsByColor = null) {
-        if ($playedCardsByColor === null) {
-            $playedCardsByColor = $this->getPlayedCardsByColor($playerId);
+        if ($this->array_some($tokens, fn($token) => $token->id == 1)) {
+            throw new BgaUserException("You can't take gold tokens this way");
         }
-        foreach ([1,2,3,4,5] as $color) {
-            $playedCardsByColor[$color] = $this->getCardsByLocation('played'.$playerId.'-'.$color);
-        }
-        return array_map(fn($cards) => count($cards), $playedCardsByColor);
     }
 
-    function getCompletedLines(int $playerId) {
-        $playedCardsColors = $this->getPlayedCardsColor($playerId);
-        return min($playedCardsColors);
-    }
+    function checkPlayTakeGems(array $tokens)  {
+        $gold = array_values(array_filter($tokens, fn($token) => $token->type == 1));
+        $gems = array_values(array_filter($tokens, fn($token) => $token->type == 2));
 
-    function completedAPlayedLine(int $playerId) {
-        $completedLines = intval($this->getGameStateValue(COMPLETED_LINES));
-        return $this->getCompletedLines($playerId) > $completedLines; // completed a line during the turn
-    }
+        if (count($gold) > 0) {
+            if (count($gold) > 1) {
+                throw new BgaUserException("You can only take 1 gold token");
+            } else if (count($gems) > 0) {
+                throw new BgaUserException("You can't take gold and gems at the same time");
+            }
+        } else {
+            if (count($gems) > 3) {
+                throw new BgaUserException("You can only take up to 3 tokens");
+            }
 
+            usort($gems, fn($a, $b) => $b->row == $b->row ? $a->column - $b->column : $a->row - $b->row);
+            $rowDiff = null;
+            $colDiff = null;
+            $invalid = false;
 
-    function getAvailableDeckCards() {
-        return intval($this->cards->countCardInLocation('deck')) + intval($this->cards->countCardInLocation('discard'));
-    }
-
-    function getTradeGains(int $playerId, int $bracelets) {
-        $destinations = $this->getTokensByLocation('played'.$playerId);
-
-        $gains = [];
-
-        $rows = array_merge(
-            [$this->getBoatGain()],
-            array_map(fn($token) => $token->gains, $destinations),
-        );
-        foreach ($rows as $row) {
-            for ($i = 0; $i < $bracelets; $i++) {
-                if ($row[$i] !== null) {
-                    $gains[] = $row[$i];
+            for ($i = 1; $i < count($gems); $i++) {
+                if ($rowDiff === null && $colDiff === null) {
+                    $rowDiff = $gems[$i]->row - $gems[$i - 1]->row;
+                    $colDiff = $gems[$i]->column - $gems[$i - 1]->column;
+                } else {
+                    if (($gems[$i]->row - $gems[$i - 1]->row != $rowDiff) || ($gems[$i]->column - $gems[$i - 1]->column != $colDiff)) {
+                        $invalid = true;
+                    }
+                }
+                if ($rowDiff < -1 || $rowDiff > 1 || $colDiff < -1 || $colDiff > 1) {
+                    $invalid = true;
                 }
             }
-        }
 
-        return $gains;
+            if ($invalid) {
+                throw new BgaUserException("You can only take tokens in straight line");
+            }
+        }
     }
 
-    public function cardDeckAutoReshuffle() {
-        $this->notifyAllPlayers('cardDeckReset', clienttranslate('The card deck has been reshuffled'), [            
-            'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'))),
-            'cardDeckCount' => intval($this->cards->countCardInLocation('deck')),
-            'cardDiscardCount' => intval($this->cards->countCardInLocation('discard')),
+    function applyTakeTokens(int $playerId, array $tokens) {
+        $this->cards->moveCards(array_map(fn($token) => $token->id, $tokens), 'player', $playerId);
+
+        self::notifyAllPlayers('takeTokens', clienttranslate('${player_name} takes token(s) ${new_tokens}'), [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'tokens' => $tokens,
+            'new_tokens' => $tokens, // for logs
         ]);
+    }
+
+    function applyEndTurn(int $playerId) {
+        $mustDiscard = count($this->getTokensByLocation('player', $playerId)) > 10;
+
+        $this->gamestate->jumpToState($mustDiscard ? ST_PLAYER_DISCARD_TOKENS : ST_NEXT_PLAYER);
+    }
+    
+    function spendPrivileges(int $playerId, int $number) {
+        $this->DbQuery("UPDATE player SET `player_privileges` = `player_privileges` - $number WHERE player_id = $playerId");
+
+        self::notifyAllPlayers('privileges', clienttranslate('${player_name} uses ${number} privileges to take token(s) from the board'), [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'privileges' => [
+                $playerId => $this->getPlayerPrivileges($playerId),
+            ],
+            'number' => $number, // for logs
+        ]);
+    }
+
+    function getEndReason(int $playerId) {
+        // TODO
+        return 0;
     }
 }

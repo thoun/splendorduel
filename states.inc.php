@@ -71,8 +71,6 @@ $basicGameStates = [
 ];
 
 $playedCardTransitions = [
-    "discardTokens" => ST_PLAYER_DISCARD_TOKENS,
-    "endTurn" => ST_NEXT_PLAYER,
     "placeJoker" => ST_PLAYER_PLACE_JOKER,
     "takeBoardToken" => ST_PLAYER_TAKE_BOARD_TOKEN,
     "takeOpponentToken" => ST_PLAYER_TAKE_OPPONENT_TOKEN,
@@ -118,8 +116,8 @@ $playerActionsGameStates = [
         "name" => "playAction",
         "description" => clienttranslate('${actplayer} must take token(s) or buy a card'),
         "descriptionmyturn" => clienttranslate('${you} must take token(s) or buy a card'),
-        "descriptionOnlyTokens" => clienttranslate('${actplayer} must take tokens'),
-        "descriptionmyturnOnlyTokens" => clienttranslate('${you} must take tokens'),
+        "descriptionOnlyTokens" => clienttranslate('${actplayer} must take token(s)'),
+        "descriptionmyturnOnlyTokens" => clienttranslate('${you} must take token(s)'),
         "descriptionOnlyBuy" => clienttranslate('${actplayer} must buy a card'),
         "descriptionmyturnOnlyBuy" => clienttranslate('${you} must buy a card'),
         "type" => "activeplayer",
@@ -138,7 +136,7 @@ $playerActionsGameStates = [
         "description" => clienttranslate('${actplayer} must choose the card to reserve'),
         "descriptionmyturn" => clienttranslate('${you} must choose the card to reserve'),
         "type" => "activeplayer",
-        "args" => "argReserveCard",
+        //"args" => "argReserveCard",
         "possibleactions" => [ 
             "reserveCard",
         ],

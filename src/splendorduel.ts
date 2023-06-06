@@ -32,6 +32,8 @@ class SplendorDuel implements SplendorDuelGame {
     private playersTables: PlayerTable[] = [];
     private privilegeCounters: Counter[] = [];
     private reservedCounters: Counter[] = [];
+
+    private tokensSelection: Token[];
     
     private TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
 
@@ -114,8 +116,14 @@ class SplendorDuel implements SplendorDuelGame {
         log('Entering state: ' + stateName, args.args);
 
         switch (stateName) {
+            case 'usePrivilege':
+                this.onEnteringUsePrivilege(args.args);
+                break;
             case 'playAction':
                 this.onEnteringPlayAction(args.args);
+                break;
+            case 'reserveCard':
+                this.onEnteringReserveCard();
                 break;
         }
     }
@@ -127,6 +135,12 @@ class SplendorDuel implements SplendorDuelGame {
         (this as any).updatePageTitle();
     }
 
+    private onEnteringUsePrivilege(args: EnteringUsePrivilegeArgs) {
+        if ((this as any).isCurrentPlayerActive()) {
+            this.tableCenter.setBoardSelectable('privileges', args.privileges);
+        }
+    }
+
     private onEnteringPlayAction(args: EnteringPlayActionArgs) {
         if (!args.canTakeTokens) {
             this.setGamestateDescription('OnlyBuy');
@@ -136,7 +150,7 @@ class SplendorDuel implements SplendorDuelGame {
 
         if ((this as any).isCurrentPlayerActive()) {
             if (args.canTakeTokens) {
-                this.tableCenter.setBoardSelectable('play');
+                this.tableCenter.setBoardSelectable('play', 3);
             }
             if (args.canBuyCard) {
                 this.tableCenter.setCardsSelectable(true, args.buyableCards);
@@ -144,10 +158,15 @@ class SplendorDuel implements SplendorDuelGame {
         }
     }
 
+    private onEnteringReserveCard() {
+        this.tableCenter.setCardsSelectable(true, [], true);
+    }
+
     public onLeavingState(stateName: string) {
         log( 'Leaving state: '+stateName );
 
         switch (stateName) {
+            case 'usePrivilege':
             case 'playAction':
                 this.onLeavingPlayAction();
                 break;
@@ -155,9 +174,8 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     private onLeavingPlayAction() {
-        /*this.tableCenter.setDestinationsSelectable(false);
-        this.getCurrentPlayerTable()?.setHandSelectable(false);
-        this.getCurrentPlayerTable()?.setDestinationsSelectable(false);*/
+        this.tableCenter.setBoardSelectable(null);
+        this.tableCenter.setCardsSelectable(false);
     }
 
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
@@ -357,15 +375,17 @@ class SplendorDuel implements SplendorDuelGame {
     }
     
     public onTokenSelectionChange(tokens: Token[], valid: boolean): void {
+        this.tokensSelection = tokens;
+
         document.getElementById('takeSelectedTokens_button')?.classList.toggle('disabled', !valid);
     }
 
     public onTableCardClick(card: Card): void {
-        /*if (this.gamedatas.gamestate.name == 'discardTableCard') {
-            this.discardTableCard(card.id);
+        if (this.gamedatas.gamestate.name == 'reserveCard') {
+            this.reserveCard(card.id);
         } else {
             this.chooseNewCard(card.id);
-        }*/
+        }
     }
 
     public onReservedCardClick(card: Card): void {
@@ -381,7 +401,9 @@ class SplendorDuel implements SplendorDuelGame {
             return;
         }
 
-        this.takeAction('takeTokens'); // TODO
+        this.takeAction('takeTokens', {
+            ids: this.tokensSelection.map(token => token.id).join(','), 
+        });
     }
   	
     public skip() {
@@ -406,6 +428,16 @@ class SplendorDuel implements SplendorDuelGame {
         }
 
         this.takeAction('refillBoard');
+    }
+  	
+    public reserveCard(id: number) {
+        if(!(this as any).checkAction('reserveCard')) {
+            return;
+        }
+
+        this.takeAction('reserveCard', {
+            id
+        });
     }
   	
     public discardSelectedTokens() {
@@ -440,6 +472,8 @@ class SplendorDuel implements SplendorDuelGame {
         const notifs = [
             ['privileges', ANIMATION_MS],
             ['refill', undefined],
+            ['takeTokens', ANIMATION_MS],
+            ['reserveCard', ANIMATION_MS],
         ];
     
         notifs.forEach((notif) => {
@@ -474,8 +508,20 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     notif_refill(args: NotifRefillArgs) {
-        return this.tableCenter.board.addCards(args.refilledTokens, undefined, undefined, 100);
+        return this.tableCenter.refillBoard(args.refilledTokens);
     }
+
+    notif_takeTokens(args: NotifTakeTokensArgs) {
+        // TODO
+    }
+
+    notif_reserveCard(args: NotifReserveCardArgs) {
+        this.reservedCounters[args.playerId].incValue(1);
+
+        this.tableCenter.reserveCard(args);
+    }
+    
+    
 
     public getColor(color: number): string {
         switch (color) {
