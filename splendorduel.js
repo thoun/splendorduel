@@ -2715,6 +2715,7 @@ var SplendorDuel = /** @class */ (function () {
             ['takeTokens', ANIMATION_MS],
             ['reserveCard', ANIMATION_MS],
             ['buyCard', ANIMATION_MS],
+            ['win', 1],
         ];
         notifs.forEach(function (notif) {
             dojo.subscribe(notif[0], _this, function (notifDetails) {
@@ -2760,6 +2761,9 @@ var SplendorDuel = /** @class */ (function () {
             this.tableCenter.replaceCard(args);
         }
     };
+    SplendorDuel.prototype.notif_win = function (args) {
+        this.setScore(args.playerId, 1);
+    };
     SplendorDuel.prototype.getColor = function (color) {
         switch (color) {
             case 0: return _("Pearl");
@@ -2773,10 +2777,8 @@ var SplendorDuel = /** @class */ (function () {
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */
     SplendorDuel.prototype.format_string_recursive = function (log, args) {
-        console.log(log, args);
         try {
             if (log && args && !args.processed) {
-                console.log(args.new_tokens, (typeof args.new_tokens));
                 if (args.new_tokens && (typeof args.new_tokens !== 'string' || args.new_tokens[0] !== '<')) {
                     args.new_tokens = args.new_tokens.map(function (token) { return "<div class=\"token-icon\" data-type=\"".concat(token.type == 1 ? -1 : token.color, "\"></div>"); }).join(' ');
                 }

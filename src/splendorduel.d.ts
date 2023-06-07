@@ -95,4 +95,9 @@ interface NotifReserveCardArgs extends NotifNewPlayerCardArgs {
 // buyCard
 interface NotifBuyCardArgs extends NotifNewPlayerCardArgs {
     fromReserved: boolean;
-}
+}   
+
+// win
+interface NotifWinArgs {
+    playerId: number;
+}         

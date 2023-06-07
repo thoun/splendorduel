@@ -484,6 +484,7 @@ class SplendorDuel implements SplendorDuelGame {
             ['takeTokens', ANIMATION_MS],
             ['reserveCard', ANIMATION_MS],
             ['buyCard', ANIMATION_MS],
+            ['win', 1],
         ];
     
         notifs.forEach((notif) => {
@@ -541,6 +542,10 @@ class SplendorDuel implements SplendorDuelGame {
         }
     }
 
+    notif_win(args: NotifWinArgs) {
+        this.setScore(args.playerId, 1);
+    }
+
     public getColor(color: number): string {
         switch (color) {
             case 0: return _("Pearl")
@@ -555,10 +560,8 @@ class SplendorDuel implements SplendorDuelGame {
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */
     public format_string_recursive(log: string, args: any) {
-        console.log(log, args);
         try {
             if (log && args && !args.processed) {
-                console.log(args.new_tokens, (typeof args.new_tokens));
                 if (args.new_tokens && (typeof args.new_tokens !== 'string' || args.new_tokens[0] !== '<')) {
                     args.new_tokens = args.new_tokens.map(token => `<div class="token-icon" data-type="${token.type == 1 ? -1 : token.color}"></div>`).join(' ');
                 }

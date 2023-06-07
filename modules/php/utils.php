@@ -352,6 +352,27 @@ trait UtilTrait {
         ]);
     }
 
+    function givePrivilegeToOpponent(int $playerId, string $message) {
+        $fromPlayer = $this->getPlayerPrivileges($playerId) >= 3;
+        if ($fromPlayer) {
+            $this->DbQuery("UPDATE player SET `player_privileges` = `player_privileges` - 1 WHERE player_id = $playerId");
+        }
+
+        $opponentId = $this->getOpponentId($playerId);
+        $this->DbQuery("UPDATE player SET `player_privileges` = `player_privileges` + 1 WHERE player_id = $opponentId");
+
+        self::notifyAllPlayers('privileges', $message, [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'opponentId' => $opponentId,
+            'player_name2' => $this->getPlayerName($opponentId),
+            'privileges' => [
+                $playerId => $this->getPlayerPrivileges($playerId),
+                $opponentId => $this->getPlayerPrivileges($opponentId),
+            ],
+        ]);
+    }
+
     function getEndReason(int $playerId) {
         $cards = $this->getCardsByLocation('player'.$playerId.'-%');
         $totalPoints = 0;
@@ -374,7 +395,6 @@ trait UtilTrait {
             return 3;
         }
 
-        // TODO
         return 0;
     }
 

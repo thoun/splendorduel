@@ -76,13 +76,13 @@ trait ActionTrait {
     }
 
     public function refillBoard() {
-        self::checkAction('skipBoth');
+        self::checkAction('refillBoard');
 
         $playerId = intval($this->getActivePlayerId());
 
         $message = clienttranslate('${player_name} chooses to replenish the board and allow ${player_name2} to get a privilege.');
         $this->givePrivilegeToOpponent($playerId, $message);
-        $this->game->refillBoard();
+        $this->refillBag();
 
         $this->gamestate->nextState('next');
     } 
@@ -159,6 +159,8 @@ trait ActionTrait {
             'level' => $level,
             'card_level' => $level, // for logs
         ]);
+
+        // TODO pay cost
 
         // TODO redirect to crown or power. Can it be both ?
         $this->applyEndTurn($playerId);

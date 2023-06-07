@@ -38,6 +38,28 @@ trait StateTrait {
 
         $endReason = $this->getEndReason($playerId);
 
+        if ($endReason > 0) {
+            $this->DbQuery("UPDATE player SET `player_score` = 1 WHERE player_id = $playerId");
+
+            $message = null;
+            switch ($endReason) {
+                case 1:
+                    $message = clienttranslate('${player_name} reached 20 points and wins the game!');
+                    break;
+                case 2:
+                    $message = clienttranslate('${player_name} reached 10 crowns and wins the game!');
+                    break;
+                case 3:
+                    $message = clienttranslate('${player_name} reached 10 points in a single column and wins the game!');
+                    break;
+            }
+                
+            self::notifyAllPlayers('win', $message, [
+                'playerId' => $playerId,
+                'player_name' => $this->getPlayerName($playerId),
+            ]);
+        }
+
         $this->activeNextPlayer();
         $playerId = $this->getActivePlayerId();
 
