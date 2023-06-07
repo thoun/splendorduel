@@ -6,8 +6,7 @@ class PlayerTable {
     public voidStock: VoidStock<Card>;
     public hand?: LineStock<Card>;
     public played: LineStock<Card>[] = [];
-    public destinations: LineStock<Token>;
-    public reservedDestinations?: LineStock<Token>;
+    public tokens: LineStock<Token>;
     public limitSelection: number | null = null;
 
     private currentPlayer: boolean;
@@ -28,9 +27,8 @@ class PlayerTable {
             </div>`;
         }
         html += `
-            <div id="player-table-${this.playerId}-destinations" class="destinations"></div>
+            <div id="player-table-${this.playerId}-tokens" class="tokens"></div>
             
-            </div>
             <div class="visible-cards">`;            
             for (let i = 1; i <= 5; i++) {
                 html += `
@@ -45,42 +43,31 @@ class PlayerTable {
 
         dojo.place(html, document.getElementById('tables'));
 
-        /*if (this.currentPlayer) {
+        if (this.currentPlayer) {
             const handDiv = document.getElementById(`player-table-${this.playerId}-hand`);
-            this.hand = new LineStock<Card>(this.game.cardsManager, handDiv, {
-                sort: (a: Card, b: Card) => a.color == b.color ? a.gain - b.gain : a.color - b.color,
-            });
-            this.hand.onCardClick = (card: Card) => this.game.onHandCardClick(card);
+            this.hand = new LineStock<Card>(this.game.cardsManager, handDiv);
+            this.hand.onCardClick = (card: Card) => this.game.onReservedCardClick(card);
             
-            this.hand.addCards(player.hand);
+            this.hand.addCards(player.reserved);
 
         }
         this.voidStock = new VoidStock<Card>(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-name`));
-                
+               
         for (let i = 1; i <= 5; i++) {
             const playedDiv = document.getElementById(`player-table-${this.playerId}-played-${i}`);
             this.played[i] = new LineStock<Card>(this.game.cardsManager, playedDiv, {
                 direction: 'column',
                 center: false,
             });
-            this.played[i].onCardClick = card => {
-                this.game.onPlayedCardClick(card);
-                if (this.limitSelection !== null) {
-                    this.updateSelectable();
-                }
-            }
-            this.played[i].addCards(player.playedCards[i]);
+            this.played[i].addCards(player.cards.filter(card => Number(card.location.slice(-1)) == i));
             playedDiv.style.setProperty('--card-overlap', '195px');
         }
         
-        const destinationsDiv = document.getElementById(`player-table-${this.playerId}-destinations`);
-        this.destinations = new LineStock<Token>(this.game.tokensManager, destinationsDiv, {
+        this.tokens = new LineStock<Token>(this.game.tokensManager, document.getElementById(`player-table-${this.playerId}-tokens`), {
             center: false,
         });
-        destinationsDiv.style.setProperty('--card-overlap', '94px');
         
-        this.destinations.addCards(player.destinations);
-        */
+        this.tokens.addCards(player.tokens);
     }
 
     public updateCounter(type: 'recruits' | 'bracelets', count: number) {
@@ -93,81 +80,14 @@ class PlayerTable {
         });
     }
 
-    public setHandSelectable(selectable: boolean) {
+    public setHandSelectable(selectable: boolean, buyableCards: Card[] | null = null) {
         this.hand.setSelectionMode(selectable ? 'single' : 'none');
-    }
-
-    public setCardsSelectable(selectable: boolean, cost: { [color: number]: number } | null = null) {
-        const colors = cost == null ? [] : Object.keys(cost).map(key => Number(key));
-        const equalOrDifferent = cost == null ? false : [EQUAL, DIFFERENT].includes(colors[0]);
-        this.limitSelection = equalOrDifferent ? colors[0] : null;
-
-        for (let i = 1; i <= 5; i++) {
-            this.played[i].setSelectionMode(selectable ? 'multiple' : 'none');
-            if (selectable) {
-                const selectableCards = this.played[i].getCards().filter(card => {
-                    let disabled = !selectable || cost == null;
-                    if (!disabled) {
-                        if (colors.length != 1 || (colors.length == 1 && !equalOrDifferent)) {
-                            disabled = !colors.includes(card.color);
-                        }
-                    }
-                    return !disabled;
-                });
-                this.played[i].setSelectableCards(selectableCards);
-            }
+        if (selectable) {
+            this.hand.setSelectableCards(buyableCards);
         }
-    }
-
-    public getSelectedCards(): Card[] {
-        const cards = [];
-
-        for (let i = 1; i <= 5; i++) {
-            cards.push(...this.played[i].getSelection());
-        }
-
-        return cards;
-    }
+    }    
     
-    public reserveDestination(token: Token) {
-        return this.reservedDestinations.addCard(token);
-    }
-    
-    public setDestinationsSelectable(selectable: boolean, selectableCards: Token[] | null = null) {
-        if (!this.reservedDestinations) {
-            return;
-        }
-
-        this.reservedDestinations.setSelectionMode(selectable ? 'single' : 'none');
-        this.reservedDestinations.setSelectableCards(selectableCards);
-    }
-    
-    public showColumns(number: number) {
-        if (number > 0) {
-            document.getElementById(`player-table-${this.playerId}-boat`).style.setProperty('--column-height', `${35 * (this.destinations.getCards().length + 1)}px`);
-        }
-
-        for (let i = 1; i <= 3; i++) {
-            document.getElementById(`player-table-${this.playerId}-column${i}`).classList.toggle('highlight', i <= number);
-        }
-    }
-    
-    private updateSelectable() {
-        const selectedCards = this.getSelectedCards();
-        const selectedColors = selectedCards.map(card => card.color);
-        const color = selectedCards.length ? selectedCards[0].color : null;
-
-        for (let i = 1; i <= 5; i++) {
-            const selectableCards = this.played[i].getCards().filter(card => {                
-                let disabled = false;
-                if (this.limitSelection === DIFFERENT) {
-                    disabled = selectedColors.includes(card.color) && !selectedCards.includes(card);
-                } else if (this.limitSelection === EQUAL) {
-                    disabled = color !== null && card.color != color;
-                }
-                return !disabled;
-            });
-            this.played[i].setSelectableCards(selectableCards);
-        }
+    public addCard(card: Card) {
+        this.played[Number(card.location.slice(-1))].addCard(card);
     }
 }

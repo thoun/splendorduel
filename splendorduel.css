@@ -524,65 +524,311 @@ body > .card {
 .splendorduel-card.bga-cards_selected-card:not(.bga-cards_disabled-card) .card-side {
   box-shadow: unset;
 }
-.splendorduel-card .front[data-color="1"][data-gain="1"] {
+.splendorduel-card[data-level="1"] .card-side {
+  background-position-y: 0%;
+}
+.splendorduel-card[data-level="2"] .card-side {
+  background-position-y: 150%;
+}
+.splendorduel-card[data-level="3"] .card-side {
+  background-position-y: 300%;
+}
+.splendorduel-card .front[data-index="1"] {
   background-position-x: 5%;
 }
-.splendorduel-card .front[data-color="1"][data-gain="2"] {
+.splendorduel-card .front[data-index="2"] {
   background-position-x: 10%;
 }
-.splendorduel-card .front[data-color="1"][data-gain="3"] {
+.splendorduel-card .front[data-index="3"] {
   background-position-x: 15%;
 }
-.splendorduel-card .front[data-color="1"][data-gain="4"] {
+.splendorduel-card .front[data-index="4"] {
   background-position-x: 20%;
 }
-.splendorduel-card .front[data-color="2"][data-gain="1"] {
+.splendorduel-card .front[data-index="5"] {
   background-position-x: 25%;
 }
-.splendorduel-card .front[data-color="2"][data-gain="2"] {
+.splendorduel-card .front[data-index="6"] {
   background-position-x: 30%;
 }
-.splendorduel-card .front[data-color="2"][data-gain="3"] {
+.splendorduel-card .front[data-index="7"] {
   background-position-x: 35%;
 }
-.splendorduel-card .front[data-color="2"][data-gain="4"] {
+.splendorduel-card .front[data-index="8"] {
   background-position-x: 40%;
 }
-.splendorduel-card .front[data-color="3"][data-gain="1"] {
+.splendorduel-card .front[data-index="9"] {
   background-position-x: 45%;
 }
-.splendorduel-card .front[data-color="3"][data-gain="2"] {
+.splendorduel-card .front[data-index="10"] {
   background-position-x: 50%;
 }
-.splendorduel-card .front[data-color="3"][data-gain="3"] {
+.splendorduel-card .front[data-index="11"] {
   background-position-x: 55%;
 }
-.splendorduel-card .front[data-color="3"][data-gain="4"] {
+.splendorduel-card .front[data-index="12"] {
   background-position-x: 60%;
 }
-.splendorduel-card .front[data-color="4"][data-gain="1"] {
+.splendorduel-card .front[data-index="13"] {
   background-position-x: 65%;
 }
-.splendorduel-card .front[data-color="4"][data-gain="2"] {
+.splendorduel-card .front[data-index="14"] {
   background-position-x: 70%;
 }
-.splendorduel-card .front[data-color="4"][data-gain="3"] {
+.splendorduel-card .front[data-index="15"] {
   background-position-x: 75%;
 }
-.splendorduel-card .front[data-color="4"][data-gain="4"] {
+.splendorduel-card .front[data-index="16"] {
   background-position-x: 80%;
 }
-.splendorduel-card .front[data-color="5"][data-gain="1"] {
+.splendorduel-card .front[data-index="17"] {
   background-position-x: 85%;
 }
-.splendorduel-card .front[data-color="5"][data-gain="2"] {
+.splendorduel-card .front[data-index="18"] {
   background-position-x: 90%;
 }
-.splendorduel-card .front[data-color="5"][data-gain="3"] {
+.splendorduel-card .front[data-index="19"] {
   background-position-x: 95%;
 }
-.splendorduel-card .front[data-color="5"][data-gain="4"] {
+.splendorduel-card .front[data-index="20"] {
   background-position-x: 100%;
+}
+.splendorduel-card .front[data-index="21"] {
+  background-position-x: 105%;
+}
+.splendorduel-card .front[data-index="22"] {
+  background-position-x: 110%;
+}
+.splendorduel-card .front[data-index="23"] {
+  background-position-x: 115%;
+}
+.splendorduel-card .front[data-index="24"] {
+  background-position-x: 120%;
+}
+.splendorduel-card .front[data-index="25"] {
+  background-position-x: 125%;
+}
+.splendorduel-card .front[data-index="26"] {
+  background-position-x: 130%;
+}
+.splendorduel-card .front[data-index="27"] {
+  background-position-x: 135%;
+}
+.splendorduel-card .front[data-index="28"] {
+  background-position-x: 140%;
+}
+.splendorduel-card .front[data-index="29"] {
+  background-position-x: 145%;
+}
+.splendorduel-card .front[data-index="30"] {
+  background-position-x: 150%;
+}
+.splendorduel-card .front[data-index="31"] {
+  background-position-x: 155%;
+}
+.splendorduel-card .front[data-index="32"] {
+  background-position-x: 160%;
+}
+.splendorduel-card .front[data-index="33"] {
+  background-position-x: 165%;
+}
+.splendorduel-card .front[data-index="34"] {
+  background-position-x: 170%;
+}
+.splendorduel-card .front[data-index="35"] {
+  background-position-x: 175%;
+}
+.splendorduel-card .front[data-index="36"] {
+  background-position-x: 180%;
+}
+.splendorduel-card .front[data-index="37"] {
+  background-position-x: 185%;
+}
+.splendorduel-card .front[data-index="38"] {
+  background-position-x: 190%;
+}
+.splendorduel-card .front[data-index="39"] {
+  background-position-x: 195%;
+}
+.splendorduel-card .front[data-index="40"] {
+  background-position-x: 200%;
+}
+.splendorduel-card .front[data-index="41"] {
+  background-position-x: 205%;
+}
+.splendorduel-card .front[data-index="42"] {
+  background-position-x: 210%;
+}
+.splendorduel-card .front[data-index="43"] {
+  background-position-x: 215%;
+}
+.splendorduel-card .front[data-index="44"] {
+  background-position-x: 220%;
+}
+.splendorduel-card .front[data-index="45"] {
+  background-position-x: 225%;
+}
+.splendorduel-card .front[data-index="46"] {
+  background-position-x: 230%;
+}
+.splendorduel-card .front[data-index="47"] {
+  background-position-x: 235%;
+}
+.splendorduel-card .front[data-index="48"] {
+  background-position-x: 240%;
+}
+.splendorduel-card .front[data-index="49"] {
+  background-position-x: 245%;
+}
+.splendorduel-card .front[data-index="50"] {
+  background-position-x: 250%;
+}
+.splendorduel-card .front[data-index="51"] {
+  background-position-x: 255%;
+}
+.splendorduel-card .front[data-index="52"] {
+  background-position-x: 260%;
+}
+.splendorduel-card .front[data-index="53"] {
+  background-position-x: 265%;
+}
+.splendorduel-card .front[data-index="54"] {
+  background-position-x: 270%;
+}
+.splendorduel-card .front[data-index="55"] {
+  background-position-x: 275%;
+}
+.splendorduel-card .front[data-index="56"] {
+  background-position-x: 280%;
+}
+.splendorduel-card .front[data-index="57"] {
+  background-position-x: 285%;
+}
+.splendorduel-card .front[data-index="58"] {
+  background-position-x: 290%;
+}
+.splendorduel-card .front[data-index="59"] {
+  background-position-x: 295%;
+}
+.splendorduel-card .front[data-index="60"] {
+  background-position-x: 300%;
+}
+.splendorduel-card .front[data-index="61"] {
+  background-position-x: 305%;
+}
+.splendorduel-card .front[data-index="62"] {
+  background-position-x: 310%;
+}
+.splendorduel-card .front[data-index="63"] {
+  background-position-x: 315%;
+}
+.splendorduel-card .front[data-index="64"] {
+  background-position-x: 320%;
+}
+.splendorduel-card .front[data-index="65"] {
+  background-position-x: 325%;
+}
+.splendorduel-card .front[data-index="66"] {
+  background-position-x: 330%;
+}
+.splendorduel-card .front[data-index="67"] {
+  background-position-x: 335%;
+}
+.splendorduel-card .front[data-index="68"] {
+  background-position-x: 340%;
+}
+.splendorduel-card .front[data-index="69"] {
+  background-position-x: 345%;
+}
+.splendorduel-card .front[data-index="70"] {
+  background-position-x: 350%;
+}
+.splendorduel-card .front[data-index="71"] {
+  background-position-x: 355%;
+}
+.splendorduel-card .front[data-index="72"] {
+  background-position-x: 360%;
+}
+.splendorduel-card .front[data-index="73"] {
+  background-position-x: 365%;
+}
+.splendorduel-card .front[data-index="74"] {
+  background-position-x: 370%;
+}
+.splendorduel-card .front[data-index="75"] {
+  background-position-x: 375%;
+}
+.splendorduel-card .front[data-index="76"] {
+  background-position-x: 380%;
+}
+.splendorduel-card .front[data-index="77"] {
+  background-position-x: 385%;
+}
+.splendorduel-card .front[data-index="78"] {
+  background-position-x: 390%;
+}
+.splendorduel-card .front[data-index="79"] {
+  background-position-x: 395%;
+}
+.splendorduel-card .front[data-index="80"] {
+  background-position-x: 400%;
+}
+.splendorduel-card .front[data-index="81"] {
+  background-position-x: 405%;
+}
+.splendorduel-card .front[data-index="82"] {
+  background-position-x: 410%;
+}
+.splendorduel-card .front[data-index="83"] {
+  background-position-x: 415%;
+}
+.splendorduel-card .front[data-index="84"] {
+  background-position-x: 420%;
+}
+.splendorduel-card .front[data-index="85"] {
+  background-position-x: 425%;
+}
+.splendorduel-card .front[data-index="86"] {
+  background-position-x: 430%;
+}
+.splendorduel-card .front[data-index="87"] {
+  background-position-x: 435%;
+}
+.splendorduel-card .front[data-index="88"] {
+  background-position-x: 440%;
+}
+.splendorduel-card .front[data-index="89"] {
+  background-position-x: 445%;
+}
+.splendorduel-card .front[data-index="90"] {
+  background-position-x: 450%;
+}
+.splendorduel-card .front[data-index="91"] {
+  background-position-x: 455%;
+}
+.splendorduel-card .front[data-index="92"] {
+  background-position-x: 460%;
+}
+.splendorduel-card .front[data-index="93"] {
+  background-position-x: 465%;
+}
+.splendorduel-card .front[data-index="94"] {
+  background-position-x: 470%;
+}
+.splendorduel-card .front[data-index="95"] {
+  background-position-x: 475%;
+}
+.splendorduel-card .front[data-index="96"] {
+  background-position-x: 480%;
+}
+.splendorduel-card .front[data-index="97"] {
+  background-position-x: 485%;
+}
+.splendorduel-card .front[data-index="98"] {
+  background-position-x: 490%;
+}
+.splendorduel-card .front[data-index="99"] {
+  background-position-x: 495%;
 }
 
 @keyframes selectable-card-animation {
@@ -760,129 +1006,6 @@ body > .card {
   font-size: 20pt;
   font-family: "copperplate-gothic-bold";
 }
-.player-table .boat {
-  position: relative;
-  width: 309px;
-  height: 149px;
-  background-size: 100% auto;
-  margin-top: -4px;
-}
-.player-table .boat.normal {
-  background-image: url("img/boats-normal.png");
-}
-.player-table .boat.advanced {
-  background-image: url("img/boats-advanced.png");
-}
-.player-table .boat[data-color="7c5654"] {
-  background-position-y: 0%;
-}
-.player-table .boat[data-color=d6d6d7] {
-  background-position-y: 33.3333333333%;
-}
-.player-table .boat[data-color=b79d86] {
-  background-position-y: 66.6666666667%;
-}
-.player-table .boat[data-color="1e2c36"] {
-  background-position-y: 100%;
-}
-.player-table .boat[data-recruits="0"] .icon.recruit[data-number="1"] {
-  top: 108px;
-  left: 50px;
-}
-.player-table .boat[data-recruits="0"] .icon.recruit[data-number="2"] {
-  top: 108px;
-  left: 55px;
-}
-.player-table .boat[data-recruits="0"] .icon.recruit[data-number="3"] {
-  top: 108px;
-  left: 60px;
-}
-.player-table .boat[data-recruits="1"] .icon.recruit[data-number="2"] {
-  top: 108px;
-  left: 55px;
-}
-.player-table .boat[data-recruits="1"] .icon.recruit[data-number="3"] {
-  top: 108px;
-  left: 60px;
-}
-.player-table .boat[data-recruits="2"] .icon.recruit[data-number="3"] {
-  top: 108px;
-  left: 60px;
-}
-.player-table .boat[data-bracelets="0"] .icon.bracelet[data-number="1"] {
-  top: 108px;
-  right: 50px;
-}
-.player-table .boat[data-bracelets="0"] .icon.bracelet[data-number="2"] {
-  top: 108px;
-  right: 55px;
-}
-.player-table .boat[data-bracelets="0"] .icon.bracelet[data-number="3"] {
-  top: 108px;
-  right: 60px;
-}
-.player-table .boat[data-bracelets="1"] .icon.bracelet[data-number="2"] {
-  top: 108px;
-  right: 55px;
-}
-.player-table .boat[data-bracelets="1"] .icon.bracelet[data-number="3"] {
-  top: 108px;
-  right: 60px;
-}
-.player-table .boat[data-bracelets="2"] .icon.bracelet[data-number="3"] {
-  top: 108px;
-  right: 60px;
-}
-.player-table .boat .icon {
-  position: absolute;
-  box-shadow: 0 0 2px 1px black;
-  transition: left 0.5s, right 0.5s, top 0.5s;
-}
-.player-table .boat .icon[data-number="3"] {
-  top: 13px;
-}
-.player-table .boat .icon[data-number="3"].recruit {
-  left: 20px;
-}
-.player-table .boat .icon[data-number="3"].bracelet {
-  right: 20px;
-}
-.player-table .boat .icon[data-number="2"] {
-  top: 53px;
-}
-.player-table .boat .icon[data-number="2"].recruit {
-  left: 11px;
-}
-.player-table .boat .icon[data-number="2"].bracelet {
-  right: 11px;
-}
-.player-table .boat .icon[data-number="1"] {
-  top: 92px;
-}
-.player-table .boat .icon[data-number="1"].recruit {
-  left: 2px;
-}
-.player-table .boat .icon[data-number="1"].bracelet {
-  right: 2px;
-}
-.player-table .boat .column {
-  position: absolute;
-  bottom: 110px;
-  width: 28px;
-  height: var(--column-height);
-}
-.player-table .boat .column[data-number="1"] {
-  left: 112px;
-}
-.player-table .boat .column[data-number="2"] {
-  left: 141px;
-}
-.player-table .boat .column[data-number="3"] {
-  left: 170px;
-}
-.player-table .boat .column.highlight {
-  box-shadow: 0 0 2px 3px orange;
-}
 .player-table .block-with-text {
   display: flex;
 }
@@ -916,32 +1039,6 @@ body > .card {
 }
 .player-table .visible-cards .cards .card:not(:first-child) {
   margin-top: calc(-1 * var(--card-overlap));
-}
-.player-table .destinations {
-  flex-direction: column-reverse;
-  width: 221px;
-}
-.player-table .destinations .card:not(:last-child) {
-  margin-top: calc(-1 * var(--card-overlap));
-}
-.player-table .col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.player-table .col.col2 {
-  display: none;
-}
-
-.double-player-column .cols {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 10px;
-}
-.double-player-column .cols .col2 {
-  display: flex;
 }
 
 .color-help-folded-content {

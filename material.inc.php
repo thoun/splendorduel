@@ -20,32 +20,85 @@
  */
 
 require_once(__DIR__.'/modules/php/constants.inc.php');
-require_once(__DIR__.'/modules/php/objects/token.php');
 require_once(__DIR__.'/modules/php/objects/card.php');
 
-$this->CARDS = [    
-    new CardType(BLUE, VP, [2 => 2, 3 => 3, 4 => 4]),
-    new CardType(BLUE, BRACELET, [2 => 1, 3 => 2, 4 => 2]),
-    new CardType(BLUE, RECRUIT, [2 => 1, 3 => 1, 4 => 1]),
-    new CardType(BLUE, REPUTATION, [2 => 2, 3 => 2, 4 => 3]),
+$this->CARDS = [    // TODO    
+    1 => [ // level 1 cards
+        1 => new CardType(BLUE, [BLUE => 2, RED => 1]),
+        2 => new CardType(BLUE, [BLUE => 2, RED => 1]),
+        new CardType(BLUE, [BLUE => 2, RED => 1]),
+        new CardType(BLUE, [BLUE => 2, RED => 1]),
 
-    new CardType(YELLOW, VP, [2 => 3, 3 => 4, 4 => 5]),
-    new CardType(YELLOW, BRACELET, [2 => 1, 3 => 1, 4 => 2]),
-    new CardType(YELLOW, RECRUIT, [2 => 0, 3 => 1, 4 => 1]),
-    new CardType(YELLOW, REPUTATION, [2 => 2, 3 => 2, 4 => 2]),
+        new CardType(WHITE, [BLUE => 2, RED => 1]),
+        new CardType(WHITE, [BLUE => 2, RED => 1]),
+        new CardType(WHITE, [BLUE => 2, RED => 1]),
+        new CardType(WHITE, [BLUE => 2, RED => 1]),
 
-    new CardType(PURPLE, VP, [2 => 1, 3 => 2, 4 => 4]),
-    new CardType(PURPLE, BRACELET, [2 => 2, 3 => 2, 4 => 2]),
-    new CardType(PURPLE, RECRUIT, [2 => 2, 3 => 2, 4 => 2]),
-    new CardType(PURPLE, REPUTATION, [2 => 1, 3 => 2, 4 => 2]),
+        new CardType(BLACK, [BLUE => 2, RED => 1]),
+        new CardType(BLACK, [BLUE => 2, RED => 1]),
+        new CardType(BLACK, [BLUE => 2, RED => 1]),
+        new CardType(BLACK, [BLUE => 2, RED => 1]),
 
-    new CardType(GREEN, VP, [2 => 2, 3 => 3, 4 => 4]),
-    new CardType(GREEN, BRACELET, [2 => 1, 3 => 1, 4 => 2]),
-    new CardType(GREEN, RECRUIT, [2 => 2, 3 => 3, 4 => 3]),
-    new CardType(GREEN, REPUTATION, [2 => 1, 3 => 1, 4 => 1]),
+        new CardType(GREEN, [BLUE => 2, RED => 1]),
+        new CardType(GREEN, [BLUE => 2, RED => 1]),
+        new CardType(GREEN, [BLUE => 2, RED => 1]),
+        new CardType(GREEN, [BLUE => 2, RED => 1]),
 
-    new CardType(RED, VP, [2 => 3, 3 => 3, 4 => 4]),
-    new CardType(RED, BRACELET, [2 => 2, 3 => 3, 4 => 3]),
-    new CardType(RED, RECRUIT, [2 => 1, 3 => 1, 4 => 2]),
-    new CardType(RED, REPUTATION, [2 => 0, 3 => 1, 4 => 1]),
+        new CardType(RED, [BLUE => 2, RED => 1]),
+        new CardType(RED, [BLUE => 2, RED => 1]),
+        new CardType(RED, [BLUE => 2, RED => 1]),
+        new CardType(RED, [BLUE => 2, RED => 1]),
+    ],    
+    2 => [ // level 2 cards
+        1 => new CardType(BLUE, [BLUE => 2, RED => 1]),
+        new CardType(BLUE, [BLUE => 2, RED => 1]),
+        new CardType(BLUE, [BLUE => 2, RED => 1]),
+        new CardType(BLUE, [BLUE => 2, RED => 1]),
+
+        new CardType(WHITE, [BLUE => 2, RED => 1]),
+        new CardType(WHITE, [BLUE => 2, RED => 1]),
+        new CardType(WHITE, [BLUE => 2, RED => 1]),
+        new CardType(WHITE, [BLUE => 2, RED => 1]),
+
+        new CardType(BLACK, [BLUE => 2, RED => 1]),
+        new CardType(BLACK, [BLUE => 2, RED => 1]),
+        new CardType(BLACK, [BLUE => 2, RED => 1]),
+        new CardType(BLACK, [BLUE => 2, RED => 1]),
+
+        new CardType(GREEN, [BLUE => 2, RED => 1]),
+        new CardType(GREEN, [BLUE => 2, RED => 1]),
+        new CardType(GREEN, [BLUE => 2, RED => 1]),
+        new CardType(GREEN, [BLUE => 2, RED => 1]),
+
+        new CardType(RED, [BLUE => 2, RED => 1]),
+        new CardType(RED, [BLUE => 2, RED => 1]),
+        new CardType(RED, [BLUE => 2, RED => 1]),
+        new CardType(RED, [BLUE => 2, RED => 1]),
+    ],    
+    3 => [ // level 3 cards
+        1 => new CardType(BLUE, [BLUE => 2, RED => 1]),
+        new CardType(BLUE, [BLUE => 2, RED => 1]),
+        new CardType(BLUE, [BLUE => 2, RED => 1]),
+        new CardType(BLUE, [BLUE => 2, RED => 1]),
+
+        new CardType(WHITE, [BLUE => 2, RED => 1]),
+        new CardType(WHITE, [BLUE => 2, RED => 1]),
+        new CardType(WHITE, [BLUE => 2, RED => 1]),
+        new CardType(WHITE, [BLUE => 2, RED => 1]),
+
+        new CardType(BLACK, [BLUE => 2, RED => 1]),
+        new CardType(BLACK, [BLUE => 2, RED => 1]),
+        new CardType(BLACK, [BLUE => 2, RED => 1]),
+        new CardType(BLACK, [BLUE => 2, RED => 1]),
+
+        new CardType(GREEN, [BLUE => 2, RED => 1]),
+        new CardType(GREEN, [BLUE => 2, RED => 1]),
+        new CardType(GREEN, [BLUE => 2, RED => 1]),
+        new CardType(GREEN, [BLUE => 2, RED => 1]),
+
+        new CardType(RED, [BLUE => 2, RED => 1]),
+        new CardType(RED, [BLUE => 2, RED => 1]),
+        new CardType(RED, [BLUE => 2, RED => 1]),
+        new CardType(RED, [BLUE => 2, RED => 1]),
+    ],
 ];

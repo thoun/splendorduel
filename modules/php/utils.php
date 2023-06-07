@@ -1,5 +1,11 @@
 <?php
 
+if (!function_exists('str_contains')) {
+    function str_contains($haystack, $needle) {
+        return $needle !== '' && mb_strpos($haystack, $needle) !== false;
+    }
+}
+
 trait UtilTrait {
 
     //////////////////////////////////////////////////////////////////////////////
@@ -110,37 +116,11 @@ trait UtilTrait {
         ] + $args);
     }
 
-    function incPlayerRecruit(int $playerId, int $amount, $message = '', $args = []) {
-        if ($amount != 0) {
-            $this->DbQuery("UPDATE player SET `player_recruit` = `player_recruit` + $amount WHERE player_id = $playerId");
-        }
-
-        $this->notifyAllPlayers('recruit', $message, [
-            'playerId' => $playerId,
-            'player_name' => $this->getPlayerName($playerId),
-            'newScore' => $this->getPlayer($playerId)->recruit,
-            'incScore' => $amount,
-        ] + $args);
-    }
-
-    function incPlayerBracelet(int $playerId, int $amount, $message = '', $args = []) {
-        if ($amount != 0) {
-            $this->DbQuery("UPDATE player SET `player_bracelet` = `player_bracelet` + $amount WHERE player_id = $playerId");
-        }
-
-        $this->notifyAllPlayers('bracelet', $message, [
-            'playerId' => $playerId,
-            'player_name' => $this->getPlayerName($playerId),
-            'newScore' => $this->getPlayer($playerId)->bracelet,
-            'incScore' => $amount,
-        ] + $args);
-    }
-
     function getCardFromDb(/*array|null*/ $dbCard) {
         if ($dbCard == null) {
             return null;
         }
-        return new Card($dbCard);
+        return new Card($dbCard, $this->CARDS);
     }
 
     function getCardsFromDb(array $dbCards) {
@@ -155,7 +135,7 @@ trait UtilTrait {
     }
 
     function getCardsByLocation(string $location, /*int|null*/ $location_arg = null, /*int|null*/ $type = null, /*int|null*/ $number = null) {
-        $sql = "SELECT * FROM `card` WHERE `card_location` = '$location'";
+        $sql = "SELECT * FROM `card` WHERE `card_location` ".( str_contains($location, '%') ? "LIKE" : "=" )." '$location'";
         if ($location_arg !== null) {
             $sql .= " AND `card_location_arg` = $location_arg";
         }
@@ -174,8 +154,8 @@ trait UtilTrait {
         for ($level = 1; $level <= 3; $level++) {
             $cards = [];
 
-            foreach ($this->CARDS as $cardType) {// TODO    
-                $cards[] = [ 'type' => $cardType->color, 'type_arg' => $cardType->gain, 'nbr' => 2 ];
+            foreach ($this->CARDS[$level] as $index => $cardType) {
+                $cards[] = [ 'type' => $level, 'type_arg' => $index, 'nbr' => 1 ];
             }
 
             $this->cards->createCards($cards, 'deck'.$level);
@@ -218,6 +198,21 @@ trait UtilTrait {
         return $this->getTokensByLocation('board');
     }
 
+    function getPlayerTokens(int $playerId) {
+        return $this->getTokensByLocation('player', $playerId);
+    }
+
+    // gold is -1, pearl is 0, else color index
+    function getPlayerTokensByColor(int $playerId) {
+        $tokens = $this->getPlayerTokens($playerId);
+
+        $tokensByColor = [];
+        foreach ([-1, 0,1,2,3,4,5] as $color) {
+            $tokensByColor[$color] = array_values(array_filter($tokens, fn($token) => $token->type == 1 ? $color == -1 : $token->color == $color));
+        }
+        return $tokensByColor;
+    }
+
     function setupTokens() {
         $cards = [
             [ 'type' => 1, 'type_arg' => 0, 'nbr' => 3 ], // gold
@@ -243,7 +238,6 @@ trait UtilTrait {
         for ($i = 1; $i <= 25; $i++) {
             if ($bagCount > 0 && !$this->array_some($board, fn($token) => $token->locationArg == $i)) {
                 $refilledTokens[] = $this->getTokenFromDb($this->tokens->pickCardForLocation('bag', 'board', $i));
-                // TODO notif
 
                 $bagCount--;
                 if ($bagCount == 0) {
@@ -264,12 +258,13 @@ trait UtilTrait {
     }
 
     function getColorName(int $color) {
-        switch ($color) { // TODO
+        switch ($color) {
+            case PEARL: return clienttranslate("Pearl");
             case BLUE: return clienttranslate("Blue");
-            case YELLOW: return clienttranslate("Yellow");
+            case WHITE: return clienttranslate("White");
             case GREEN: return clienttranslate("Green");
+            case BLACK: return clienttranslate("Black");
             case RED: return clienttranslate("Red");
-            case PURPLE: return clienttranslate("Purple");
         }
     }
     
@@ -298,7 +293,7 @@ trait UtilTrait {
                 throw new BgaUserException("You can only take up to 3 tokens");
             }
 
-            usort($gems, fn($a, $b) => $b->row == $b->row ? $a->column - $b->column : $a->row - $b->row);
+            usort($gems, fn($a, $b) => $a->row == $b->row ? $a->column - $b->column : $a->row - $b->row);
             $rowDiff = null;
             $colDiff = null;
             $invalid = false;
@@ -324,7 +319,7 @@ trait UtilTrait {
     }
 
     function applyTakeTokens(int $playerId, array $tokens) {
-        $this->cards->moveCards(array_map(fn($token) => $token->id, $tokens), 'player', $playerId);
+        $this->tokens->moveCards(array_map(fn($token) => $token->id, $tokens), 'player', $playerId);
 
         self::notifyAllPlayers('takeTokens', clienttranslate('${player_name} takes token(s) ${new_tokens}'), [
             'playerId' => $playerId,
@@ -356,5 +351,59 @@ trait UtilTrait {
     function getEndReason(int $playerId) {
         // TODO
         return 0;
+    }
+
+    function getCardReducedCost(array &$initialCost, array $playerCards) {
+        $cost = $initialCost; // copy
+        
+        foreach($playerCards as $card) {
+            foreach($card->produces as $color => $count) {
+                if ($color == MULTICOLOR) {
+                    $color = intval(substr($card->location, -1));
+                }
+                if (array_key_exists($color, $cost)) {
+                    if ($cost[$color] > $count) {
+                        $cost[$color] -= $count;
+                    } else {
+                        unset($cost[$color]);
+                    }
+                } 
+            }
+        }
+
+        return $cost;
+    }
+
+    function canBuyCard(Card &$card, array $playerTokensByColor, array $playerCards) {
+        $gold = count($playerTokensByColor[-1]);
+        $cost = $this->getCardReducedCost($card->cost, $playerCards);
+
+        foreach($cost as $color => $number) {
+            if ($number > count($playerTokensByColor[$color])) {
+                $cost[$color] -= count($playerTokensByColor[$color]);
+            } else {
+                $cost[$color] = 0;
+            }
+        }
+
+        $remainingTokensCount = array_reduce($cost, fn($a, $b) => $a + $b, 0);
+
+        return $gold >= $remainingTokensCount;
+    }
+
+
+    function getBuyableCards(int $playerId) {
+        $tokens = $this->getPlayerTokensByColor($playerId);
+        $cards = $this->getCardsByLocation('player'.$playerId.'-%');
+        $gold = count($tokens[-1]);
+
+        $possibleCards = array_merge(
+            $this->getCardsByLocation('reserved', $playerId),
+            $this->getCardsByLocation('table%'),
+        );
+
+        $buyableCards = array_values(array_filter($possibleCards, fn($card) => $this->canBuyCard($card, $tokens, $cards)));
+
+        return $buyableCards;
     }
 }

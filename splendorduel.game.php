@@ -180,7 +180,7 @@ class SplendorDuel extends Table {
         
         foreach($result['players'] as $playerId => &$player) {
             $player['playerNo'] = intval($player['playerNo']);
-            $player['tokens'] = $this->getTokensByLocation('player', $playerId);
+            $player['tokens'] = $this->getPlayerTokens($playerId);
             $player['privileges'] = intval($player['privileges']);
 
             $player['reservedCount'] = intval($this->cards->countCardInLocation('reserved', $playerId));
@@ -188,6 +188,8 @@ class SplendorDuel extends Table {
             if ($currentPlayerId == $playerId) {
                 $player['reserved'] = $this->getCardsByLocation('reserved', $playerId);
             }
+
+            $player['cards'] = $this->getCardsByLocation('player'.$playerId.'-%');
         }
 
         $result['board'] = $this->getBoard();

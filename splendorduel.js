@@ -2001,14 +2001,15 @@ var CardsManager = /** @class */ (function (_super) {
             getId: function (card) { return "card-".concat(card.id); },
             setupDiv: function (card, div) {
                 div.classList.add('splendorduel-card');
-                div.dataset.cardId = '' + card.id;
+                div.dataset.level = '' + card.level;
             },
             setupFrontDiv: function (card, div) {
-                div.dataset.color = '' + card.color;
-                div.dataset.gain = '' + card.gain;
-                game.setTooltip(div.id, _this.getTooltip(card));
+                div.dataset.index = '' + card.index;
+                if (card.index > 0) {
+                    game.setTooltip(div.id, _this.getTooltip(card));
+                }
             },
-            isCardVisible: function (card) { return Boolean(card.color); },
+            isCardVisible: function (card) { return Boolean(card.index); },
             cardWidth: 120,
             cardHeight: 221,
         }) || this;
@@ -2016,7 +2017,7 @@ var CardsManager = /** @class */ (function (_super) {
         return _this;
     }
     CardsManager.prototype.getTooltip = function (card) {
-        var message = "\n        <strong>".concat(_("Color:"), "</strong> ").concat(this.game.getColor(card.color), "\n        <br>\n        <strong>").concat(_("Gain:"), "</strong> <strong>1</strong> ").concat(card.gain, "\n        ");
+        var message = "\n        <strong>".concat(_("Level:"), "</strong> ").concat(card.level, "\n\n        <strong>").concat(_("Color:"), "</strong> ").concat(this.game.getColor(card.color), "\n        <br>\n        <strong>").concat(_("Cost:"), "</strong> ").concat(JSON.stringify(card.cost), "\n        <br>\n        <strong>").concat(_("Provides:"), "</strong> ").concat(JSON.stringify(card.provides), "\n        <br>\n        <strong>").concat(_("Crowns:"), "</strong> ").concat(card.crowns, "\n        <br>\n        <strong>").concat(_("Power:"), "</strong> ").concat(card.power, "\n        ");
         return message;
     };
     return CardsManager;
@@ -2276,6 +2277,9 @@ var TableCenter = /** @class */ (function () {
     };
     TableCenter.prototype.reserveCard = function (args) {
         this.game.cardsManager.removeCard(args.card);
+        this.replaceCard(args);
+    };
+    TableCenter.prototype.replaceCard = function (args) {
         if (args.newCard) {
             this.cards[args.level].addCard(args.newCard);
         }
@@ -2288,6 +2292,7 @@ var isDebug = window.location.host == 'studio.boardgamearena.com' || window.loca
 var log = isDebug ? console.log.bind(window.console) : function () { };
 var PlayerTable = /** @class */ (function () {
     function PlayerTable(game, player) {
+        var _this = this;
         this.game = game;
         this.played = [];
         this.limitSelection = null;
@@ -2297,48 +2302,36 @@ var PlayerTable = /** @class */ (function () {
         if (this.currentPlayer) {
             html += "\n            <div class=\"block-with-text hand-wrapper\">\n                <div class=\"block-label\">".concat(_('Your hand'), "</div>\n                <div id=\"player-table-").concat(this.playerId, "-hand\" class=\"hand cards\"></div>\n            </div>");
         }
-        html += "\n            <div id=\"player-table-".concat(this.playerId, "-destinations\" class=\"destinations\"></div>\n            \n            </div>\n            <div class=\"visible-cards\">");
+        html += "\n            <div id=\"player-table-".concat(this.playerId, "-tokens\" class=\"tokens\"></div>\n            \n            <div class=\"visible-cards\">");
         for (var i = 1; i <= 5; i++) {
             html += "\n                <div id=\"player-table-".concat(this.playerId, "-played-").concat(i, "\" class=\"cards\"></div>\n                ");
         }
         html += "\n            </div>\n            \n        </div>\n        ";
         dojo.place(html, document.getElementById('tables'));
-        /*if (this.currentPlayer) {
-            const handDiv = document.getElementById(`player-table-${this.playerId}-hand`);
-            this.hand = new LineStock<Card>(this.game.cardsManager, handDiv, {
-                sort: (a: Card, b: Card) => a.color == b.color ? a.gain - b.gain : a.color - b.color,
-            });
-            this.hand.onCardClick = (card: Card) => this.game.onHandCardClick(card);
-            
-            this.hand.addCards(player.hand);
-
+        if (this.currentPlayer) {
+            var handDiv = document.getElementById("player-table-".concat(this.playerId, "-hand"));
+            this.hand = new LineStock(this.game.cardsManager, handDiv);
+            this.hand.onCardClick = function (card) { return _this.game.onReservedCardClick(card); };
+            this.hand.addCards(player.reserved);
         }
-        this.voidStock = new VoidStock<Card>(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-name`));
-                
-        for (let i = 1; i <= 5; i++) {
-            const playedDiv = document.getElementById(`player-table-${this.playerId}-played-${i}`);
-            this.played[i] = new LineStock<Card>(this.game.cardsManager, playedDiv, {
+        this.voidStock = new VoidStock(this.game.cardsManager, document.getElementById("player-table-".concat(this.playerId, "-name")));
+        var _loop_3 = function (i) {
+            var playedDiv = document.getElementById("player-table-".concat(this_1.playerId, "-played-").concat(i));
+            this_1.played[i] = new LineStock(this_1.game.cardsManager, playedDiv, {
                 direction: 'column',
                 center: false,
             });
-            this.played[i].onCardClick = card => {
-                this.game.onPlayedCardClick(card);
-                if (this.limitSelection !== null) {
-                    this.updateSelectable();
-                }
-            }
-            this.played[i].addCards(player.playedCards[i]);
+            this_1.played[i].addCards(player.cards.filter(function (card) { return Number(card.location.slice(-1)) == i; }));
             playedDiv.style.setProperty('--card-overlap', '195px');
+        };
+        var this_1 = this;
+        for (var i = 1; i <= 5; i++) {
+            _loop_3(i);
         }
-        
-        const destinationsDiv = document.getElementById(`player-table-${this.playerId}-destinations`);
-        this.destinations = new LineStock<Token>(this.game.tokensManager, destinationsDiv, {
+        this.tokens = new LineStock(this.game.tokensManager, document.getElementById("player-table-".concat(this.playerId, "-tokens")), {
             center: false,
         });
-        destinationsDiv.style.setProperty('--card-overlap', '94px');
-        
-        this.destinations.addCards(player.destinations);
-        */
+        this.tokens.addCards(player.tokens);
     }
     PlayerTable.prototype.updateCounter = function (type, count) {
         document.getElementById("player-table-".concat(this.playerId, "-boat")).dataset[type] = '' + count;
@@ -2348,74 +2341,15 @@ var PlayerTable = /** @class */ (function () {
             fromElement: fromElement
         });
     };
-    PlayerTable.prototype.setHandSelectable = function (selectable) {
+    PlayerTable.prototype.setHandSelectable = function (selectable, buyableCards) {
+        if (buyableCards === void 0) { buyableCards = null; }
         this.hand.setSelectionMode(selectable ? 'single' : 'none');
-    };
-    PlayerTable.prototype.setCardsSelectable = function (selectable, cost) {
-        if (cost === void 0) { cost = null; }
-        var colors = cost == null ? [] : Object.keys(cost).map(function (key) { return Number(key); });
-        var equalOrDifferent = cost == null ? false : [EQUAL, DIFFERENT].includes(colors[0]);
-        this.limitSelection = equalOrDifferent ? colors[0] : null;
-        for (var i = 1; i <= 5; i++) {
-            this.played[i].setSelectionMode(selectable ? 'multiple' : 'none');
-            if (selectable) {
-                var selectableCards = this.played[i].getCards().filter(function (card) {
-                    var disabled = !selectable || cost == null;
-                    if (!disabled) {
-                        if (colors.length != 1 || (colors.length == 1 && !equalOrDifferent)) {
-                            disabled = !colors.includes(card.color);
-                        }
-                    }
-                    return !disabled;
-                });
-                this.played[i].setSelectableCards(selectableCards);
-            }
+        if (selectable) {
+            this.hand.setSelectableCards(buyableCards);
         }
     };
-    PlayerTable.prototype.getSelectedCards = function () {
-        var cards = [];
-        for (var i = 1; i <= 5; i++) {
-            cards.push.apply(cards, this.played[i].getSelection());
-        }
-        return cards;
-    };
-    PlayerTable.prototype.reserveDestination = function (token) {
-        return this.reservedDestinations.addCard(token);
-    };
-    PlayerTable.prototype.setDestinationsSelectable = function (selectable, selectableCards) {
-        if (selectableCards === void 0) { selectableCards = null; }
-        if (!this.reservedDestinations) {
-            return;
-        }
-        this.reservedDestinations.setSelectionMode(selectable ? 'single' : 'none');
-        this.reservedDestinations.setSelectableCards(selectableCards);
-    };
-    PlayerTable.prototype.showColumns = function (number) {
-        if (number > 0) {
-            document.getElementById("player-table-".concat(this.playerId, "-boat")).style.setProperty('--column-height', "".concat(35 * (this.destinations.getCards().length + 1), "px"));
-        }
-        for (var i = 1; i <= 3; i++) {
-            document.getElementById("player-table-".concat(this.playerId, "-column").concat(i)).classList.toggle('highlight', i <= number);
-        }
-    };
-    PlayerTable.prototype.updateSelectable = function () {
-        var _this = this;
-        var selectedCards = this.getSelectedCards();
-        var selectedColors = selectedCards.map(function (card) { return card.color; });
-        var color = selectedCards.length ? selectedCards[0].color : null;
-        for (var i = 1; i <= 5; i++) {
-            var selectableCards = this.played[i].getCards().filter(function (card) {
-                var disabled = false;
-                if (_this.limitSelection === DIFFERENT) {
-                    disabled = selectedColors.includes(card.color) && !selectedCards.includes(card);
-                }
-                else if (_this.limitSelection === EQUAL) {
-                    disabled = color !== null && card.color != color;
-                }
-                return !disabled;
-            });
-            this.played[i].setSelectableCards(selectableCards);
-        }
+    PlayerTable.prototype.addCard = function (card) {
+        this.played[Number(card.location.slice(-1))].addCard(card);
     };
     return PlayerTable;
 }());
@@ -2539,6 +2473,7 @@ var SplendorDuel = /** @class */ (function () {
             }
             if (args.canBuyCard) {
                 this.tableCenter.setCardsSelectable(true, args.buyableCards);
+                this.getCurrentPlayerTable().setHandSelectable(true, args.buyableCards);
             }
         }
     };
@@ -2555,8 +2490,10 @@ var SplendorDuel = /** @class */ (function () {
         }
     };
     SplendorDuel.prototype.onLeavingPlayAction = function () {
+        var _a;
         this.tableCenter.setBoardSelectable(null);
         this.tableCenter.setCardsSelectable(false);
+        (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setHandSelectable(false);
     };
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
     //                        action status bar (ie: the HTML links in the status bar).
@@ -2697,7 +2634,7 @@ var SplendorDuel = /** @class */ (function () {
             this.reserveCard(card.id);
         }
         else {
-            this.chooseNewCard(card.id);
+            this.buyCard(card.id);
         }
     };
     SplendorDuel.prototype.onReservedCardClick = function (card) {
@@ -2741,6 +2678,14 @@ var SplendorDuel = /** @class */ (function () {
             id: id
         });
     };
+    SplendorDuel.prototype.buyCard = function (id) {
+        if (!this.checkAction('buyCard')) {
+            return;
+        }
+        this.takeAction('buyCard', {
+            id: id
+        });
+    };
     SplendorDuel.prototype.discardSelectedTokens = function () {
         if (!this.checkAction('discardTokens')) {
             return;
@@ -2771,6 +2716,7 @@ var SplendorDuel = /** @class */ (function () {
             ['refill', undefined],
             ['takeTokens', ANIMATION_MS],
             ['reserveCard', ANIMATION_MS],
+            ['buyCard', ANIMATION_MS],
         ];
         notifs.forEach(function (notif) {
             dojo.subscribe(notif[0], _this, function (notifDetails) {
@@ -2803,10 +2749,18 @@ var SplendorDuel = /** @class */ (function () {
     };
     SplendorDuel.prototype.notif_takeTokens = function (args) {
         // TODO
+        this.getPlayerTable(args.playerId).tokens.addCards(args.tokens);
     };
     SplendorDuel.prototype.notif_reserveCard = function (args) {
         this.reservedCounters[args.playerId].incValue(1);
         this.tableCenter.reserveCard(args);
+    };
+    SplendorDuel.prototype.notif_buyCard = function (args) {
+        this.reservedCounters[args.playerId].incValue(1);
+        this.getPlayerTable(args.playerId).addCard(args.card);
+        if (!args.fromReserved) {
+            this.tableCenter.replaceCard(args);
+        }
     };
     SplendorDuel.prototype.getColor = function (color) {
         switch (color) {
@@ -2814,7 +2768,7 @@ var SplendorDuel = /** @class */ (function () {
             case 1: return _("Blue");
             case 2: return _("White");
             case 3: return _("Green");
-            case 4: return _("White");
+            case 4: return _("Black");
             case 5: return _("Red");
         }
     };

@@ -7,6 +7,7 @@ interface SplendorDuelPlayer extends Player {
     tokens: Token[];
     privileges: number;
     reservedCount: number;
+    cards: Card[];
     reserved?: Card[];
 }
 
@@ -77,13 +78,21 @@ interface NotifTakeTokensArgs {
     tokens: Token[];
 }
 
-// reserveCard
-interface NotifReserveCardArgs {
+interface NotifNewPlayerCardArgs {
     playerId: number;
     card: Card;
-    fromDeck: boolean;
     newCard: Card | null;
     cardDeckCount: number;
     cardDeckTop: Card | null;
     level: number;
+}
+
+// reserveCard
+interface NotifReserveCardArgs extends NotifNewPlayerCardArgs {
+    fromDeck: boolean;
+}
+
+// buyCard
+interface NotifBuyCardArgs extends NotifNewPlayerCardArgs {
+    fromReserved: boolean;
 }

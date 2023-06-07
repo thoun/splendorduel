@@ -38,4 +38,18 @@ trait ArgsTrait {
             'mustRefill' => $mustRefill,
         ];
     }
+
+    function argPlayAction() {
+        $playerId = intval($this->getActivePlayerId());
+
+        $canTakeTokens = count($this->getBoard()) > 0;
+        $buyableCards = $this->getBuyableCards($playerId);
+        $canBuyCard = count($buyableCards) > 0;
+
+        return [
+            'canTakeTokens' => $canTakeTokens,
+            'canBuyCard' => $canBuyCard,
+            'buyableCards' => $buyableCards,
+        ];
+    }
 } 

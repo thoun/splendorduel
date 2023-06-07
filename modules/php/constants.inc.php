@@ -1,30 +1,18 @@
 <?php
 
 /*
- * Token types
- */
-define('A', 'A');
-define('B', 'B');
-
-/*
  * Color
  */
-define('EQUAL', -1);
-define('DIFFERENT', 0);
-define('RED', 1);
-define('YELLOW', 2);
+define('GOLD', -1);
+define('PEARL', 0);
+define('BLUE', 1);
+define('WHITE', 2);
 define('GREEN', 3);
-define('BLUE', 4);
-define('PURPLE', 5);
+define('BLACK', 4);
+define('RED', 5);
 
-/*
- * Gain
- */
-define('VP', 1);
-define('BRACELET', 2);
-define('RECRUIT', 3);
-define('REPUTATION', 4);
-define('CARD', 5);
+define('GRAY', 9);
+define('MULTICOLOR', 9);
 
 /*
  * State constants

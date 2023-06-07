@@ -81,6 +81,15 @@
 
         self::ajaxResponse();
     }
+
+    public function buyCard() {
+        self::setAjaxMode();     
+
+        $id = self::getArg("id", AT_posint, true);
+        $this->game->buyCard($id);
+
+        self::ajaxResponse();
+    }
   }
   
 

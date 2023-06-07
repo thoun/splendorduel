@@ -66,6 +66,10 @@ class TableCenter {
     public reserveCard(args: NotifReserveCardArgs) {
         this.game.cardsManager.removeCard(args.card);
 
+        this.replaceCard(args);
+    }
+    
+    public replaceCard(args: NotifNewPlayerCardArgs) {
         if (args.newCard) {
             this.cards[args.level].addCard(args.newCard);
         }

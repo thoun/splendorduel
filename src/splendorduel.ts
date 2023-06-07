@@ -154,6 +154,7 @@ class SplendorDuel implements SplendorDuelGame {
             }
             if (args.canBuyCard) {
                 this.tableCenter.setCardsSelectable(true, args.buyableCards);
+                this.getCurrentPlayerTable().setHandSelectable(true, args.buyableCards);
             }
         }
     }
@@ -176,6 +177,7 @@ class SplendorDuel implements SplendorDuelGame {
     private onLeavingPlayAction() {
         this.tableCenter.setBoardSelectable(null);
         this.tableCenter.setCardsSelectable(false);
+        this.getCurrentPlayerTable()?.setHandSelectable(false);
     }
 
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
@@ -384,7 +386,7 @@ class SplendorDuel implements SplendorDuelGame {
         if (this.gamedatas.gamestate.name == 'reserveCard') {
             this.reserveCard(card.id);
         } else {
-            this.chooseNewCard(card.id);
+            this.buyCard(card.id);
         }
     }
 
@@ -440,6 +442,16 @@ class SplendorDuel implements SplendorDuelGame {
         });
     }
   	
+    public buyCard(id: number) {
+        if(!(this as any).checkAction('buyCard')) {
+            return;
+        }
+
+        this.takeAction('buyCard', {
+            id
+        });
+    }
+  	
     public discardSelectedTokens() {
         if(!(this as any).checkAction('discardTokens')) {
             return;
@@ -474,6 +486,7 @@ class SplendorDuel implements SplendorDuelGame {
             ['refill', undefined],
             ['takeTokens', ANIMATION_MS],
             ['reserveCard', ANIMATION_MS],
+            ['buyCard', ANIMATION_MS],
         ];
     
         notifs.forEach((notif) => {
@@ -513,6 +526,7 @@ class SplendorDuel implements SplendorDuelGame {
 
     notif_takeTokens(args: NotifTakeTokensArgs) {
         // TODO
+        this.getPlayerTable(args.playerId).tokens.addCards(args.tokens);
     }
 
     notif_reserveCard(args: NotifReserveCardArgs) {
@@ -520,8 +534,15 @@ class SplendorDuel implements SplendorDuelGame {
 
         this.tableCenter.reserveCard(args);
     }
-    
-    
+
+    notif_buyCard(args: NotifBuyCardArgs) {
+        this.reservedCounters[args.playerId].incValue(1);
+        this.getPlayerTable(args.playerId).addCard(args.card);
+
+        if (!args.fromReserved) {
+            this.tableCenter.replaceCard(args);
+        }
+    }
 
     public getColor(color: number): string {
         switch (color) {
@@ -529,7 +550,7 @@ class SplendorDuel implements SplendorDuelGame {
             case 1: return _("Blue");
             case 2: return _("White");
             case 3: return _("Green");
-            case 4: return _("White");
+            case 4: return _("Black");
             case 5: return _("Red");
         }
     }

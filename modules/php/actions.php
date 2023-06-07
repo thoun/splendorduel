@@ -84,8 +84,7 @@ trait ActionTrait {
             throw new BgaUserException("You must reserve a card from the table or from the decks");
         }
 
-        preg_match('/\d+/', $card->location, $matches);
-        $level = intval($matches[0]);
+        $level = $card->level;
         $fromDeck = str_starts_with($card->location, 'deck');
 
         $message = $fromDeck ?
@@ -101,6 +100,46 @@ trait ActionTrait {
             'player_name' => $this->getPlayerName($playerId),
             'card' => $card,
             'fromDeck' => $fromDeck,
+            'newCard' => $newCard,
+            'cardDeckCount' => intval($this->cards->countCardInLocation('deck'.$level)),
+            'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'.$level))),
+            'level' => $level,
+            'card_level' => $level, // for logs
+        ]);
+
+        $this->applyEndTurn($playerId);
+    }
+
+    public function buyCard(int $id) {
+        self::checkAction('buyCard');
+
+        $playerId = intval($this->getActivePlayerId());
+
+        $card = $this->getCardFromDb($this->cards->getCard($id));
+        $fromReserved = str_starts_with($card->location, 'reserved');
+        if ((!$fromReserved && !str_starts_with($card->location, 'table')) || ($fromReserved && $card->locationArg != $playerId)) {
+            throw new BgaUserException("You must buy a card from the table or from your reserve");
+        }
+
+        $level = $card->level;
+
+        $message = $fromReserved ?
+            clienttranslate('${player_name} buys a level ${card_level} card from the reserved cards') :
+            clienttranslate('${player_name} buys a visible level ${card_level} card');
+
+        $newCard = $fromReserved ? null : $this->getCardFromDb($this->cards->pickCardForLocation('deck'.$level, 'table'.$level, $card->locationArg));
+
+        $location = 'player'.$playerId.'-'.$card->color;
+        $locationArg = intval($this->cards->countCardInLocation($location));
+        $this->cards->moveCard($card->id, $location, $locationArg);
+        $card->location = $location;
+        $card->locationArg = $locationArg;
+        
+        self::notifyAllPlayers('buyCard', $message, [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'card' => $card,
+            'fromReserved' => $fromReserved,
             'newCard' => $newCard,
             'cardDeckCount' => intval($this->cards->countCardInLocation('deck'.$level)),
             'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'.$level))),
