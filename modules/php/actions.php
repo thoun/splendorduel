@@ -42,6 +42,19 @@ trait ActionTrait {
         if ($statedId == ST_PLAYER_USE_PRIVILEGE) {
             $this->gamestate->nextState('next');
         } else if ($statedId == ST_PLAYER_PLAY_ACTION) {
+            $tokensByColor = [];
+            foreach ([PEARL,1,2,3,4,5] as $color) {
+                $tokensByColor[$color] = array_values(array_filter($tokens, fn($token) => $token->type == 1 ? $color == -1 : $token->color == $color));
+            }
+
+            if (count($tokensByColor[PEARL]) >= 2) {
+                $message = clienttranslate('${player_name} took 2 Pearl gems and allow ${player_name2} to get a privilege.');
+                $this->givePrivilegeToOpponent($playerId, $message);
+            } else if ($this->array_some($tokensByColor, fn($colorTokens) => count($colorTokens) >= 3)) {
+                $message = clienttranslate('${player_name} took 3 gems of the same color and allow ${player_name2} to get a privilege.');
+                $this->givePrivilegeToOpponent($playerId, $message);
+            }
+
             if (count($tokens) == 1 && $tokens[0]->type == 1) {
                 $this->gamestate->nextState('reserveCard');
             } else {
@@ -147,6 +160,7 @@ trait ActionTrait {
             'card_level' => $level, // for logs
         ]);
 
+        // TODO redirect to crown or power. Can it be both ?
         $this->applyEndTurn($playerId);
     }
 }
