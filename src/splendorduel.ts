@@ -24,6 +24,7 @@ const CARD = 5;
 class SplendorDuel implements SplendorDuelGame {
     public animationManager: AnimationManager;
     public cardsManager: CardsManager;
+    public royalCardsManager: RoyalCardsManager;
     public tokensManager: TokensManager;
 
     private zoomManager: ZoomManager;
@@ -62,6 +63,7 @@ class SplendorDuel implements SplendorDuelGame {
 
         this.animationManager = new AnimationManager(this);
         this.cardsManager = new CardsManager(this);
+        this.royalCardsManager = new RoyalCardsManager(this);
         this.tokensManager = new TokensManager(this);        
         new JumpToManager(this, {
             localStorageFoldedKey: LOCAL_STORAGE_JUMP_TO_FOLDED_KEY,
@@ -206,9 +208,11 @@ class SplendorDuel implements SplendorDuelGame {
                     break;
                 case 'playAction':
                     (this as any).addActionButton(`takeSelectedTokens_button`, _("Take selected tokens"), () => this.takeSelectedTokens());
+                    document.getElementById(`takeSelectedTokens_button`).classList.add('disabled');
                     break;
                 case 'discardTokens':
                     (this as any).addActionButton(`discardSelectedTokens_button`, _("Discard selected tokens"), () => this.discardSelectedTokens());
+                    document.getElementById(`discardSelectedTokens_button`).classList.add('disabled');
                     break;
                     
             }
@@ -387,6 +391,10 @@ class SplendorDuel implements SplendorDuelGame {
         }
     }
 
+    public onRoyalCardClick(card: RoyalCard): void {
+        this.takeRoyalCard(card.id);
+    }
+
     public onReservedCardClick(card: Card): void {
         /*if (this.gamedatas.gamestate.name == 'discardCard') {
             this.discardCard(card.id);
@@ -445,6 +453,16 @@ class SplendorDuel implements SplendorDuelGame {
         }
 
         this.takeAction('buyCard', {
+            id
+        });
+    }
+  	
+    public takeRoyalCard(id: number) {
+        if(!(this as any).checkAction('takeRoyalCard')) {
+            return;
+        }
+
+        this.takeAction('takeRoyalCard', {
             id
         });
     }

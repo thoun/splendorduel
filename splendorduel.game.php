@@ -146,6 +146,7 @@ class SplendorDuel extends Table {
 
         // setup the initial game situation here
         $this->setupCards();
+        $this->setupRoyalCards();
         $this->setupTokens();
 
         // Activate first player (which is in general a good idea :) )
@@ -190,10 +191,12 @@ class SplendorDuel extends Table {
             }
 
             $player['cards'] = $this->getCardsByLocation('player'.$playerId.'-%');
+            $player['royalCards'] = $this->getCardsByLocation('player', $playerId);
         }
 
         $result['board'] = $this->getBoard();
 
+        $result['royalCards'] = $this->getRoyalCardsByLocation('deck');
         $result['cardDeckCount'] = [];
         $result['cardDeckTop'] = [];
         $result['tableCards'] = [];

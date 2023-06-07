@@ -31,6 +31,7 @@
         "node_modules/bga-cards/src/sort.ts",
         "node_modules/bga-cards/src/card-manager.ts",
         "src/cards.ts",
+        "src/royal-cards.ts",
         "src/tokens.ts",
         "src/token-board.ts",
         "src/table-center.ts",

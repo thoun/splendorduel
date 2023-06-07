@@ -1,0 +1,45 @@
+.royal-card {
+    display: inline-block;
+    position: relative;
+    width: 120px;
+    height: 221px;
+    border-radius: 8px;
+
+    .card-sides {
+        .card-side {
+            border-radius: 8px;
+            background-size: auto 100%;
+            background-image: url('img/cards.jpg');
+
+            &>* {
+                pointer-events: none;
+                user-select: none;
+            }
+        }
+    }    
+
+    &.bga-cards_selectable-card:not(.bga-cards_disabled-card) {
+        &:not(.bga-cards_selected-card) {
+            animation: selectable-card-animation 1s alternate infinite ease-in-out;
+        }
+
+        .card-side {
+            box-shadow: unset;
+        }
+    }
+
+    @for $index from 1 through 4 {
+        &[data-index="#{$index}"] .card-side {
+            background-position-x: #{($index - 1) * 100% / 3};
+        }
+    }
+}
+
+@keyframes selectable-card-animation {
+    0% {
+      box-shadow: 0 0 3px 2px rgb(255, 212, 131);
+    }
+    100% { 
+      box-shadow: 0 0 5px 3px rgb(255, 212, 131);
+    }
+}

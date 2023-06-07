@@ -8,6 +8,7 @@ interface Card {
     cost: number[];
     provides: number[];
     crowns: number;
+    points: number;
     power: number | null;
 }
 
@@ -42,6 +43,8 @@ class CardsManager extends CardManager<Card> {
         <strong>${_("Provides:")}</strong> ${JSON.stringify(card.provides)}
         <br>
         <strong>${_("Crowns:")}</strong> ${card.crowns}
+        <br>
+        <strong>${_("Points:")}</strong> ${card.points}
         <br>
         <strong>${_("Power:")}</strong> ${card.power}
         `;

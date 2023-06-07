@@ -9,6 +9,7 @@ interface SplendorDuelPlayer extends Player {
     reservedCount: number;
     cards: Card[];
     reserved?: Card[];
+    royalCards: RoyalCard[];
 }
 
 interface SplendorDuelGamedatas {
@@ -28,11 +29,13 @@ interface SplendorDuelGamedatas {
     cardDeckCount: { [level: number]: number };
     cardDeckTop: { [level: number]: Card };
     tableCards: { [level: number]: Card[] };
+    royalCards: RoyalCard[];
 }
 
 interface SplendorDuelGame extends Game {
     animationManager: AnimationManager;
     cardsManager: CardsManager;
+    royalCardsManager: RoyalCardsManager;
     tokensManager: TokensManager;
 
     getPlayerId(): number;
@@ -44,6 +47,7 @@ interface SplendorDuelGame extends Game {
     setTooltip(id: string, html: string): void;
     onTokenSelectionChange(tokens: Token[], valid: boolean): void;
     onTableCardClick(card: Card): void;
+    onRoyalCardClick(card: RoyalCard): void;
     onReservedCardClick(card: Card): void;
 }
 

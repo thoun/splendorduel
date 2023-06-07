@@ -2017,10 +2017,35 @@ var CardsManager = /** @class */ (function (_super) {
         return _this;
     }
     CardsManager.prototype.getTooltip = function (card) {
-        var message = "\n        <strong>".concat(_("Level:"), "</strong> ").concat(card.level, "\n\n        <strong>").concat(_("Color:"), "</strong> ").concat(this.game.getColor(card.color), "\n        <br>\n        <strong>").concat(_("Cost:"), "</strong> ").concat(JSON.stringify(card.cost), "\n        <br>\n        <strong>").concat(_("Provides:"), "</strong> ").concat(JSON.stringify(card.provides), "\n        <br>\n        <strong>").concat(_("Crowns:"), "</strong> ").concat(card.crowns, "\n        <br>\n        <strong>").concat(_("Power:"), "</strong> ").concat(card.power, "\n        ");
+        var message = "\n        <strong>".concat(_("Level:"), "</strong> ").concat(card.level, "\n\n        <strong>").concat(_("Color:"), "</strong> ").concat(this.game.getColor(card.color), "\n        <br>\n        <strong>").concat(_("Cost:"), "</strong> ").concat(JSON.stringify(card.cost), "\n        <br>\n        <strong>").concat(_("Provides:"), "</strong> ").concat(JSON.stringify(card.provides), "\n        <br>\n        <strong>").concat(_("Crowns:"), "</strong> ").concat(card.crowns, "\n        <br>\n        <strong>").concat(_("Points:"), "</strong> ").concat(card.points, "\n        <br>\n        <strong>").concat(_("Power:"), "</strong> ").concat(card.power, "\n        ");
         return message;
     };
     return CardsManager;
+}(CardManager));
+var RoyalCardsManager = /** @class */ (function (_super) {
+    __extends(RoyalCardsManager, _super);
+    function RoyalCardsManager(game) {
+        var _this = _super.call(this, game, {
+            getId: function (card) { return "royal-card-".concat(card.id); },
+            setupDiv: function (card, div) {
+                div.classList.add('royal-card');
+                div.dataset.index = '' + card.index;
+            },
+            setupFrontDiv: function (card, div) {
+                game.setTooltip(div.id, _this.getTooltip(card));
+            },
+            isCardVisible: function () { return true; },
+            cardWidth: 120,
+            cardHeight: 221,
+        }) || this;
+        _this.game = game;
+        return _this;
+    }
+    RoyalCardsManager.prototype.getTooltip = function (card) {
+        var message = "\n        <strong>".concat(_("Points:"), "</strong> ").concat(card.points, "\n        <br>\n        <strong>").concat(_("Power:"), "</strong> ").concat(card.power, "\n        ");
+        return message;
+    };
+    return RoyalCardsManager;
 }(CardManager));
 var TokensManager = /** @class */ (function (_super) {
     __extends(TokensManager, _super);
@@ -2249,11 +2274,11 @@ var TableCenter = /** @class */ (function () {
             this.cards[level].onCardClick = function (card) { return _this.game.onTableCardClick(card); };
             this.cards[level].addCards(gamedatas.tableCards[level]);
         }
-        /*this.royalCards = new LineStock<Card>(game.cardsManager, document.getElementById(`royal-cards`), {
+        this.royalCards = new LineStock(game.royalCardsManager, document.getElementById("royal-cards"), {
             center: true,
         });
-        this.royalCards.onCardClick = card => this.game.onRoyalCardClick(card);
-        this.royalCards.addCards(gamedatas.royalCards);*/
+        this.royalCards.onCardClick = function (card) { return _this.game.onRoyalCardClick(card); };
+        this.royalCards.addCards(gamedatas.royalCards);
     }
     TableCenter.prototype.setCardsSelectable = function (selectable, selectableCards, all) {
         if (selectableCards === void 0) { selectableCards = []; }
@@ -2306,7 +2331,7 @@ var PlayerTable = /** @class */ (function () {
         for (var i = 1; i <= 5; i++) {
             html += "\n                <div id=\"player-table-".concat(this.playerId, "-played-").concat(i, "\" class=\"cards\"></div>\n                ");
         }
-        html += "\n            </div>\n            \n        </div>\n        ";
+        html += "\n            </div>\n\n            <div id=\"player-table-".concat(this.playerId, "-royal-cards\"></div>\n            \n        </div>\n        ");
         dojo.place(html, document.getElementById('tables'));
         if (this.currentPlayer) {
             var handDiv = document.getElementById("player-table-".concat(this.playerId, "-hand"));
@@ -2328,6 +2353,8 @@ var PlayerTable = /** @class */ (function () {
         for (var i = 1; i <= 5; i++) {
             _loop_3(i);
         }
+        this.royalCards = new LineStock(this.game.royalCardsManager, document.getElementById("player-table-".concat(this.playerId, "-royal-cards")));
+        this.royalCards.addCards(player.royalCards);
         this.tokens = new LineStock(this.game.tokensManager, document.getElementById("player-table-".concat(this.playerId, "-tokens")), {
             center: false,
         });
@@ -2390,6 +2417,7 @@ var SplendorDuel = /** @class */ (function () {
         log('gamedatas', gamedatas);
         this.animationManager = new AnimationManager(this);
         this.cardsManager = new CardsManager(this);
+        this.royalCardsManager = new RoyalCardsManager(this);
         this.tokensManager = new TokensManager(this);
         new JumpToManager(this, {
             localStorageFoldedKey: LOCAL_STORAGE_JUMP_TO_FOLDED_KEY,
@@ -2521,9 +2549,11 @@ var SplendorDuel = /** @class */ (function () {
                     break;
                 case 'playAction':
                     this.addActionButton("takeSelectedTokens_button", _("Take selected tokens"), function () { return _this.takeSelectedTokens(); });
+                    document.getElementById("takeSelectedTokens_button").classList.add('disabled');
                     break;
                 case 'discardTokens':
                     this.addActionButton("discardSelectedTokens_button", _("Discard selected tokens"), function () { return _this.discardSelectedTokens(); });
+                    document.getElementById("discardSelectedTokens_button").classList.add('disabled');
                     break;
             }
         }
@@ -2635,6 +2665,9 @@ var SplendorDuel = /** @class */ (function () {
             this.buyCard(card.id);
         }
     };
+    SplendorDuel.prototype.onRoyalCardClick = function (card) {
+        this.takeRoyalCard(card.id);
+    };
     SplendorDuel.prototype.onReservedCardClick = function (card) {
         /*if (this.gamedatas.gamestate.name == 'discardCard') {
             this.discardCard(card.id);
@@ -2681,6 +2714,14 @@ var SplendorDuel = /** @class */ (function () {
             return;
         }
         this.takeAction('buyCard', {
+            id: id
+        });
+    };
+    SplendorDuel.prototype.takeRoyalCard = function (id) {
+        if (!this.checkAction('takeRoyalCard')) {
+            return;
+        }
+        this.takeAction('takeRoyalCard', {
             id: id
         });
     };

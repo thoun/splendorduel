@@ -5,8 +5,8 @@
             <div id="table-center">
                 <div id="bag"></div>
                 <div id="board"></div>
-                <div id="royal-cards"></div>
                 <div id="table-cards"></div>
+                <div id="royal-cards"></div>
             </div>
         </div>
         <div id="tables"></div>

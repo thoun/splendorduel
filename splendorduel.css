@@ -839,6 +839,49 @@ body > .card {
     box-shadow: 0 0 5px 3px rgb(255, 212, 131);
   }
 }
+.royal-card {
+  display: inline-block;
+  position: relative;
+  width: 120px;
+  height: 221px;
+  border-radius: 8px;
+}
+.royal-card .card-sides .card-side {
+  border-radius: 8px;
+  background-size: auto 100%;
+  background-image: url("img/cards.jpg");
+}
+.royal-card .card-sides .card-side > * {
+  pointer-events: none;
+  user-select: none;
+}
+.royal-card.bga-cards_selectable-card:not(.bga-cards_disabled-card):not(.bga-cards_selected-card) {
+  animation: selectable-card-animation 1s alternate infinite ease-in-out;
+}
+.royal-card.bga-cards_selectable-card:not(.bga-cards_disabled-card) .card-side {
+  box-shadow: unset;
+}
+.royal-card[data-index="1"] .card-side {
+  background-position-x: 0%;
+}
+.royal-card[data-index="2"] .card-side {
+  background-position-x: 33.3333333333%;
+}
+.royal-card[data-index="3"] .card-side {
+  background-position-x: 66.6666666667%;
+}
+.royal-card[data-index="4"] .card-side {
+  background-position-x: 100%;
+}
+
+@keyframes selectable-card-animation {
+  0% {
+    box-shadow: 0 0 3px 2px rgb(255, 212, 131);
+  }
+  100% {
+    box-shadow: 0 0 5px 3px rgb(255, 212, 131);
+  }
+}
 .token {
   display: inline-block;
   position: relative;

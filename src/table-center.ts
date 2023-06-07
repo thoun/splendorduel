@@ -5,7 +5,7 @@ class TableCenter {
 
     public cardsDecks: Deck<Card>[] = [];
     public cards: SlotStock<Card>[] = [];
-    public royalCards: LineStock<Card>[];
+    public royalCards: LineStock<RoyalCard>;
         
     constructor(private game: SplendorDuelGame, gamedatas: SplendorDuelGamedatas) {
         this.bag = new VoidStock<Token>(game.tokensManager, document.getElementById('bag'));
@@ -36,11 +36,11 @@ class TableCenter {
             this.cards[level].addCards(gamedatas.tableCards[level]);
         }
 
-        /*this.royalCards = new LineStock<Card>(game.cardsManager, document.getElementById(`royal-cards`), {
+        this.royalCards = new LineStock<RoyalCard>(game.royalCardsManager, document.getElementById(`royal-cards`), {
             center: true,
         });
         this.royalCards.onCardClick = card => this.game.onRoyalCardClick(card);
-        this.royalCards.addCards(gamedatas.royalCards);*/
+        this.royalCards.addCards(gamedatas.royalCards);
     }
     
     public setCardsSelectable(selectable: boolean, selectableCards: Card[] = [], all: boolean = false) {

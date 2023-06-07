@@ -21,6 +21,7 @@
 
 require_once(__DIR__.'/modules/php/constants.inc.php');
 require_once(__DIR__.'/modules/php/objects/card.php');
+require_once(__DIR__.'/modules/php/objects/royal-card.php');
 
 $this->CARDS = [    // TODO    
     1 => [ // level 1 cards
@@ -101,4 +102,11 @@ $this->CARDS = [    // TODO
         new CardType(RED, [BLUE => 2, RED => 1]),
         new CardType(RED, [BLUE => 2, RED => 1]),
     ],
+];
+
+$this->ROYAL_CARDS = [
+    1 => new RoyalCardType(2, 1), // TODO
+    2 => new RoyalCardType(2, 1), // TODO
+    3 => new RoyalCardType(2, 1), // TODO
+    4 => new RoyalCardType(2, 1), // TODO
 ];

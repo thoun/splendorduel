@@ -8,6 +8,7 @@ class PlayerTable {
     public played: LineStock<Card>[] = [];
     public tokens: LineStock<Token>;
     public limitSelection: number | null = null;
+    public royalCards: LineStock<RoyalCard>;
 
     private currentPlayer: boolean;
 
@@ -37,6 +38,8 @@ class PlayerTable {
             }
             html += `
             </div>
+
+            <div id="player-table-${this.playerId}-royal-cards"></div>
             
         </div>
         `;
@@ -62,6 +65,9 @@ class PlayerTable {
             this.played[i].addCards(player.cards.filter(card => Number(card.location.slice(-1)) == i));
             playedDiv.style.setProperty('--card-overlap', '195px');
         }
+        
+        this.royalCards = new LineStock<RoyalCard>(this.game.royalCardsManager, document.getElementById(`player-table-${this.playerId}-royal-cards`));
+        this.royalCards.addCards(player.royalCards);
         
         this.tokens = new LineStock<Token>(this.game.tokensManager, document.getElementById(`player-table-${this.playerId}-tokens`), {
             center: false,

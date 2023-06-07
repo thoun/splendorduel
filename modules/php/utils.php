@@ -171,6 +171,37 @@ trait UtilTrait {
         }
     }
 
+    function getRoyalCardFromDb(/*array|null*/ $dbCard) {
+        if ($dbCard == null) {
+            return null;
+        }
+        return new RoyalCard($dbCard, $this->ROYAL_CARDS);
+    }
+
+    function getRoyalCardsFromDb(array $dbCards) {
+        return array_map(fn($dbCard) => $this->getRoyalCardFromDb($dbCard), array_values($dbCards));
+    }
+
+    function getRoyalCardsByLocation(string $location, /*int|null*/ $location_arg = null) {
+        $sql = "SELECT * FROM `royal_card` WHERE `card_location` = '$location'";
+        if ($location_arg !== null) {
+            $sql .= " AND `card_location_arg` = $location_arg";
+        }
+        $sql .= " ORDER BY `card_location_arg`";
+        $dbResults = $this->getCollectionFromDb($sql);
+        return array_map(fn($dbCard) => $this->getRoyalCardFromDb($dbCard), array_values($dbResults));
+    }
+
+    function setupRoyalCards() {     
+            $cards = [];
+
+            foreach ($this->ROYAL_CARDS as $index => $cardType) {
+                $cards[] = [ 'type' => $index, 'type_arg' => 0, 'nbr' => 1 ];
+            }
+
+            $this->royalCards->createCards($cards, 'deck');
+    }
+
     function getTokenFromDb(/*array|null*/ $dbCard) {
         if ($dbCard == null) {
             return null;
