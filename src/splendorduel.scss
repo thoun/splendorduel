@@ -39,21 +39,6 @@ html, .mode_3d #game_play_area_background {
   padding-top: 32px;
 }
 
-#round-counter-row {
-  display: flex;
-  justify-content: center;
-
-  #round-counter-block {
-    background: #FFFFFF99;
-    font-size: 120%;
-    padding: 8px 16px;
-    margin: 0 5px;
-    border-radius: 10px;
-    text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black, 0 0 4px black;
-    color: white;
-  }
-}
-
 .icon {
   display: inline-block;
   width: 32px;
@@ -82,24 +67,6 @@ html, .mode_3d #game_play_area_background {
   }
 }
 
-.color {
-  display: inline-block;
-  width: 32px;
-  height: 32px;
-  background-image: url('img/colors.png');
-  background-size: auto 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-  vertical-align: middle;
-  border-radius: 2px;
-  
-  @for $color from 1 through 5 {
-    &[data-color="#{$color}"] {
-        background-position-x: #{($color - 1) * 100% / 4};
-    }
-  }
-}
-
 .action-button, .log {
   .icon, .color {
     width: 24px;
@@ -114,6 +81,29 @@ html, .mode_3d #game_play_area_background {
   }
 }
 
+.privilege-icon {
+  display: inline-block;
+  width: 19px;
+  height: 57px;
+  background-size: auto 100%;
+  background-image: url('img/privilege.png');
+}
+
+.token-icon {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-size: auto 100%;
+  background-image: url('img/tokens.png');
+  vertical-align: middle;
+
+  @for $type from -1 through 5 {
+    &[data-type="#{$type}"] {
+        background-position-x: #{($type + 1) * 100% / 6};
+    }
+  }
+}
 
 #tables-and-center {
   position: relative;

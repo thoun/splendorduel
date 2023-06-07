@@ -96,6 +96,10 @@ trait UtilTrait {
     function getPlayerPrivileges(int $playerId) {
         return intval(self::getUniqueValueFromDB("SELECT player_privileges FROM player WHERE player_id = $playerId"));
     }
+    
+    function getOpponentId(int $playerId) {
+        return intval(self::getUniqueValueFromDB("SELECT player_id FROM player WHERE player_id <> $playerId"));
+    }
 
     function getPlayer(int $id) {
         $sql = "SELECT * FROM player WHERE player_id = $id";

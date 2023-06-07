@@ -915,6 +915,8 @@ body > .card {
   display: grid;
   grid-template-rows: repeat(5, 1fr);
   grid-template-columns: repeat(5, 1fr);
+  background: url("img/board.jpg");
+  background-size: cover;
 }
 #table-center #board .slot {
   width: 80px;
@@ -1107,20 +1109,6 @@ html, .mode_3d #game_play_area_background {
   padding-top: 32px;
 }
 
-#round-counter-row {
-  display: flex;
-  justify-content: center;
-}
-#round-counter-row #round-counter-block {
-  background: rgba(255, 255, 255, 0.6);
-  font-size: 120%;
-  padding: 8px 16px;
-  margin: 0 5px;
-  border-radius: 10px;
-  text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black, 0 0 4px black;
-  color: white;
-}
-
 .icon {
   display: inline-block;
   width: 32px;
@@ -1148,33 +1136,6 @@ html, .mode_3d #game_play_area_background {
   background-position-x: 100%;
 }
 
-.color {
-  display: inline-block;
-  width: 32px;
-  height: 32px;
-  background-image: url("img/colors.png");
-  background-size: auto 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-  vertical-align: middle;
-  border-radius: 2px;
-}
-.color[data-color="1"] {
-  background-position-x: 0%;
-}
-.color[data-color="2"] {
-  background-position-x: 25%;
-}
-.color[data-color="3"] {
-  background-position-x: 50%;
-}
-.color[data-color="4"] {
-  background-position-x: 75%;
-}
-.color[data-color="5"] {
-  background-position-x: 100%;
-}
-
 .action-button .icon, .action-button .color, .log .icon, .log .color {
   width: 24px;
   height: 24px;
@@ -1183,6 +1144,45 @@ html, .mode_3d #game_play_area_background {
 .dijitTooltipContents .icon, .dijitTooltipContents .color {
   width: 20px;
   height: 20px;
+}
+
+.privilege-icon {
+  display: inline-block;
+  width: 19px;
+  height: 57px;
+  background-size: auto 100%;
+  background-image: url("img/privilege.png");
+}
+
+.token-icon {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-size: auto 100%;
+  background-image: url("img/tokens.png");
+  vertical-align: middle;
+}
+.token-icon[data-type="-1"] {
+  background-position-x: 0%;
+}
+.token-icon[data-type="0"] {
+  background-position-x: 16.6666666667%;
+}
+.token-icon[data-type="1"] {
+  background-position-x: 33.3333333333%;
+}
+.token-icon[data-type="2"] {
+  background-position-x: 50%;
+}
+.token-icon[data-type="3"] {
+  background-position-x: 66.6666666667%;
+}
+.token-icon[data-type="4"] {
+  background-position-x: 83.3333333333%;
+}
+.token-icon[data-type="5"] {
+  background-position-x: 100%;
 }
 
 #tables-and-center {

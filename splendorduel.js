@@ -2581,9 +2581,7 @@ var SplendorDuel = /** @class */ (function () {
         var _this = this;
         Object.values(gamedatas.players).forEach(function (player) {
             var playerId = Number(player.id);
-            /*
-                */
-            var html = "<div class=\"counters\">\n            \n                <div id=\"privilege-counter-wrapper-".concat(player.id, "\" class=\"privilege-counter\">\n                    <div class=\"privilege icon\"></div>\n                    <span id=\"privilege-counter-").concat(player.id, "\"></span>\n                </div>\n\n                <div id=\"reserved-counter-wrapper-").concat(player.id, "\" class=\"reserved-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"reserved-counter-").concat(player.id, "\"></span>\n                </div>\n            </div>");
+            var html = "<div class=\"counters\">            \n                <div id=\"privilege-counter-wrapper-".concat(player.id, "\" class=\"privilege-counter\">\n                    <div class=\"privilege-icon\"></div>\n                    <span id=\"privilege-counter-").concat(player.id, "\"></span>\n                </div>\n\n                <div id=\"reserved-counter-wrapper-").concat(player.id, "\" class=\"reserved-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"reserved-counter-").concat(player.id, "\"></span>\n                </div>\n            </div>");
             dojo.place(html, "player_board_".concat(player.id));
             var reservedCounter = new ebg.counter();
             reservedCounter.create("reserved-counter-".concat(playerId));
@@ -2775,14 +2773,15 @@ var SplendorDuel = /** @class */ (function () {
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */
     SplendorDuel.prototype.format_string_recursive = function (log, args) {
+        console.log(log, args);
         try {
             if (log && args && !args.processed) {
-                if (args.gains && (typeof args.gains !== 'string' || args.gains[0] !== '<')) {
-                    var entries = Object.entries(args.gains);
-                    args.gains = entries.length ? entries.map(function (entry) { return "<strong>".concat(entry[1], "</strong> <div class=\"icon\" data-type=\"").concat(entry[0], "\"></div>"); }).join(' ') : "<strong>".concat(_('nothing'), "</strong>");
+                console.log(args.new_tokens, (typeof args.new_tokens));
+                if (args.new_tokens && (typeof args.new_tokens !== 'string' || args.new_tokens[0] !== '<')) {
+                    args.new_tokens = args.new_tokens.map(function (token) { return "<div class=\"token-icon\" data-type=\"".concat(token.type == 1 ? -1 : token.color, "\"></div>"); }).join(' ');
                 }
                 for (var property in args) {
-                    if (['number', 'color', 'card_color', 'card_type'].includes(property) && args[property][0] != '<') {
+                    if (['card_level'].includes(property) && args[property][0] != '<') {
                         args[property] = "<strong>".concat(_(args[property]), "</strong>");
                     }
                 }

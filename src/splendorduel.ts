@@ -282,12 +282,9 @@ class SplendorDuel implements SplendorDuelGame {
         Object.values(gamedatas.players).forEach(player => {
             const playerId = Number(player.id);
 
-            /*
-                */
-            let html = `<div class="counters">
-            
+            let html = `<div class="counters">            
                 <div id="privilege-counter-wrapper-${player.id}" class="privilege-counter">
-                    <div class="privilege icon"></div>
+                    <div class="privilege-icon"></div>
                     <span id="privilege-counter-${player.id}"></span>
                 </div>
 
@@ -558,15 +555,16 @@ class SplendorDuel implements SplendorDuelGame {
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */
     public format_string_recursive(log: string, args: any) {
+        console.log(log, args);
         try {
             if (log && args && !args.processed) {
-                if (args.gains && (typeof args.gains !== 'string' || args.gains[0] !== '<')) {
-                    const entries = Object.entries(args.gains);
-                    args.gains = entries.length ? entries.map(entry => `<strong>${entry[1]}</strong> <div class="icon" data-type="${entry[0]}"></div>`).join(' ') : `<strong>${_('nothing')}</strong>`;
+                console.log(args.new_tokens, (typeof args.new_tokens));
+                if (args.new_tokens && (typeof args.new_tokens !== 'string' || args.new_tokens[0] !== '<')) {
+                    args.new_tokens = args.new_tokens.map(token => `<div class="token-icon" data-type="${token.type == 1 ? -1 : token.color}"></div>`).join(' ');
                 }
 
                 for (const property in args) {
-                    if (['number', 'color', 'card_color', 'card_type'].includes(property) && args[property][0] != '<') {
+                    if (['card_level'].includes(property) && args[property][0] != '<') {
                         args[property] = `<strong>${_(args[property])}</strong>`;
                     }
                 }
