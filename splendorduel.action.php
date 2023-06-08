@@ -90,6 +90,15 @@
 
         self::ajaxResponse();
     }
+
+    public function takeRoyalCard() {
+        self::setAjaxMode();     
+
+        $id = self::getArg("id", AT_posint, true);
+        $this->game->takeRoyalCard($id);
+
+        self::ajaxResponse();
+    }
   }
   
 

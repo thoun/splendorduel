@@ -164,4 +164,25 @@ trait ActionTrait {
 
         $this->applyEndTurn($playerId, $card);
     }
+
+    public function takeRoyalCard(int $id) {
+        self::checkAction('takeRoyalCard');
+
+        $playerId = intval($this->getActivePlayerId());
+
+        $card = $this->getRoyalCardFromDb($this->royalCards->getCard($id));
+        if ($card->location != 'deck') {
+            throw new BgaUserException("You must take a royal card from the table");
+        }
+
+        $this->cards->moveCard($card->id, 'player', $playerId);
+        
+        self::notifyAllPlayers('takeRoyalCard', clienttranslate('${player_name} takes a royal card'), [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'card' => $card,
+        ]);
+
+        $this->applyEndTurn($playerId, $card);
+    }
 }

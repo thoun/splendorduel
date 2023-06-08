@@ -93,7 +93,11 @@ class PlayerTable {
         }
     }    
     
-    public addCard(card: Card) {
-        this.played[Number(card.location.slice(-1))].addCard(card);
+    public addCard(card: Card): Promise<any> {
+        return this.played[Number(card.location.slice(-1))].addCard(card);
+    }
+
+    public addRoyalCard(card: RoyalCard): Promise<any> {
+        return this.royalCards.addCard(card);
     }
 }

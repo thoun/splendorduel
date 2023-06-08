@@ -2376,7 +2376,10 @@ var PlayerTable = /** @class */ (function () {
         }
     };
     PlayerTable.prototype.addCard = function (card) {
-        this.played[Number(card.location.slice(-1))].addCard(card);
+        return this.played[Number(card.location.slice(-1))].addCard(card);
+    };
+    PlayerTable.prototype.addRoyalCard = function (card) {
+        return this.royalCards.addCard(card);
     };
     return PlayerTable;
 }());
@@ -2755,7 +2758,8 @@ var SplendorDuel = /** @class */ (function () {
             ['refill', undefined],
             ['takeTokens', ANIMATION_MS],
             ['reserveCard', ANIMATION_MS],
-            ['buyCard', ANIMATION_MS],
+            ['buyCard', undefined],
+            ['takeRoyalCard', undefined],
             ['win', 1],
         ];
         notifs.forEach(function (notif) {
@@ -2797,10 +2801,14 @@ var SplendorDuel = /** @class */ (function () {
     };
     SplendorDuel.prototype.notif_buyCard = function (args) {
         this.reservedCounters[args.playerId].incValue(1);
-        this.getPlayerTable(args.playerId).addCard(args.card);
+        var promise = this.getPlayerTable(args.playerId).addCard(args.card);
         if (!args.fromReserved) {
             this.tableCenter.replaceCard(args);
         }
+        return promise;
+    };
+    SplendorDuel.prototype.notif_takeRoyalCard = function (args) {
+        return this.getPlayerTable(args.playerId).addRoyalCard(args.card);
     };
     SplendorDuel.prototype.notif_win = function (args) {
         this.setScore(args.playerId, 1);

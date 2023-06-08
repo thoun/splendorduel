@@ -114,12 +114,12 @@ $playerActionsGameStates = [
 
     ST_PLAYER_PLAY_ACTION => [
         "name" => "playAction",
-        "description" => clienttranslate('${actplayer} must take token(s) or buy a card'),
-        "descriptionmyturn" => clienttranslate('${you} must take token(s) or buy a card'),
+        "description" => clienttranslate('${actplayer} must take token(s) or purchase a card'),
+        "descriptionmyturn" => clienttranslate('${you} must take token(s) or purchase a card'),
         "descriptionOnlyTokens" => clienttranslate('${actplayer} must take token(s)'),
         "descriptionmyturnOnlyTokens" => clienttranslate('${you} must take token(s)'),
-        "descriptionOnlyBuy" => clienttranslate('${actplayer} must buy a card'),
-        "descriptionmyturnOnlyBuy" => clienttranslate('${you} must buy a card'),
+        "descriptionOnlyBuy" => clienttranslate('${actplayer} must purchase a card'),
+        "descriptionmyturnOnlyBuy" => clienttranslate('${you} must purchase a card'),
         "type" => "activeplayer",
         "args" => "argPlayAction",
         "possibleactions" => [ 
