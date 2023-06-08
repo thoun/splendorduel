@@ -100,6 +100,7 @@ interface NotifReserveCardArgs extends NotifNewPlayerCardArgs {
 // buyCard
 interface NotifBuyCardArgs extends NotifNewPlayerCardArgs {
     fromReserved: boolean;
+    tokens: Token[];
 }   
 
 // takeRoyalCard

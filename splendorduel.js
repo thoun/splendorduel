@@ -2391,6 +2391,9 @@ var PlayerTable = /** @class */ (function () {
     PlayerTable.prototype.addRoyalCard = function (card) {
         return this.royalCards.addCard(card);
     };
+    PlayerTable.prototype.removeTokens = function (tokens) {
+        this.tokens.removeCards(tokens);
+    };
     return PlayerTable;
 }());
 var ANIMATION_MS = 500;
@@ -2815,6 +2818,7 @@ var SplendorDuel = /** @class */ (function () {
         if (!args.fromReserved) {
             this.tableCenter.replaceCard(args);
         }
+        this.getPlayerTable(args.playerId).removeTokens(args.tokens);
         return promise;
     };
     SplendorDuel.prototype.notif_takeRoyalCard = function (args) {
@@ -2838,9 +2842,11 @@ var SplendorDuel = /** @class */ (function () {
     SplendorDuel.prototype.format_string_recursive = function (log, args) {
         try {
             if (log && args && !args.processed) {
-                if (args.new_tokens && (typeof args.new_tokens !== 'string' || args.new_tokens[0] !== '<')) {
-                    args.new_tokens = args.new_tokens.map(function (token) { return "<div class=\"token-icon\" data-type=\"".concat(token.type == 1 ? -1 : token.color, "\"></div>"); }).join(' ');
-                }
+                ['new_tokens', 'spent_tokens'].forEach(function (property) {
+                    if (args[property] && (typeof args[property] !== 'string' || args[property][0] !== '<')) {
+                        args[property] = args[property].map(function (token) { return "<div class=\"token-icon\" data-type=\"".concat(token.type == 1 ? -1 : token.color, "\"></div>"); }).join(' ');
+                    }
+                });
                 for (var property in args) {
                     if (['card_level'].includes(property) && args[property][0] != '<') {
                         args[property] = "<strong>".concat(_(args[property]), "</strong>");

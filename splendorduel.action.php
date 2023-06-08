@@ -86,7 +86,11 @@
         self::setAjaxMode();     
 
         $id = self::getArg("id", AT_posint, true);
-        $this->game->buyCard($id);
+
+        $idsStr = self::getArg( "tokensIds", AT_numberlist, true );
+        $tokensIds = $idsStr == '' ? [] : array_map(fn($str) => intval($str), explode(',', $idsStr));
+
+        $this->game->buyCard($id, $tokensIds);
 
         self::ajaxResponse();
     }

@@ -123,7 +123,7 @@ trait ActionTrait {
         $this->applyEndTurn($playerId);
     }
 
-    public function buyCard(int $id) {
+    public function buyCard(int $id, array $tokensIds) {
         self::checkAction('buyCard');
 
         $playerId = intval($this->getActivePlayerId());
@@ -131,14 +131,37 @@ trait ActionTrait {
         $card = $this->getCardFromDb($this->cards->getCard($id));
         $fromReserved = str_starts_with($card->location, 'reserved');
         if ((!$fromReserved && !str_starts_with($card->location, 'table')) || ($fromReserved && $card->locationArg != $playerId)) {
-            throw new BgaUserException("You must buy a card from the table or from your reserve");
+            throw new BgaUserException("You must purchase a card from the table or from your reserve");
+        }
+
+        $tokens = $this->getTokensFromDb($this->tokens->getCards($tokensIds));
+        if ($this->array_some($tokens, fn($token) => $token->location != 'player' && $token->locationArg != $playerId)) {
+            throw new BgaUserException("You must use you tokens to purchase the card");
+        }
+
+        $playerCards = $this->getCardsByLocation('player'.$playerId.'-%');
+        $tokensByColor = [];
+        foreach ([-1, 0,1,2,3,4,5] as $color) {
+            $tokensByColor[$color] = array_values(array_filter($tokens, fn($token) => $token->type == 1 ? $color == -1 : $token->color == $color));
+        }
+        if (!$this->canBuyCard($card, $tokensByColor, $playerCards)) {
+            throw new BgaUserException("You can't purchase this card with the selected tokens");
         }
 
         $level = $card->level;
+        
 
-        $message = $fromReserved ?
-            clienttranslate('${player_name} buys a level ${card_level} card from the reserved cards') :
-            clienttranslate('${player_name} buys a visible level ${card_level} card');
+        $message = null;
+        
+        if ($fromReserved) {
+            $message = count($tokens) > 0 ? 
+                clienttranslate('${player_name} purchases a level ${card_level} card from the reserved cards with ${spent_tokens}') :
+                clienttranslate('${player_name} purchases a level ${card_level} card from the reserved cards for free');
+        } else {
+            $message = count($tokens) > 0 ? 
+                clienttranslate('${player_name} purchases a visible level with ${spent_tokens}') :
+                clienttranslate('${player_name} purchases a visible level for free');
+        }
 
         $newCard = $fromReserved ? null : $this->getCardFromDb($this->cards->pickCardForLocation('deck'.$level, 'table'.$level, $card->locationArg));
 
@@ -147,6 +170,8 @@ trait ActionTrait {
         $this->cards->moveCard($card->id, $location, $locationArg);
         $card->location = $location;
         $card->locationArg = $locationArg;
+
+        $this->tokens->moveCards($tokensIds, 'bag');
         
         self::notifyAllPlayers('buyCard', $message, [
             'playerId' => $playerId,
@@ -157,10 +182,10 @@ trait ActionTrait {
             'cardDeckCount' => intval($this->cards->countCardInLocation('deck'.$level)),
             'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'.$level))),
             'level' => $level,
+            'tokens' => $tokens, // for logs
             'card_level' => $level, // for logs
+            'spent_tokens' => $tokens, // for logs
         ]);
-
-        // TODO pay cost
 
         $this->applyEndTurn($playerId, $card);
     }

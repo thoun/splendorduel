@@ -100,4 +100,8 @@ class PlayerTable {
     public addRoyalCard(card: RoyalCard): Promise<any> {
         return this.royalCards.addCard(card);
     }
+    
+    public removeTokens(tokens: Token[]) {
+        this.tokens.removeCards(tokens);
+    }
 }

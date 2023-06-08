@@ -560,6 +560,8 @@ class SplendorDuel implements SplendorDuelGame {
             this.tableCenter.replaceCard(args);
         }
 
+        this.getPlayerTable(args.playerId).removeTokens(args.tokens);
+
         return promise
     }
 
@@ -587,9 +589,12 @@ class SplendorDuel implements SplendorDuelGame {
     public format_string_recursive(log: string, args: any) {
         try {
             if (log && args && !args.processed) {
-                if (args.new_tokens && (typeof args.new_tokens !== 'string' || args.new_tokens[0] !== '<')) {
-                    args.new_tokens = args.new_tokens.map(token => `<div class="token-icon" data-type="${token.type == 1 ? -1 : token.color}"></div>`).join(' ');
-                }
+                
+                ['new_tokens', 'spent_tokens'].forEach(property => {                
+                    if (args[property] && (typeof args[property] !== 'string' || args[property][0] !== '<')) {
+                        args[property] = args[property].map(token => `<div class="token-icon" data-type="${token.type == 1 ? -1 : token.color}"></div>`).join(' ');
+                    }
+                });
 
                 for (const property in args) {
                     if (['card_level'].includes(property) && args[property][0] != '<') {
