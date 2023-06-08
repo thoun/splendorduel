@@ -849,7 +849,7 @@ body > .card {
 .royal-card .card-sides .card-side {
   border-radius: 8px;
   background-size: auto 100%;
-  background-image: url("img/cards.jpg");
+  background-image: url("img/royal-cards.jpg");
 }
 .royal-card .card-sides .card-side > * {
   pointer-events: none;

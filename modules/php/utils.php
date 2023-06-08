@@ -364,7 +364,64 @@ trait UtilTrait {
         ]);
     }
 
-    function applyEndTurn(int $playerId) {
+    function applyPower(int $playerId, int $power, int $cardId = -1) {
+        switch ($power) {
+            case POWER_PLAY_AGAIN:
+                $this->setGameStateValue(PLAY_AGAIN, 1);
+                break;
+            case POWER_MULTICOLOR:
+                $this->setGameStateValue(PLAYED_CARD, $cardId);
+                $this->gamestate->jumpToState(ST_PLAYER_PLACE_JOKER);
+                return true;
+            case POWER_TAKE_GEM_FROM_TABLE:
+                $this->setGameStateValue(PLAYED_CARD, $cardId);
+                $this->gamestate->jumpToState(ST_PLAYER_TAKE_BOARD_TOKEN);
+                return true;
+            case POWER_TAKE_PRIVILEGE:
+                $message = $cardId == -1 ?
+                    clienttranslate('${player_name} takes a privilege with the Royal card ability') :
+                    clienttranslate('${player_name} takes a privilege with the played card ability');
+                $this->takePrivilege($playerId, $message);
+                break;
+            case ST_PLAYER_TAKE_OPPONENT_TOKEN:
+                $this->gamestate->jumpToState(ST_PLAYER_TAKE_BOARD_TOKEN);
+                return true;
+        }
+
+        return false;
+    }
+
+    function applyEndTurn(int $playerId, /*?Card | RoyalCard*/ $card = null) {
+        $takeRoyalCard = false;
+
+        if ($card != null) {
+            if (property_exists($card, 'crowns') && $card->crowns > 0) {
+                $cards = $this->getCardsByLocation('player'.$playerId.'-%');
+                $crownsAfter = 0;
+                foreach($cards as $card) {
+                    $crownsAfter += $card->crowns;
+                }
+                $crownsBefore = $crownsAfter - $card->crowns;
+
+                if (($crownsAfter >= 3 && $crownsBefore < 3) || ($crownsAfter >= 6 && $crownsBefore < 6)) {
+                    $takeRoyalCard = true;
+                    $this->setGameStateValue(TAKE_ROYAL_CARD, 1);
+                }
+            }
+
+            if ($card->power != null) {
+                $redirected = $this->applyPower($playerId, $card->power, $card->id);
+                if ($redirected) {
+                    return;
+                }
+            }
+        }
+
+        if ($takeRoyalCard) { // in case we hadn't been redirected to choose column for joker color
+            $this->gamestate->jumpToState(ST_PLAYER_TAKE_ROYAL_CARD);
+            return;
+        }
+
         $mustDiscard = count($this->getTokensByLocation('player', $playerId)) > 10;
 
         $this->gamestate->jumpToState($mustDiscard ? ST_PLAYER_DISCARD_TOKENS : ST_NEXT_PLAYER);
@@ -383,14 +440,14 @@ trait UtilTrait {
         ]);
     }
 
-    function givePrivilegeToOpponent(int $playerId, string $message) {
-        $fromPlayer = $this->getPlayerPrivileges($playerId) >= 3;
-        if ($fromPlayer) {
-            $this->DbQuery("UPDATE player SET `player_privileges` = `player_privileges` - 1 WHERE player_id = $playerId");
+    function takePrivilege(int $playerId, string $message) {
+        $opponentId = $this->getOpponentId($playerId);
+        $fromOpponent = $this->getPlayerPrivileges($opponentId) >= 3;
+        if ($fromOpponent) {
+            $this->DbQuery("UPDATE player SET `player_privileges` = `player_privileges` - 1 WHERE player_id = $opponentId");
         }
 
-        $opponentId = $this->getOpponentId($playerId);
-        $this->DbQuery("UPDATE player SET `player_privileges` = `player_privileges` + 1 WHERE player_id = $opponentId");
+        $this->DbQuery("UPDATE player SET `player_privileges` = `player_privileges` + 1 WHERE player_id = $playerId");
 
         self::notifyAllPlayers('privileges', $message, [
             'playerId' => $playerId,
@@ -414,7 +471,11 @@ trait UtilTrait {
             $crowns += $card->crowns;
             $pointsByColor[intval(substr($card->location, -1))] += $card->points;
         }
-        // TODO add royal cards points
+        
+        $royalCards = $this->getRoyalCardsByLocation('player', $playerId);
+        foreach($royalCards as $royalCard) {
+            $totalPoints += $royalCard->points;
+        }
 
         if ($totalPoints >= 20) {
             return 1;

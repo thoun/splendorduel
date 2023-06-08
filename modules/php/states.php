@@ -60,8 +60,12 @@ trait StateTrait {
             ]);
         }
 
-        $this->activeNextPlayer();
-        $playerId = $this->getActivePlayerId();
+        if (boolval($this->getGameStateValue(PLAY_AGAIN))) {
+            $this->setGameStateValue(PLAY_AGAIN, 0);
+        } else {
+            $this->activeNextPlayer();
+            $playerId = $this->getActivePlayerId();
+        }
 
         $this->giveExtraTime($playerId);
 

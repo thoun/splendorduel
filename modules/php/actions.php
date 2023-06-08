@@ -48,11 +48,11 @@ trait ActionTrait {
             }
 
             if (count($tokensByColor[PEARL]) >= 2) {
-                $message = clienttranslate('${player_name} took 2 Pearl gems and allow ${player_name2} to get a privilege.');
-                $this->givePrivilegeToOpponent($playerId, $message);
+                $message = clienttranslate('${player_name2} took 2 Pearl gems and allow ${player_name} to get a privilege.');
+                $this->takePrivilege($playerId, $message);
             } else if ($this->array_some($tokensByColor, fn($colorTokens) => count($colorTokens) >= 3)) {
-                $message = clienttranslate('${player_name} took 3 gems of the same color and allow ${player_name2} to get a privilege.');
-                $this->givePrivilegeToOpponent($playerId, $message);
+                $message = clienttranslate('${player_name2} took 3 gems of the same color and allow ${player_name} to get a privilege.');
+                $this->takePrivilege($playerId, $message);
             }
 
             if (count($tokens) == 1 && $tokens[0]->type == 1) {
@@ -80,8 +80,8 @@ trait ActionTrait {
 
         $playerId = intval($this->getActivePlayerId());
 
-        $message = clienttranslate('${player_name} chooses to replenish the board and allow ${player_name2} to get a privilege.');
-        $this->givePrivilegeToOpponent($playerId, $message);
+        $message = clienttranslate('${player_name2} chooses to replenish the board and allow ${player_name} to get a privilege.');
+        $this->takePrivilege($playerId, $message);
         $this->refillBag();
 
         $this->gamestate->nextState('next');
@@ -162,7 +162,6 @@ trait ActionTrait {
 
         // TODO pay cost
 
-        // TODO redirect to crown or power. Can it be both ?
-        $this->applyEndTurn($playerId);
+        $this->applyEndTurn($playerId, $card);
     }
 }

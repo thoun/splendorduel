@@ -38,10 +38,6 @@ trait DebugUtilTrait {
     function debugSetPlayerReputation($playerId, $score) {
 		$this->DbQuery("UPDATE player SET `player_reputation` = $score WHERE player_id = $playerId");
     }
-
-    function debugLastTurn() {
-        $this->setGameStateValue(LAST_TURN, 1);
-    }
     
     function debugEmpty() {
 		$this->cards->moveAllCardsInLocation('deck', 'void');

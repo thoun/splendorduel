@@ -15,6 +15,15 @@ define('GRAY', 9);
 define('MULTICOLOR', 9);
 
 /*
+ * Powers
+ */
+define('POWER_PLAY_AGAIN', 1);
+define('POWER_MULTICOLOR', 2);
+define('POWER_TAKE_GEM_FROM_TABLE', 3);
+define('POWER_TAKE_PRIVILEGE', 4);
+define('POWER_TAKE_GEM_FROM_OPPONENT', 5);
+
+/*
  * State constants
  */
 define('ST_BGA_GAME_SETUP', 1);
@@ -47,15 +56,9 @@ define('END_SCORE', 100);
 /*
  * Constants
  */
-define('LAST_TURN', 10);
-define('RECRUIT_DONE', 11);
-define('EXPLORE_DONE', 12);
-define('TRADE_DONE', 15);
-define('GO_DISCARD_TABLE_CARD', 16);
-define('GO_RESERVE', 17);
-define('PLAYED_CARD_COLOR', 20);
-define('SELECTED_DESTINATION', 21);
-define('COMPLETED_LINES', 22);
+define('PLAY_AGAIN', 10);
+define('PLAYED_CARD', 11);
+define('TAKE_ROYAL_CARD', 12);
 
 /*
  * Options
@@ -64,7 +67,5 @@ define('COMPLETED_LINES', 22);
 /*
  * Global variables
  */
-define('REMAINING_CARDS_TO_TAKE', 'RemainingCardsToTake');
-//define('UNDO', 'undo');
 
 ?>

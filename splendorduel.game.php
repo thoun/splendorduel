@@ -47,15 +47,9 @@ class SplendorDuel extends Table {
         parent::__construct();
         
         self::initGameStateLabels([
-            LAST_TURN => LAST_TURN,
-            RECRUIT_DONE => RECRUIT_DONE,
-            EXPLORE_DONE => EXPLORE_DONE,
-            TRADE_DONE => TRADE_DONE,
-            GO_DISCARD_TABLE_CARD => GO_DISCARD_TABLE_CARD,
-            GO_RESERVE => GO_RESERVE,
-            PLAYED_CARD_COLOR => PLAYED_CARD_COLOR,
-            SELECTED_DESTINATION => SELECTED_DESTINATION,
-            COMPLETED_LINES => COMPLETED_LINES,
+            PLAY_AGAIN => PLAY_AGAIN,
+            PLAYED_CARD => PLAYED_CARD,
+            TAKE_ROYAL_CARD => TAKE_ROYAL_CARD,
         ]);   
 		
         $this->cards = $this->getNew("module.common.deck");
@@ -112,14 +106,10 @@ class SplendorDuel extends Table {
         /************ Start the game initialization *****/
 
         // Init global values with their initial values
-        $this->setGameStateInitialValue(LAST_TURN, 0);
-        $this->setGameStateInitialValue(RECRUIT_DONE, 0);
-        $this->setGameStateInitialValue(EXPLORE_DONE, 0);
-        $this->setGameStateInitialValue(TRADE_DONE, 0);
-        $this->setGameStateInitialValue(PLAYED_CARD_COLOR, 0);
-        $this->setGameStateInitialValue(GO_DISCARD_TABLE_CARD, 0);
-        $this->setGameStateInitialValue(GO_RESERVE, 0);
-        
+        $this->setGameStateInitialValue(PLAY_AGAIN, 0);
+        $this->setGameStateInitialValue(PLAYED_CARD, 0);
+        $this->setGameStateInitialValue(TAKE_ROYAL_CARD, 0);
+
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
         $this->initStat('table', 'roundNumber', 0);

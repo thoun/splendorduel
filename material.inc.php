@@ -105,8 +105,8 @@ $this->CARDS = [    // TODO
 ];
 
 $this->ROYAL_CARDS = [
-    1 => new RoyalCardType(2, 1), // TODO
-    2 => new RoyalCardType(2, 1), // TODO
-    3 => new RoyalCardType(2, 1), // TODO
-    4 => new RoyalCardType(2, 1), // TODO
+    1 => new RoyalCardType(2, POWER_PLAY_AGAIN),
+    2 => new RoyalCardType(2, POWER_TAKE_PRIVILEGE),
+    3 => new RoyalCardType(3),
+    4 => new RoyalCardType(2, POWER_TAKE_GEM_FROM_OPPONENT),
 ];
