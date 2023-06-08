@@ -62,6 +62,7 @@ interface EnteringRefillBoardArgs {
 
 interface EnteringPlayActionArgs {
     canTakeTokens: boolean;
+    canReserve: boolean;
     canBuyCard: boolean;
     buyableCards: Card[];
 }

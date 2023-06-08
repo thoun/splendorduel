@@ -59,8 +59,8 @@ class TableCenter {
         return this.board.refill(refilledTokens);
     }
     
-    public setBoardSelectable(selectionType: 'privileges' | 'play' | 'effect' | null, max: number = 3, color: number = null) {
-        this.board.setSelectable(selectionType, max, color);
+    public setBoardSelectable(selectionType: 'privileges' | 'play' | 'effect' | null, canTakeGold: boolean = false, max: number = 3, color: number = null) {
+        this.board.setSelectable(selectionType, canTakeGold, max, color);
     }
     
     public reserveCard(args: NotifReserveCardArgs) {

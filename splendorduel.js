@@ -2092,18 +2092,27 @@ var TokenBoard = /** @class */ (function () {
         this.stock.addCards(board);
         this.stock.onSelectionChange = function (selection, lastChange) { return _this.onTokenSelectionChange(selection, lastChange); };
     }
-    TokenBoard.prototype.setSelectable = function (selectionType, max, color) {
+    TokenBoard.prototype.getDefaultPossibleSelection = function () {
+        var _this = this;
+        var possibleSelection = this.stock.getCards();
+        if (!this.canTakeGold) {
+            possibleSelection = possibleSelection.filter(function (card) { return card.type == 2; });
+        }
+        if (this.selectionColor != null) {
+            possibleSelection = possibleSelection.filter(function (card) { return card.color == _this.selectionColor; });
+        }
+        return possibleSelection;
+    };
+    TokenBoard.prototype.setSelectable = function (selectionType, canTakeGold, max, color) {
         if (max === void 0) { max = 3; }
         if (color === void 0) { color = null; }
         this.stock.setSelectionMode(selectionType ? 'multiple' : 'none');
         this.maxSelectionToken = max;
         this.selectionType = selectionType;
         this.selectionColor = color;
+        this.canTakeGold = canTakeGold;
         if (selectionType === 'privileges') {
-            this.stock.setSelectableCards(this.stock.getCards().filter(function (card) { return card.type == 2; }));
-        }
-        else if (selectionType === 'effect') {
-            this.stock.setSelectableCards(this.stock.getCards().filter(function (card) { return card.type == 2 && card.color == color; }));
+            this.stock.setSelectableCards(this.getDefaultPossibleSelection());
         }
     };
     TokenBoard.prototype.onTokenSelectionChange = function (selection, lastChange) {
@@ -2133,7 +2142,7 @@ var TokenBoard = /** @class */ (function () {
         var gemsTokens = selection.filter(function (card) { return card.type == 2; });
         var goldSelection = goldTokens.length >= 1;
         var selectionAtMax = goldSelection || gemsTokens.length >= this.maxSelectionToken;
-        var remainingSelection = selectionAtMax ? selection : tokens;
+        var remainingSelection = selectionAtMax ? selection : this.getDefaultPossibleSelection();
         if (goldSelection) {
             if (gemsTokens.length) {
                 valid = false;
@@ -2229,14 +2238,14 @@ var TokenBoard = /** @class */ (function () {
     };
     TokenBoard.prototype.onEffectTokenSelectionChange = function (selection, tokens, valid) {
         var _this = this;
-        this.stock.setSelectableCards(selection.length >= this.maxSelectionToken ? selection : tokens.filter(function (card) { return card.type == 2 && card.color == _this.selectionColor; }));
+        this.stock.setSelectableCards(selection.length >= this.maxSelectionToken ? selection : this.getDefaultPossibleSelection());
         if (selection.some(function (card) { return card.type != 2 || card.color != _this.selectionColor; })) {
             valid = false;
         }
         return valid;
     };
     TokenBoard.prototype.onPrivilegeTokenSelectionChange = function (selection, tokens, valid) {
-        this.stock.setSelectableCards(selection.length >= this.maxSelectionToken ? selection : tokens.filter(function (card) { return card.type == 2; }));
+        this.stock.setSelectableCards(selection.length >= this.maxSelectionToken ? selection : this.getDefaultPossibleSelection());
         if (selection.some(function (card) { return card.type != 2; })) {
             valid = false;
         }
@@ -2295,10 +2304,11 @@ var TableCenter = /** @class */ (function () {
     TableCenter.prototype.refillBoard = function (refilledTokens) {
         return this.board.refill(refilledTokens);
     };
-    TableCenter.prototype.setBoardSelectable = function (selectionType, max, color) {
+    TableCenter.prototype.setBoardSelectable = function (selectionType, canTakeGold, max, color) {
+        if (canTakeGold === void 0) { canTakeGold = false; }
         if (max === void 0) { max = 3; }
         if (color === void 0) { color = null; }
-        this.board.setSelectable(selectionType, max, color);
+        this.board.setSelectable(selectionType, canTakeGold, max, color);
     };
     TableCenter.prototype.reserveCard = function (args) {
         this.game.cardsManager.removeCard(args.card);
@@ -2488,7 +2498,7 @@ var SplendorDuel = /** @class */ (function () {
     };
     SplendorDuel.prototype.onEnteringUsePrivilege = function (args) {
         if (this.isCurrentPlayerActive()) {
-            this.tableCenter.setBoardSelectable('privileges', args.privileges);
+            this.tableCenter.setBoardSelectable('privileges', false, args.privileges);
         }
     };
     SplendorDuel.prototype.onEnteringPlayAction = function (args) {
@@ -2500,7 +2510,7 @@ var SplendorDuel = /** @class */ (function () {
         }
         if (this.isCurrentPlayerActive()) {
             if (args.canTakeTokens) {
-                this.tableCenter.setBoardSelectable('play', 3);
+                this.tableCenter.setBoardSelectable('play', args.canReserve, 3);
             }
             if (args.canBuyCard) {
                 this.tableCenter.setCardsSelectable(true, args.buyableCards);

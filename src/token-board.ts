@@ -6,6 +6,7 @@ class TokenBoard {
     private maxSelectionToken: number;
     private selectionType: SelectionType;
     private selectionColor: number;
+    private canTakeGold: boolean;
         
     constructor(private game: SplendorDuelGame, board: Token[]) {
         const slotsIds = [];
@@ -21,17 +22,27 @@ class TokenBoard {
         this.stock.addCards(board);
         this.stock.onSelectionChange = (selection: Token[], lastChange: Token) => this.onTokenSelectionChange(selection, lastChange);
     }
+
+    private getDefaultPossibleSelection(): Token[] {
+        let possibleSelection = this.stock.getCards();
+        if (!this.canTakeGold) {
+            possibleSelection = possibleSelection.filter(card => card.type == 2);
+        }
+        if (this.selectionColor != null) {
+            possibleSelection = possibleSelection.filter(card => card.color == this.selectionColor);
+        }
+        return possibleSelection;
+    }
     
-    public setSelectable(selectionType: 'privileges' | 'play' | 'effect' | null, max: number = 3, color: number = null) {
+    public setSelectable(selectionType: 'privileges' | 'play' | 'effect' | null, canTakeGold: boolean, max: number = 3, color: number = null) {
         this.stock.setSelectionMode(selectionType ? 'multiple' : 'none');
         this.maxSelectionToken = max;
         this.selectionType = selectionType;
         this.selectionColor = color;
+        this.canTakeGold = canTakeGold;
 
         if (selectionType === 'privileges') {
-            this.stock.setSelectableCards(this.stock.getCards().filter(card => card.type == 2));
-        } else if (selectionType === 'effect') {
-            this.stock.setSelectableCards(this.stock.getCards().filter(card => card.type == 2 && card.color == color));
+            this.stock.setSelectableCards(this.getDefaultPossibleSelection());
         }
     }
 
@@ -66,7 +77,7 @@ class TokenBoard {
 
         const selectionAtMax = goldSelection || gemsTokens.length >= this.maxSelectionToken;
 
-        let remainingSelection = selectionAtMax ? selection : tokens;
+        let remainingSelection = selectionAtMax ? selection : this.getDefaultPossibleSelection();
 
         if (goldSelection) {
             if (gemsTokens.length) {
@@ -162,7 +173,7 @@ class TokenBoard {
     }
 
     private onEffectTokenSelectionChange(selection: Token[], tokens: Token[], valid: boolean) {
-        this.stock.setSelectableCards(selection.length >= this.maxSelectionToken ? selection : tokens.filter(card => card.type == 2 && card.color == this.selectionColor));
+        this.stock.setSelectableCards(selection.length >= this.maxSelectionToken ? selection : this.getDefaultPossibleSelection());
 
         if (selection.some(card => card.type != 2 || card.color != this.selectionColor)) {
             valid = false;
@@ -171,7 +182,7 @@ class TokenBoard {
     }
 
     private onPrivilegeTokenSelectionChange(selection: Token[], tokens: Token[], valid: boolean) {
-        this.stock.setSelectableCards(selection.length >= this.maxSelectionToken ? selection : tokens.filter(card => card.type == 2));
+        this.stock.setSelectableCards(selection.length >= this.maxSelectionToken ? selection : this.getDefaultPossibleSelection());
 
         if (selection.some(card => card.type != 2)) {
             valid = false;

@@ -139,7 +139,7 @@ class SplendorDuel implements SplendorDuelGame {
 
     private onEnteringUsePrivilege(args: EnteringUsePrivilegeArgs) {
         if ((this as any).isCurrentPlayerActive()) {
-            this.tableCenter.setBoardSelectable('privileges', args.privileges);
+            this.tableCenter.setBoardSelectable('privileges', false, args.privileges);
         }
     }
 
@@ -152,7 +152,7 @@ class SplendorDuel implements SplendorDuelGame {
 
         if ((this as any).isCurrentPlayerActive()) {
             if (args.canTakeTokens) {
-                this.tableCenter.setBoardSelectable('play', 3);
+                this.tableCenter.setBoardSelectable('play', args.canReserve, 3);
             }
             if (args.canBuyCard) {
                 this.tableCenter.setCardsSelectable(true, args.buyableCards);
