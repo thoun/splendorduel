@@ -35,3 +35,4 @@ Make sure ftp-sync.json and node_modules are in .gitignore
 # Rules
 TODO TOCHECK new card revealed before effect is applied ?
 TODO TOCHECK when checking if mus refill, ignore reserve cards the player can buy, to not reveal in case only reserved cards can be bought ?
+TODO TOCHECK do we automatically pay when it's only one possibility, or do we still ask to show what will be spent ?

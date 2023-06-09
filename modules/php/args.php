@@ -44,18 +44,17 @@ trait ArgsTrait {
 
         $board = $this->getBoard();
         $canTakeTokens = count($board) > 0;
-        $buyableCards = $this->getBuyableCards($playerId);
+        $buyableCardsAndCosts = $this->getBuyableCardsAndCosts($playerId);
         $canReserve = intval($this->cards->countCardInLocation('reserved', $playerId)) < 3;
         if (!$canReserve && $this->array_every($board, fn($token) => $token->type == 1)) {
             $canTakeTokens = false;
         }
-        $canBuyCard = count($buyableCards) > 0;
+        $canBuyCard = count($buyableCardsAndCosts['buyableCards']) > 0;
 
         return [
             'canTakeTokens' => $canTakeTokens,
             'canReserve' => $canReserve,
             'canBuyCard' => $canBuyCard,
-            'buyableCards' => $buyableCards,
-        ];
+        ] + $buyableCardsAndCosts;
     }
 } 

@@ -529,10 +529,9 @@ trait UtilTrait {
     }
 
 
-    function getBuyableCards(int $playerId) {
+    function getBuyableCardsAndCosts(int $playerId) {
         $tokens = $this->getPlayerTokensByColor($playerId);
         $cards = $this->getCardsByLocation('player'.$playerId.'-%');
-        $gold = count($tokens[-1]);
 
         $possibleCards = array_merge(
             $this->getCardsByLocation('reserved', $playerId),
@@ -540,7 +539,14 @@ trait UtilTrait {
         );
 
         $buyableCards = array_values(array_filter($possibleCards, fn($card) => $this->canBuyCard($card, $tokens, $cards)));
+        $reducedCosts = [];
+        foreach($buyableCards as $card) {
+            $reducedCosts[$card->id] = $this->getCardReducedCost($card->cost, $cards);
+        }
 
-        return $buyableCards;
+        return [
+            'buyableCards' => $buyableCards,
+            'reducedCosts' => $reducedCosts,
+        ];
     }
 }

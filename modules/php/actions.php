@@ -159,8 +159,8 @@ trait ActionTrait {
                 clienttranslate('${player_name} purchases a level ${card_level} card from the reserved cards for free');
         } else {
             $message = count($tokens) > 0 ? 
-                clienttranslate('${player_name} purchases a visible level with ${spent_tokens}') :
-                clienttranslate('${player_name} purchases a visible level for free');
+                clienttranslate('${player_name} purchases a visible level ${card_level} card with ${spent_tokens}') :
+                clienttranslate('${player_name} purchases a visible level ${card_level} card for free');
         }
 
         $newCard = $fromReserved ? null : $this->getCardFromDb($this->cards->pickCardForLocation('deck'.$level, 'table'.$level, $card->locationArg));

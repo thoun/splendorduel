@@ -387,8 +387,37 @@ class SplendorDuel implements SplendorDuelGame {
         if (this.gamedatas.gamestate.name == 'reserveCard') {
             this.reserveCard(card.id);
         } else {
-            this.buyCard(card.id);
+            this.onBuyCardClick(card);
         }
+    }
+
+    public onBuyCardClick(card: Card): void {
+        const tokens = this.getCurrentPlayerTable().tokens.getCards();
+        const goldTokens = tokens.filter(token => token.type == 1);
+        const reductedCost = structuredClone((this.gamedatas.gamestate.args as EnteringPlayActionArgs).reducedCosts[card.id]);
+        let selectedTokens = [];
+        let remaining = 0;
+        let remainingOfColors = 0;
+        Object.entries(reductedCost).forEach(entry => {
+            const color = Number(entry[0]);
+            const number = entry[1] as number;
+            const tokensOfColor = tokens.filter(token => token.type == 2 && token.color == color);
+            selectedTokens.push(...tokensOfColor.slice(0, Math.min(number, tokensOfColor.length)));
+            if (number > tokensOfColor.length) {
+                remaining += number - tokensOfColor.length;
+            } else if (tokensOfColor.length > number) { 
+                remainingOfColors += tokensOfColor.length - number;
+            }
+        });
+        if (selectedTokens.length && goldTokens.length > 0) {
+            console.warn('Paying with color tokens when player could have wanted to pay with gold')
+        }
+        if (remaining > 0) {
+            selectedTokens.push(...goldTokens.slice(0, remaining));
+        }
+
+        this.tokensSelection = selectedTokens;
+        this.buyCard(card.id);
     }
 
     public onRoyalCardClick(card: RoyalCard): void {
@@ -396,11 +425,7 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     public onReservedCardClick(card: Card): void {
-        /*if (this.gamedatas.gamestate.name == 'discardCard') {
-            this.discardCard(card.id);
-        } else {
-            this.setPayDestinationLabelAndState();
-        }*/
+        this.onBuyCardClick(card);
     }
   	
     public takeSelectedTokens() {
@@ -453,7 +478,8 @@ class SplendorDuel implements SplendorDuelGame {
         }
 
         this.takeAction('buyCard', {
-            id
+            id,
+            tokensIds: this.tokensSelection.map(token => token.id).join(','), 
         });
     }
   	

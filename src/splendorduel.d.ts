@@ -65,6 +65,7 @@ interface EnteringPlayActionArgs {
     canReserve: boolean;
     canBuyCard: boolean;
     buyableCards: Card[];
+    reducedCosts: { [card: number]: { [color: number]: number } };
 }
 
 // privileges

@@ -12,7 +12,7 @@ var ZoomManager = /** @class */ (function () {
         if (!settings.element) {
             throw new DOMException('You need to set the element to wrap in the zoom element');
         }
-        this.zoomLevels = (_a = settings.zoomLevels) !== null && _a !== void 0 ? _a : DEFAULT_ZOOM_LEVELS;
+        this._zoomLevels = (_a = settings.zoomLevels) !== null && _a !== void 0 ? _a : DEFAULT_ZOOM_LEVELS;
         this._zoom = this.settings.defaultZoom || 1;
         if (this.settings.localStorageZoomKey) {
             var zoomStr = localStorage.getItem(this.settings.localStorageZoomKey);
@@ -59,6 +59,16 @@ var ZoomManager = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(ZoomManager.prototype, "zoomLevels", {
+        /**
+         * Returns the zoom levels
+         */
+        get: function () {
+            return this._zoomLevels;
+        },
+        enumerable: false,
+        configurable: true
+    });
     ZoomManager.prototype.setAutoZoom = function () {
         var _this = this;
         var _a, _b, _c;
@@ -69,8 +79,8 @@ var ZoomManager = /** @class */ (function () {
         }
         var expectedWidth = (_a = this.settings.autoZoom) === null || _a === void 0 ? void 0 : _a.expectedWidth;
         var newZoom = this.zoom;
-        while (newZoom > this.zoomLevels[0] && newZoom > ((_c = (_b = this.settings.autoZoom) === null || _b === void 0 ? void 0 : _b.minZoomLevel) !== null && _c !== void 0 ? _c : 0) && zoomWrapperWidth / newZoom < expectedWidth) {
-            newZoom = this.zoomLevels[this.zoomLevels.indexOf(newZoom) - 1];
+        while (newZoom > this._zoomLevels[0] && newZoom > ((_c = (_b = this.settings.autoZoom) === null || _b === void 0 ? void 0 : _b.minZoomLevel) !== null && _c !== void 0 ? _c : 0) && zoomWrapperWidth / newZoom < expectedWidth) {
+            newZoom = this._zoomLevels[this._zoomLevels.indexOf(newZoom) - 1];
         }
         if (this._zoom == newZoom) {
             if (this.settings.localStorageZoomKey) {
@@ -80,6 +90,19 @@ var ZoomManager = /** @class */ (function () {
         else {
             this.setZoom(newZoom);
         }
+    };
+    /**
+     * Sets the available zoomLevels and new zoom to the provided values.
+     * @param zoomLevels the new array of zoomLevels that can be used.
+     * @param newZoom if provided the zoom will be set to this value, if not the last element of the zoomLevels array will be set as the new zoom
+     */
+    ZoomManager.prototype.setZoomLevels = function (zoomLevels, newZoom) {
+        if (!zoomLevels || zoomLevels.length <= 0) {
+            return;
+        }
+        this._zoomLevels = zoomLevels;
+        var zoomIndex = newZoom && zoomLevels.includes(newZoom) ? this._zoomLevels.indexOf(newZoom) : this._zoomLevels.length - 1;
+        this.setZoom(this._zoomLevels[zoomIndex]);
     };
     /**
      * Set the zoom level. Ideally, use a zoom level in the zoomLevels range.
@@ -92,8 +115,8 @@ var ZoomManager = /** @class */ (function () {
         if (this.settings.localStorageZoomKey) {
             localStorage.setItem(this.settings.localStorageZoomKey, '' + this._zoom);
         }
-        var newIndex = this.zoomLevels.indexOf(this._zoom);
-        (_a = this.zoomInButton) === null || _a === void 0 ? void 0 : _a.classList.toggle('disabled', newIndex === this.zoomLevels.length - 1);
+        var newIndex = this._zoomLevels.indexOf(this._zoom);
+        (_a = this.zoomInButton) === null || _a === void 0 ? void 0 : _a.classList.toggle('disabled', newIndex === this._zoomLevels.length - 1);
         (_b = this.zoomOutButton) === null || _b === void 0 ? void 0 : _b.classList.toggle('disabled', newIndex === 0);
         this.settings.element.style.transform = zoom === 1 ? '' : "scale(".concat(zoom, ")");
         (_d = (_c = this.settings).onZoomChange) === null || _d === void 0 ? void 0 : _d.call(_c, this._zoom);
@@ -121,21 +144,21 @@ var ZoomManager = /** @class */ (function () {
      * Simulates a click on the Zoom-in button.
      */
     ZoomManager.prototype.zoomIn = function () {
-        if (this._zoom === this.zoomLevels[this.zoomLevels.length - 1]) {
+        if (this._zoom === this._zoomLevels[this._zoomLevels.length - 1]) {
             return;
         }
-        var newIndex = this.zoomLevels.indexOf(this._zoom) + 1;
-        this.setZoom(newIndex === -1 ? 1 : this.zoomLevels[newIndex]);
+        var newIndex = this._zoomLevels.indexOf(this._zoom) + 1;
+        this.setZoom(newIndex === -1 ? 1 : this._zoomLevels[newIndex]);
     };
     /**
      * Simulates a click on the Zoom-out button.
      */
     ZoomManager.prototype.zoomOut = function () {
-        if (this._zoom === this.zoomLevels[0]) {
+        if (this._zoom === this._zoomLevels[0]) {
             return;
         }
-        var newIndex = this.zoomLevels.indexOf(this._zoom) - 1;
-        this.setZoom(newIndex === -1 ? 1 : this.zoomLevels[newIndex]);
+        var newIndex = this._zoomLevels.indexOf(this._zoom) - 1;
+        this.setZoom(newIndex === -1 ? 1 : this._zoomLevels[newIndex]);
     };
     /**
      * Changes the color of the zoom controls.
@@ -1154,10 +1177,10 @@ var CardStock = /** @class */ (function () {
         var selectableCardsClass = this.getSelectableCardClass();
         var unselectableCardsClass = this.getUnselectableCardClass();
         if (selectableCardsClass) {
-            element.classList.toggle(selectableCardsClass, selectable);
+            element === null || element === void 0 ? void 0 : element.classList.toggle(selectableCardsClass, selectable);
         }
         if (unselectableCardsClass) {
-            element.classList.toggle(unselectableCardsClass, !selectable);
+            element === null || element === void 0 ? void 0 : element.classList.toggle(unselectableCardsClass, !selectable);
         }
         if (!selectable && this.isSelected(card)) {
             this.unselectCard(card, true);
@@ -1192,7 +1215,7 @@ var CardStock = /** @class */ (function () {
         }
         var element = this.getCardElement(card);
         var selectableCardsClass = this.getSelectableCardClass();
-        if (!element.classList.contains(selectableCardsClass)) {
+        if (!element || !element.classList.contains(selectableCardsClass)) {
             return;
         }
         if (this.selectionMode === 'single') {
@@ -1216,7 +1239,7 @@ var CardStock = /** @class */ (function () {
         if (silent === void 0) { silent = false; }
         var element = this.getCardElement(card);
         var selectedCardsClass = this.getSelectedCardClass();
-        element.classList.remove(selectedCardsClass);
+        element === null || element === void 0 ? void 0 : element.classList.remove(selectedCardsClass);
         var index = this.selectedCards.findIndex(function (c) { return _this.manager.getId(c) == _this.manager.getId(card); });
         if (index !== -1) {
             this.selectedCards.splice(index, 1);
@@ -1363,7 +1386,7 @@ var CardStock = /** @class */ (function () {
         var selectableCardsClass = this.getSelectableCardClass();
         var unselectableCardsClass = this.getUnselectableCardClass();
         var selectedCardsClass = this.getSelectedCardClass();
-        cardElement.classList.remove(selectableCardsClass, unselectableCardsClass, selectedCardsClass);
+        cardElement === null || cardElement === void 0 ? void 0 : cardElement.classList.remove(selectableCardsClass, unselectableCardsClass, selectedCardsClass);
     };
     return CardStock;
 }());
@@ -2678,18 +2701,42 @@ var SplendorDuel = /** @class */ (function () {
             this.reserveCard(card.id);
         }
         else {
-            this.buyCard(card.id);
+            this.onBuyCardClick(card);
         }
+    };
+    SplendorDuel.prototype.onBuyCardClick = function (card) {
+        var tokens = this.getCurrentPlayerTable().tokens.getCards();
+        var goldTokens = tokens.filter(function (token) { return token.type == 1; });
+        var reductedCost = structuredClone(this.gamedatas.gamestate.args.reducedCosts[card.id]);
+        var selectedTokens = [];
+        var remaining = 0;
+        var remainingOfColors = 0;
+        Object.entries(reductedCost).forEach(function (entry) {
+            var color = Number(entry[0]);
+            var number = entry[1];
+            var tokensOfColor = tokens.filter(function (token) { return token.type == 2 && token.color == color; });
+            selectedTokens.push.apply(selectedTokens, tokensOfColor.slice(0, Math.min(number, tokensOfColor.length)));
+            if (number > tokensOfColor.length) {
+                remaining += number - tokensOfColor.length;
+            }
+            else if (tokensOfColor.length > number) {
+                remainingOfColors += tokensOfColor.length - number;
+            }
+        });
+        if (selectedTokens.length && goldTokens.length > 0) {
+            console.warn('Paying with color tokens when player could have wanted to pay with gold');
+        }
+        if (remaining > 0) {
+            selectedTokens.push.apply(selectedTokens, goldTokens.slice(0, remaining));
+        }
+        this.tokensSelection = selectedTokens;
+        this.buyCard(card.id);
     };
     SplendorDuel.prototype.onRoyalCardClick = function (card) {
         this.takeRoyalCard(card.id);
     };
     SplendorDuel.prototype.onReservedCardClick = function (card) {
-        /*if (this.gamedatas.gamestate.name == 'discardCard') {
-            this.discardCard(card.id);
-        } else {
-            this.setPayDestinationLabelAndState();
-        }*/
+        this.onBuyCardClick(card);
     };
     SplendorDuel.prototype.takeSelectedTokens = function () {
         if (!this.checkAction('takeTokens')) {
@@ -2730,7 +2777,8 @@ var SplendorDuel = /** @class */ (function () {
             return;
         }
         this.takeAction('buyCard', {
-            id: id
+            id: id,
+            tokensIds: this.tokensSelection.map(function (token) { return token.id; }).join(','),
         });
     };
     SplendorDuel.prototype.takeRoyalCard = function (id) {
