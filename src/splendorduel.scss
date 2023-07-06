@@ -21,18 +21,18 @@ $playerColors: '7c5654', 'd6d6d7', 'b79d86', '1e2c36';
 }
 
 @font-face {
-    font-family: 'copperplate-gothic-bold';
-    src: url('img/copperplate-gothic-bold.woff2') format('woff2'),
-         url('img/copperplate-gothic-bold.woff') format('woff');
+    font-family: 'abril-titling';
+    src: url('img/abril-titling.woff2') format('woff2'),
+         url('img/abril-titling.woff') format('woff');
     font-weight: normal;
     font-style: normal;
 
 }
 
 html, .mode_3d #game_play_area_background {
-  background: url('img/background.jpg') #b5b4b4;
+  background: url('img/background.jpg') #72749a;
   background-size: 100% auto;
-  background-repeat: no-repeat;
+  background-repeat: repeat;
   background-position: top;
 }
 

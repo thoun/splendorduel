@@ -976,7 +976,7 @@ body > .card {
   justify-content: center;
   align-items: center;
   font-size: 20pt;
-  font-family: "copperplate-gothic-bold";
+  font-family: "abril-titling";
 }
 .player-table .block-with-text {
   display: flex;
@@ -1063,15 +1063,15 @@ body > .card {
   }
 }
 @font-face {
-  font-family: "copperplate-gothic-bold";
-  src: url("img/copperplate-gothic-bold.woff2") format("woff2"), url("img/copperplate-gothic-bold.woff") format("woff");
+  font-family: "abril-titling";
+  src: url("img/abril-titling.woff2") format("woff2"), url("img/abril-titling.woff") format("woff");
   font-weight: normal;
   font-style: normal;
 }
 html, .mode_3d #game_play_area_background {
-  background: url("img/background.jpg") #b5b4b4;
+  background: url("img/background.jpg") #72749a;
   background-size: 100% auto;
-  background-repeat: no-repeat;
+  background-repeat: repeat;
   background-position: top;
 }
 
