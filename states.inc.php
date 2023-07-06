@@ -81,8 +81,8 @@ $playerActionsGameStates = [
 
     ST_PLAYER_USE_PRIVILEGE => [
         "name" => "usePrivilege",
-        "description" => clienttranslate('${actplayer} can take up to ${number} Gem(s) or Pearl(s) with privileges'),
-        "descriptionmyturn" => clienttranslate('${you} can take up to ${number} Gem(s) or Pearl(s) with privileges'),
+        "description" => clienttranslate('[OPTIONAL ACTION] ${actplayer} can take up to ${number} Gem(s) or Pearl(s) with privileges'),
+        "descriptionmyturn" => clienttranslate('[OPTIONAL ACTION] ${you} can take up to ${number} Gem(s) or Pearl(s) with privileges'),
         "type" => "activeplayer",
         "args" => "argUsePrivilege",
         "action" => "stUsePrivilege",
@@ -98,8 +98,10 @@ $playerActionsGameStates = [
 
     ST_PLAYER_REFILL_BOARD => [
         "name" => "refillBoard",
-        "description" => clienttranslate('${actplayer} can replenish the board'),
-        "descriptionmyturn" => clienttranslate('${you} can replenish the board'),
+        "description" => clienttranslate('[OPTIONAL ACTION] ${actplayer} can replenish the board'),
+        "descriptionmyturn" => clienttranslate('[OPTIONAL ACTION] ${you} can replenish the board'),
+        "descriptionMustRefill" => clienttranslate('${actplayer} must replenish the board'), // TODO use
+        "descriptionmyturnMustRefill" => clienttranslate('${you} must replenish the board'), // TODO use
         "type" => "activeplayer",    
         "args" => "argRefillBoard",
         "action" => "stRefillBoard",
