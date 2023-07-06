@@ -2120,10 +2120,10 @@ var TokenBoard = /** @class */ (function () {
         var _this = this;
         var possibleSelection = this.stock.getCards();
         if (!this.canTakeGold) {
-            possibleSelection = possibleSelection.filter(function (card) { return card.type == 2; });
+            possibleSelection = possibleSelection.filter(function (card) { return card.type === 2; });
         }
         if (this.selectionColor != null) {
-            possibleSelection = possibleSelection.filter(function (card) { return card.color == _this.selectionColor; });
+            possibleSelection = possibleSelection.filter(function (card) { return card.color === _this.selectionColor; });
         }
         return possibleSelection;
     };

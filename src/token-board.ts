@@ -27,10 +27,10 @@ class TokenBoard {
     private getDefaultPossibleSelection(): Token[] {
         let possibleSelection = this.stock.getCards();
         if (!this.canTakeGold) {
-            possibleSelection = possibleSelection.filter(card => card.type == 2);
+            possibleSelection = possibleSelection.filter(card => card.type === 2);
         }
         if (this.selectionColor != null) {
-            possibleSelection = possibleSelection.filter(card => card.color == this.selectionColor);
+            possibleSelection = possibleSelection.filter(card => card.color === this.selectionColor);
         }
         return possibleSelection;
     }

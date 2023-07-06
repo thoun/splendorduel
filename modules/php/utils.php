@@ -539,11 +539,17 @@ trait UtilTrait {
     function getBuyableCardsAndCosts(int $playerId) {
         $tokens = $this->getPlayerTokensByColor($playerId);
         $cards = $this->getCardsByLocation('player'.$playerId.'-%');
+        $hasColoredCards = $this->array_some($cards, fn($card) => in_array($card->color, [BLUE, WHITE, GREEN, BLACK, RED]));
 
         $possibleCards = array_merge(
             $this->getCardsByLocation('reserved', $playerId),
             $this->getCardsByLocation('table%'),
         );
+
+        // ignore multi color if we don't have a colored card
+        if (!$hasColoredCards) {
+            $possibleCards = array_values(array_filter($possibleCards, fn($card) => gettype($card->power) == 'array' ? !in_array(POWER_MULTICOLOR, $card->power) : $card->power != POWER_MULTICOLOR));
+        }
 
         $buyableCards = array_values(array_filter($possibleCards, fn($card) => $this->canBuyCard($card, $tokens, $cards)));
         $reducedCosts = [];
