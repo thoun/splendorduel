@@ -18,6 +18,7 @@ class TokenBoard {
         this.stock = new SlotStock<Token>(game.tokensManager, document.getElementById(`board`), {
             slotsIds,
             mapCardToSlot: card => JSON.stringify([card.row, card.column]),
+            gap: '0',
         });
         this.stock.addCards(board);
         this.stock.onSelectionChange = (selection: Token[], lastChange: Token) => this.onTokenSelectionChange(selection, lastChange);

@@ -2111,6 +2111,7 @@ var TokenBoard = /** @class */ (function () {
         this.stock = new SlotStock(game.tokensManager, document.getElementById("board"), {
             slotsIds: slotsIds,
             mapCardToSlot: function (card) { return JSON.stringify([card.row, card.column]); },
+            gap: '0',
         });
         this.stock.addCards(board);
         this.stock.onSelectionChange = function (selection, lastChange) { return _this.onTokenSelectionChange(selection, lastChange); };

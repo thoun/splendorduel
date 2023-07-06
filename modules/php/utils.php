@@ -410,7 +410,14 @@ trait UtilTrait {
             }
 
             if ($card->power != null) {
-                $redirected = $this->applyPower($playerId, $card->power, $card->id);
+                $redirected = false;
+                if (gettype($card->power) == 'array') {
+                    foreach($card->power as $power) {
+                        $redirected = $redirected || $this->applyPower($playerId, $power, $card->id);
+                    }
+                } else {
+                    $redirected = $this->applyPower($playerId, $card->power, $card->id);
+                }
                 if ($redirected) {
                     return;
                 }

@@ -11,7 +11,11 @@
     grid-template-rows: repeat(5, 1fr);
     grid-template-columns: repeat(5, 1fr);
     background: url('img/board.jpg');
-    background-size: cover;
+    width: 525px;
+    height: 436px;
+    padding: 10px;
+    padding-right: 93px;
+    box-sizing: border-box;
 
     .slot {      
       width: 80px;
