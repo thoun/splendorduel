@@ -195,8 +195,8 @@ $playerActionsGameStates = [
 
     ST_PLAYER_DISCARD_TOKENS => [
         "name" => "discardTokens",
-        "description" => clienttranslate('${actplayer} must discard down to 10 tokens'),
-        "descriptionmyturn" => clienttranslate('${you} must discard down to 10 tokens'),
+        "description" => clienttranslate('${actplayer} must discard ${number} tokens (10 tokens limit)'),
+        "descriptionmyturn" => clienttranslate('${you} must discard ${number} tokens (10 tokens limit)'),
         "type" => "activeplayer",
         "arg" => "argDiscardTokens",
         "possibleactions" => [ 

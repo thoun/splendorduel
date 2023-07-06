@@ -20,7 +20,7 @@ class RoyalCardsManager extends CardManager<RoyalCard> {
             },
             isCardVisible: () => true,
             cardWidth: 120,
-            cardHeight: 221,
+            cardHeight: 183,
         });
     }
 

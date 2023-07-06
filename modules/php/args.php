@@ -57,4 +57,15 @@ trait ArgsTrait {
             'canBuyCard' => $canBuyCard,
         ] + $buyableCardsAndCosts;
     }
+
+    function argDiscardTokens() {
+        $playerId = intval($this->getActivePlayerId());
+
+        $tokens = $this->getPlayerTokens($playerId);
+        $number = count($tokens) - 10;
+
+        return [
+            'number' => $number, // for title
+        ];
+    }
 } 

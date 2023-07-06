@@ -28,7 +28,7 @@ class CardsManager extends CardManager<Card> {
             },
             isCardVisible: card => Boolean(card.index),
             cardWidth: 120,
-            cardHeight: 221,
+            cardHeight: 183,
         });
     }
 

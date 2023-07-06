@@ -2034,7 +2034,7 @@ var CardsManager = /** @class */ (function (_super) {
             },
             isCardVisible: function (card) { return Boolean(card.index); },
             cardWidth: 120,
-            cardHeight: 221,
+            cardHeight: 183,
         }) || this;
         _this.game = game;
         return _this;
@@ -2059,7 +2059,7 @@ var RoyalCardsManager = /** @class */ (function (_super) {
             },
             isCardVisible: function () { return true; },
             cardWidth: 120,
-            cardHeight: 221,
+            cardHeight: 183,
         }) || this;
         _this.game = game;
         return _this;

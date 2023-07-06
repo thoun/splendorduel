@@ -2,14 +2,13 @@
     display: inline-block;
     position: relative;
     width: 120px;
-    height: 221px;
+    height: 183px;
     border-radius: 8px;
 
     .card-sides {
         .card-side {
             border-radius: 8px;
             background-size: auto 100%;
-            background-image: url('img/cards.jpg');
 
             &>* {
                 pointer-events: none;
@@ -38,13 +37,25 @@
 
     @for $level from 1 through 3 {
         &[data-level="#{$level}"] .card-side {
-            background-position-y: #{(($level - 1) * 3) * 100% / 2};
+            background-image: url('img/cards#{$level}.jpg');
         }
     }
 
-    @for $index from 1 through 99 { // TODO
-        .front[data-index="#{$index}"] {
-            background-position-x: #{$index * 100% / 20};
+    @for $index from 1 through 30 {
+        &[data-level="1"] .card-side[data-index="#{$index}"] {
+            background-position-x: #{$index * 100% / 30};
+        }
+    }
+
+    @for $index from 1 through 24 {
+        &[data-level="2"] .card-side[data-index="#{$index}"] {
+            background-position-x: #{$index * 100% / 24};
+        }
+    }
+
+    @for $index from 1 through 13 {
+        &[data-level="3"] .card-side[data-index="#{$index}"] {
+            background-position-x: #{$index * 100% / 13};
         }
     }
 }

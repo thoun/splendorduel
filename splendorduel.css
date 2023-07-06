@@ -500,13 +500,12 @@ body > .card {
   display: inline-block;
   position: relative;
   width: 120px;
-  height: 221px;
+  height: 183px;
   border-radius: 8px;
 }
 .splendorduel-card .card-sides .card-side {
   border-radius: 8px;
   background-size: auto 100%;
-  background-image: url("img/cards.jpg");
 }
 .splendorduel-card .card-sides .card-side > * {
   pointer-events: none;
@@ -525,310 +524,214 @@ body > .card {
   box-shadow: unset;
 }
 .splendorduel-card[data-level="1"] .card-side {
-  background-position-y: 0%;
+  background-image: url("img/cards1.jpg");
 }
 .splendorduel-card[data-level="2"] .card-side {
-  background-position-y: 150%;
+  background-image: url("img/cards2.jpg");
 }
 .splendorduel-card[data-level="3"] .card-side {
-  background-position-y: 300%;
+  background-image: url("img/cards3.jpg");
 }
-.splendorduel-card .front[data-index="1"] {
-  background-position-x: 5%;
+.splendorduel-card[data-level="1"] .card-side[data-index="1"] {
+  background-position-x: 3.3333333333%;
 }
-.splendorduel-card .front[data-index="2"] {
+.splendorduel-card[data-level="1"] .card-side[data-index="2"] {
+  background-position-x: 6.6666666667%;
+}
+.splendorduel-card[data-level="1"] .card-side[data-index="3"] {
   background-position-x: 10%;
 }
-.splendorduel-card .front[data-index="3"] {
-  background-position-x: 15%;
+.splendorduel-card[data-level="1"] .card-side[data-index="4"] {
+  background-position-x: 13.3333333333%;
 }
-.splendorduel-card .front[data-index="4"] {
+.splendorduel-card[data-level="1"] .card-side[data-index="5"] {
+  background-position-x: 16.6666666667%;
+}
+.splendorduel-card[data-level="1"] .card-side[data-index="6"] {
   background-position-x: 20%;
 }
-.splendorduel-card .front[data-index="5"] {
-  background-position-x: 25%;
+.splendorduel-card[data-level="1"] .card-side[data-index="7"] {
+  background-position-x: 23.3333333333%;
 }
-.splendorduel-card .front[data-index="6"] {
+.splendorduel-card[data-level="1"] .card-side[data-index="8"] {
+  background-position-x: 26.6666666667%;
+}
+.splendorduel-card[data-level="1"] .card-side[data-index="9"] {
   background-position-x: 30%;
 }
-.splendorduel-card .front[data-index="7"] {
-  background-position-x: 35%;
+.splendorduel-card[data-level="1"] .card-side[data-index="10"] {
+  background-position-x: 33.3333333333%;
 }
-.splendorduel-card .front[data-index="8"] {
+.splendorduel-card[data-level="1"] .card-side[data-index="11"] {
+  background-position-x: 36.6666666667%;
+}
+.splendorduel-card[data-level="1"] .card-side[data-index="12"] {
   background-position-x: 40%;
 }
-.splendorduel-card .front[data-index="9"] {
-  background-position-x: 45%;
+.splendorduel-card[data-level="1"] .card-side[data-index="13"] {
+  background-position-x: 43.3333333333%;
 }
-.splendorduel-card .front[data-index="10"] {
+.splendorduel-card[data-level="1"] .card-side[data-index="14"] {
+  background-position-x: 46.6666666667%;
+}
+.splendorduel-card[data-level="1"] .card-side[data-index="15"] {
   background-position-x: 50%;
 }
-.splendorduel-card .front[data-index="11"] {
-  background-position-x: 55%;
+.splendorduel-card[data-level="1"] .card-side[data-index="16"] {
+  background-position-x: 53.3333333333%;
 }
-.splendorduel-card .front[data-index="12"] {
+.splendorduel-card[data-level="1"] .card-side[data-index="17"] {
+  background-position-x: 56.6666666667%;
+}
+.splendorduel-card[data-level="1"] .card-side[data-index="18"] {
   background-position-x: 60%;
 }
-.splendorduel-card .front[data-index="13"] {
-  background-position-x: 65%;
+.splendorduel-card[data-level="1"] .card-side[data-index="19"] {
+  background-position-x: 63.3333333333%;
 }
-.splendorduel-card .front[data-index="14"] {
+.splendorduel-card[data-level="1"] .card-side[data-index="20"] {
+  background-position-x: 66.6666666667%;
+}
+.splendorduel-card[data-level="1"] .card-side[data-index="21"] {
   background-position-x: 70%;
 }
-.splendorduel-card .front[data-index="15"] {
-  background-position-x: 75%;
+.splendorduel-card[data-level="1"] .card-side[data-index="22"] {
+  background-position-x: 73.3333333333%;
 }
-.splendorduel-card .front[data-index="16"] {
+.splendorduel-card[data-level="1"] .card-side[data-index="23"] {
+  background-position-x: 76.6666666667%;
+}
+.splendorduel-card[data-level="1"] .card-side[data-index="24"] {
   background-position-x: 80%;
 }
-.splendorduel-card .front[data-index="17"] {
-  background-position-x: 85%;
+.splendorduel-card[data-level="1"] .card-side[data-index="25"] {
+  background-position-x: 83.3333333333%;
 }
-.splendorduel-card .front[data-index="18"] {
+.splendorduel-card[data-level="1"] .card-side[data-index="26"] {
+  background-position-x: 86.6666666667%;
+}
+.splendorduel-card[data-level="1"] .card-side[data-index="27"] {
   background-position-x: 90%;
 }
-.splendorduel-card .front[data-index="19"] {
-  background-position-x: 95%;
+.splendorduel-card[data-level="1"] .card-side[data-index="28"] {
+  background-position-x: 93.3333333333%;
 }
-.splendorduel-card .front[data-index="20"] {
+.splendorduel-card[data-level="1"] .card-side[data-index="29"] {
+  background-position-x: 96.6666666667%;
+}
+.splendorduel-card[data-level="1"] .card-side[data-index="30"] {
   background-position-x: 100%;
 }
-.splendorduel-card .front[data-index="21"] {
-  background-position-x: 105%;
+.splendorduel-card[data-level="2"] .card-side[data-index="1"] {
+  background-position-x: 4.1666666667%;
 }
-.splendorduel-card .front[data-index="22"] {
-  background-position-x: 110%;
+.splendorduel-card[data-level="2"] .card-side[data-index="2"] {
+  background-position-x: 8.3333333333%;
 }
-.splendorduel-card .front[data-index="23"] {
-  background-position-x: 115%;
+.splendorduel-card[data-level="2"] .card-side[data-index="3"] {
+  background-position-x: 12.5%;
 }
-.splendorduel-card .front[data-index="24"] {
-  background-position-x: 120%;
+.splendorduel-card[data-level="2"] .card-side[data-index="4"] {
+  background-position-x: 16.6666666667%;
 }
-.splendorduel-card .front[data-index="25"] {
-  background-position-x: 125%;
+.splendorduel-card[data-level="2"] .card-side[data-index="5"] {
+  background-position-x: 20.8333333333%;
 }
-.splendorduel-card .front[data-index="26"] {
-  background-position-x: 130%;
+.splendorduel-card[data-level="2"] .card-side[data-index="6"] {
+  background-position-x: 25%;
 }
-.splendorduel-card .front[data-index="27"] {
-  background-position-x: 135%;
+.splendorduel-card[data-level="2"] .card-side[data-index="7"] {
+  background-position-x: 29.1666666667%;
 }
-.splendorduel-card .front[data-index="28"] {
-  background-position-x: 140%;
+.splendorduel-card[data-level="2"] .card-side[data-index="8"] {
+  background-position-x: 33.3333333333%;
 }
-.splendorduel-card .front[data-index="29"] {
-  background-position-x: 145%;
+.splendorduel-card[data-level="2"] .card-side[data-index="9"] {
+  background-position-x: 37.5%;
 }
-.splendorduel-card .front[data-index="30"] {
-  background-position-x: 150%;
+.splendorduel-card[data-level="2"] .card-side[data-index="10"] {
+  background-position-x: 41.6666666667%;
 }
-.splendorduel-card .front[data-index="31"] {
-  background-position-x: 155%;
+.splendorduel-card[data-level="2"] .card-side[data-index="11"] {
+  background-position-x: 45.8333333333%;
 }
-.splendorduel-card .front[data-index="32"] {
-  background-position-x: 160%;
+.splendorduel-card[data-level="2"] .card-side[data-index="12"] {
+  background-position-x: 50%;
 }
-.splendorduel-card .front[data-index="33"] {
-  background-position-x: 165%;
+.splendorduel-card[data-level="2"] .card-side[data-index="13"] {
+  background-position-x: 54.1666666667%;
 }
-.splendorduel-card .front[data-index="34"] {
-  background-position-x: 170%;
+.splendorduel-card[data-level="2"] .card-side[data-index="14"] {
+  background-position-x: 58.3333333333%;
 }
-.splendorduel-card .front[data-index="35"] {
-  background-position-x: 175%;
+.splendorduel-card[data-level="2"] .card-side[data-index="15"] {
+  background-position-x: 62.5%;
 }
-.splendorduel-card .front[data-index="36"] {
-  background-position-x: 180%;
+.splendorduel-card[data-level="2"] .card-side[data-index="16"] {
+  background-position-x: 66.6666666667%;
 }
-.splendorduel-card .front[data-index="37"] {
-  background-position-x: 185%;
+.splendorduel-card[data-level="2"] .card-side[data-index="17"] {
+  background-position-x: 70.8333333333%;
 }
-.splendorduel-card .front[data-index="38"] {
-  background-position-x: 190%;
+.splendorduel-card[data-level="2"] .card-side[data-index="18"] {
+  background-position-x: 75%;
 }
-.splendorduel-card .front[data-index="39"] {
-  background-position-x: 195%;
+.splendorduel-card[data-level="2"] .card-side[data-index="19"] {
+  background-position-x: 79.1666666667%;
 }
-.splendorduel-card .front[data-index="40"] {
-  background-position-x: 200%;
+.splendorduel-card[data-level="2"] .card-side[data-index="20"] {
+  background-position-x: 83.3333333333%;
 }
-.splendorduel-card .front[data-index="41"] {
-  background-position-x: 205%;
+.splendorduel-card[data-level="2"] .card-side[data-index="21"] {
+  background-position-x: 87.5%;
 }
-.splendorduel-card .front[data-index="42"] {
-  background-position-x: 210%;
+.splendorduel-card[data-level="2"] .card-side[data-index="22"] {
+  background-position-x: 91.6666666667%;
 }
-.splendorduel-card .front[data-index="43"] {
-  background-position-x: 215%;
+.splendorduel-card[data-level="2"] .card-side[data-index="23"] {
+  background-position-x: 95.8333333333%;
 }
-.splendorduel-card .front[data-index="44"] {
-  background-position-x: 220%;
+.splendorduel-card[data-level="2"] .card-side[data-index="24"] {
+  background-position-x: 100%;
 }
-.splendorduel-card .front[data-index="45"] {
-  background-position-x: 225%;
+.splendorduel-card[data-level="3"] .card-side[data-index="1"] {
+  background-position-x: 7.6923076923%;
 }
-.splendorduel-card .front[data-index="46"] {
-  background-position-x: 230%;
+.splendorduel-card[data-level="3"] .card-side[data-index="2"] {
+  background-position-x: 15.3846153846%;
 }
-.splendorduel-card .front[data-index="47"] {
-  background-position-x: 235%;
+.splendorduel-card[data-level="3"] .card-side[data-index="3"] {
+  background-position-x: 23.0769230769%;
 }
-.splendorduel-card .front[data-index="48"] {
-  background-position-x: 240%;
+.splendorduel-card[data-level="3"] .card-side[data-index="4"] {
+  background-position-x: 30.7692307692%;
 }
-.splendorduel-card .front[data-index="49"] {
-  background-position-x: 245%;
+.splendorduel-card[data-level="3"] .card-side[data-index="5"] {
+  background-position-x: 38.4615384615%;
 }
-.splendorduel-card .front[data-index="50"] {
-  background-position-x: 250%;
+.splendorduel-card[data-level="3"] .card-side[data-index="6"] {
+  background-position-x: 46.1538461538%;
 }
-.splendorduel-card .front[data-index="51"] {
-  background-position-x: 255%;
+.splendorduel-card[data-level="3"] .card-side[data-index="7"] {
+  background-position-x: 53.8461538462%;
 }
-.splendorduel-card .front[data-index="52"] {
-  background-position-x: 260%;
+.splendorduel-card[data-level="3"] .card-side[data-index="8"] {
+  background-position-x: 61.5384615385%;
 }
-.splendorduel-card .front[data-index="53"] {
-  background-position-x: 265%;
+.splendorduel-card[data-level="3"] .card-side[data-index="9"] {
+  background-position-x: 69.2307692308%;
 }
-.splendorduel-card .front[data-index="54"] {
-  background-position-x: 270%;
+.splendorduel-card[data-level="3"] .card-side[data-index="10"] {
+  background-position-x: 76.9230769231%;
 }
-.splendorduel-card .front[data-index="55"] {
-  background-position-x: 275%;
+.splendorduel-card[data-level="3"] .card-side[data-index="11"] {
+  background-position-x: 84.6153846154%;
 }
-.splendorduel-card .front[data-index="56"] {
-  background-position-x: 280%;
+.splendorduel-card[data-level="3"] .card-side[data-index="12"] {
+  background-position-x: 92.3076923077%;
 }
-.splendorduel-card .front[data-index="57"] {
-  background-position-x: 285%;
-}
-.splendorduel-card .front[data-index="58"] {
-  background-position-x: 290%;
-}
-.splendorduel-card .front[data-index="59"] {
-  background-position-x: 295%;
-}
-.splendorduel-card .front[data-index="60"] {
-  background-position-x: 300%;
-}
-.splendorduel-card .front[data-index="61"] {
-  background-position-x: 305%;
-}
-.splendorduel-card .front[data-index="62"] {
-  background-position-x: 310%;
-}
-.splendorduel-card .front[data-index="63"] {
-  background-position-x: 315%;
-}
-.splendorduel-card .front[data-index="64"] {
-  background-position-x: 320%;
-}
-.splendorduel-card .front[data-index="65"] {
-  background-position-x: 325%;
-}
-.splendorduel-card .front[data-index="66"] {
-  background-position-x: 330%;
-}
-.splendorduel-card .front[data-index="67"] {
-  background-position-x: 335%;
-}
-.splendorduel-card .front[data-index="68"] {
-  background-position-x: 340%;
-}
-.splendorduel-card .front[data-index="69"] {
-  background-position-x: 345%;
-}
-.splendorduel-card .front[data-index="70"] {
-  background-position-x: 350%;
-}
-.splendorduel-card .front[data-index="71"] {
-  background-position-x: 355%;
-}
-.splendorduel-card .front[data-index="72"] {
-  background-position-x: 360%;
-}
-.splendorduel-card .front[data-index="73"] {
-  background-position-x: 365%;
-}
-.splendorduel-card .front[data-index="74"] {
-  background-position-x: 370%;
-}
-.splendorduel-card .front[data-index="75"] {
-  background-position-x: 375%;
-}
-.splendorduel-card .front[data-index="76"] {
-  background-position-x: 380%;
-}
-.splendorduel-card .front[data-index="77"] {
-  background-position-x: 385%;
-}
-.splendorduel-card .front[data-index="78"] {
-  background-position-x: 390%;
-}
-.splendorduel-card .front[data-index="79"] {
-  background-position-x: 395%;
-}
-.splendorduel-card .front[data-index="80"] {
-  background-position-x: 400%;
-}
-.splendorduel-card .front[data-index="81"] {
-  background-position-x: 405%;
-}
-.splendorduel-card .front[data-index="82"] {
-  background-position-x: 410%;
-}
-.splendorduel-card .front[data-index="83"] {
-  background-position-x: 415%;
-}
-.splendorduel-card .front[data-index="84"] {
-  background-position-x: 420%;
-}
-.splendorduel-card .front[data-index="85"] {
-  background-position-x: 425%;
-}
-.splendorduel-card .front[data-index="86"] {
-  background-position-x: 430%;
-}
-.splendorduel-card .front[data-index="87"] {
-  background-position-x: 435%;
-}
-.splendorduel-card .front[data-index="88"] {
-  background-position-x: 440%;
-}
-.splendorduel-card .front[data-index="89"] {
-  background-position-x: 445%;
-}
-.splendorduel-card .front[data-index="90"] {
-  background-position-x: 450%;
-}
-.splendorduel-card .front[data-index="91"] {
-  background-position-x: 455%;
-}
-.splendorduel-card .front[data-index="92"] {
-  background-position-x: 460%;
-}
-.splendorduel-card .front[data-index="93"] {
-  background-position-x: 465%;
-}
-.splendorduel-card .front[data-index="94"] {
-  background-position-x: 470%;
-}
-.splendorduel-card .front[data-index="95"] {
-  background-position-x: 475%;
-}
-.splendorduel-card .front[data-index="96"] {
-  background-position-x: 480%;
-}
-.splendorduel-card .front[data-index="97"] {
-  background-position-x: 485%;
-}
-.splendorduel-card .front[data-index="98"] {
-  background-position-x: 490%;
-}
-.splendorduel-card .front[data-index="99"] {
-  background-position-x: 495%;
+.splendorduel-card[data-level="3"] .card-side[data-index="13"] {
+  background-position-x: 100%;
 }
 
 @keyframes selectable-card-animation {
@@ -843,7 +746,7 @@ body > .card {
   display: inline-block;
   position: relative;
   width: 120px;
-  height: 221px;
+  height: 183px;
   border-radius: 8px;
 }
 .royal-card .card-sides .card-side {
@@ -893,6 +796,7 @@ body > .card {
   border-radius: 50%;
   background-size: auto 100%;
   background-image: url("img/tokens.png");
+  border: 5px solid transparent;
 }
 .token .card-sides .card-side > * {
   pointer-events: none;
@@ -918,6 +822,7 @@ body > .card {
 }
 .token[data-type="1"] .card-side {
   background-position-x: 0;
+  border-color: #FFCE37;
 }
 .token[data-type="2"][data-color="0"] .card-side {
   background-position-x: 16.6666666667%;
@@ -936,6 +841,24 @@ body > .card {
 }
 .token[data-type="2"][data-color="5"] .card-side {
   background-position-x: 100%;
+}
+.token[data-type="2"][data-color="0"] .card-side {
+  border-color: #E49AC3;
+}
+.token[data-type="2"][data-color="1"] .card-side {
+  border-color: #0273AE;
+}
+.token[data-type="2"][data-color="2"] .card-side {
+  border-color: #FFFFFF;
+}
+.token[data-type="2"][data-color="3"] .card-side {
+  border-color: #00A965;
+}
+.token[data-type="2"][data-color="4"] .card-side {
+  border-color: #28272B;
+}
+.token[data-type="2"][data-color="5"] .card-side {
+  border-color: #EF405E;
 }
 
 @keyframes selectable-card-animation {
