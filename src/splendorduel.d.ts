@@ -6,7 +6,6 @@ interface SplendorDuelPlayer extends Player {
     playerNo: number;
     tokens: Token[];
     privileges: number;
-    reservedCount: number;
     cards: Card[];
     reserved?: Card[];
     royalCards: RoyalCard[];
@@ -108,7 +107,7 @@ interface NotifTakeRoyalCardArgs {
 }
 
 // newTableCard
-interface NotifNewTableCardArgs { // TODO
+interface NotifNewTableCardArgs {
     newCard: Card;
     cardDeckCount: number;
     cardDeckTop: Card | null;

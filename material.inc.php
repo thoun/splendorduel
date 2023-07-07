@@ -82,15 +82,15 @@ $this->CARDS = [
         15 => new CardType(BLACK, [RED => 2, BLACK => 4, PEARL => 1], [BLACK => 1], 2, 0, POWER_TAKE_PRIVILEGE),
         16 => new CardType(BLACK, [WHITE => 5, BLUE => 2], [BLACK => 2], 1),
 
-        13 => new CardType(RED, [WHITE => 2, BLUE => 2, GREEN => 2, PEARL => 1], [RED => 1], 2, 1),
-        14 => new CardType(RED, [BLUE => 3, BLACK => 4], [RED => 1], 1, 0, POWER_TAKE_GEM_FROM_OPPONENT),
-        15 => new CardType(RED, [GREEN => 2, RED => 4, PEARL => 1], [RED => 1], 2, 0, POWER_TAKE_PRIVILEGE),
-        16 => new CardType(RED, [WHITE => 2, BLACK => 5], [RED => 2], 1),
+        17 => new CardType(RED, [WHITE => 2, BLUE => 2, GREEN => 2, PEARL => 1], [RED => 1], 2, 1),
+        18 => new CardType(RED, [BLUE => 3, BLACK => 4], [RED => 1], 1, 0, POWER_TAKE_GEM_FROM_OPPONENT),
+        19 => new CardType(RED, [GREEN => 2, RED => 4, PEARL => 1], [RED => 1], 2, 0, POWER_TAKE_PRIVILEGE),
+        20 => new CardType(RED, [WHITE => 2, BLACK => 5], [RED => 2], 1),
 
-        17 => new CardType(GRAY, [GREEN => 6, PEARL => 1], [MULTICOLOR => 1], 2, 0, POWER_MULTICOLOR),
-        18 => new CardType(GRAY, [GREEN => 6, PEARL => 1], [MULTICOLOR => 1], 0, 2, POWER_MULTICOLOR),
-        19 => new CardType(GRAY, [BLUE => 6, PEARL => 1], [MULTICOLOR => 1], 0, 2, POWER_MULTICOLOR),
-        20 => new CardType(GRAY, [BLUE => 6, PEARL => 1], [], 5),
+        21 => new CardType(GRAY, [GREEN => 6, PEARL => 1], [MULTICOLOR => 1], 2, 0, POWER_MULTICOLOR),
+        22 => new CardType(GRAY, [GREEN => 6, PEARL => 1], [MULTICOLOR => 1], 0, 2, POWER_MULTICOLOR),
+        23 => new CardType(GRAY, [BLUE => 6, PEARL => 1], [MULTICOLOR => 1], 0, 2, POWER_MULTICOLOR),
+        24 => new CardType(GRAY, [BLUE => 6, PEARL => 1], [], 5),
     ],    
     3 => [ // level 3 cards
         1 => new CardType(WHITE, [BLUE => 3, RED => 5, BLACK => 3, PEARL => 1], [WHITE => 1], 3, 2),

@@ -4,9 +4,9 @@ const log = isDebug ? console.log.bind(window.console) : function () { };
 class PlayerTable {
     public playerId: number;
     public voidStock: VoidStock<Card>;
-    public hand?: LineStock<Card>;
+    public reserved: LineStock<Card>;
     public played: LineStock<Card>[] = [];
-    public tokens: LineStock<Token>;
+    public tokens: LineStock<Token>[] = [];
     public limitSelection: number | null = null;
     public royalCards: LineStock<RoyalCard>;
 
@@ -19,24 +19,23 @@ class PlayerTable {
         let html = `
         <div id="player-table-${this.playerId}" class="player-table" style="--player-color: #${player.color};">
             <div id="player-table-${this.playerId}-name" class="name-wrapper">${player.name}</div>
+            <div class="columns">
         `;
-        if (this.currentPlayer) {
-            html += `
-            <div class="block-with-text hand-wrapper">
-                <div class="block-label">${_('Your hand')}</div>
-                <div id="player-table-${this.playerId}-hand" class="hand cards"></div>
-            </div>`;
-        }
-        html += `
-            <div id="player-table-${this.playerId}-tokens" class="tokens"></div>
-            
-            <div class="visible-cards">`;            
-            for (let i = 1; i <= 5; i++) {
+            [1,2,3,4,5,0,-1].forEach(i => {
+                html += `
+                <div id="player-table-${this.playerId}-tokens-${i}" class="tokens"></div>
+                `;
+            });         
+            [1,2,3,4,5,9].forEach(i => {
                 html += `
                 <div id="player-table-${this.playerId}-played-${i}" class="cards"></div>
                 `;
-            }
+            });
             html += `
+                <div class="hand-wrapper">
+                    <div class="block-label">${_('Reserved cards')}</div>
+                    <div id="player-table-${this.playerId}-reserved" class="cards"></div>
+                </div>
             </div>
 
             <div id="player-table-${this.playerId}-royal-cards"></div>
@@ -46,17 +45,15 @@ class PlayerTable {
 
         dojo.place(html, document.getElementById('tables'));
 
-        if (this.currentPlayer) {
-            const handDiv = document.getElementById(`player-table-${this.playerId}-hand`);
-            this.hand = new LineStock<Card>(this.game.cardsManager, handDiv);
-            this.hand.onCardClick = (card: Card) => this.game.onReservedCardClick(card);
-            
-            this.hand.addCards(player.reserved);
+        const reservedDiv = document.getElementById(`player-table-${this.playerId}-reserved`);
+        this.reserved = new LineStock<Card>(this.game.cardsManager, reservedDiv);
+        this.reserved.onCardClick = (card: Card) => this.game.onReservedCardClick(card);
+        
+        this.reserved.addCards(player.reserved);
 
-        }
         this.voidStock = new VoidStock<Card>(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-name`));
-               
-        for (let i = 1; i <= 5; i++) {
+
+        [1,2,3,4,5,9].forEach(i => {
             const playedDiv = document.getElementById(`player-table-${this.playerId}-played-${i}`);
             this.played[i] = new LineStock<Card>(this.game.cardsManager, playedDiv, {
                 direction: 'column',
@@ -64,16 +61,22 @@ class PlayerTable {
             });
             this.played[i].addCards(player.cards.filter(card => Number(card.location.slice(-1)) == i));
             playedDiv.style.setProperty('--card-overlap', '195px');
-        }
+        });
         
         this.royalCards = new LineStock<RoyalCard>(this.game.royalCardsManager, document.getElementById(`player-table-${this.playerId}-royal-cards`));
         this.royalCards.addCards(player.royalCards);
         
-        this.tokens = new LineStock<Token>(this.game.tokensManager, document.getElementById(`player-table-${this.playerId}-tokens`), {
+        const tokensStockSettings: LineStockSettings = {
+            direction: 'column',
             center: false,
+        };
+        [1,2,3,4,5,0, -1].forEach(i => {
+            const tokenDiv = document.getElementById(`player-table-${this.playerId}-tokens-${i}`);
+            this.tokens[i] = new LineStock<Token>(this.game.tokensManager, tokenDiv, tokensStockSettings);
+            tokenDiv.style.setProperty('--card-overlap', '50px');
         });
         
-        this.tokens.addCards(player.tokens);
+        this.addTokens(player.tokens);
     }
 
     public updateCounter(type: 'recruits' | 'bracelets', count: number) {
@@ -87,9 +90,9 @@ class PlayerTable {
     }
 
     public setHandSelectable(selectable: boolean, buyableCards: Card[] | null = null) {
-        this.hand.setSelectionMode(selectable ? 'single' : 'none');
+        this.reserved.setSelectionMode(selectable ? 'single' : 'none');
         if (selectable) {
-            this.hand.setSelectableCards(buyableCards);
+            this.reserved.setSelectableCards(buyableCards);
         }
     }    
     
@@ -102,6 +105,10 @@ class PlayerTable {
     }
     
     public removeTokens(tokens: Token[]) {
-        this.tokens.removeCards(tokens);
+        [1,2,3,4,5,0,-1].map(i => this.tokens[i]).forEach(stock => stock.removeCards(tokens));
+    }
+
+    public addTokens(tokens: Token[]): Promise<any> {
+        return Promise.all([1,2,3,4,5,0,-1].map(i => this.tokens[i].addCards(tokens.filter(token => token.color == i))));
     }
 }

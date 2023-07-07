@@ -174,11 +174,8 @@ class SplendorDuel extends Table {
             $player['tokens'] = $this->getPlayerTokens($playerId);
             $player['privileges'] = intval($player['privileges']);
 
-            $player['reservedCount'] = intval($this->cards->countCardInLocation('reserved', $playerId));
-
-            if ($currentPlayerId == $playerId) {
-                $player['reserved'] = $this->getCardsByLocation('reserved', $playerId);
-            }
+            $reserved = $this->getCardsByLocation('reserved', $playerId);
+            $player['reserved'] = $currentPlayerId == $playerId ? $reserved : Card::onlyIds($reserved);
 
             $player['cards'] = $this->getCardsByLocation('player'.$playerId.'-%');
             $player['royalCards'] = $this->getCardsByLocation('player', $playerId);

@@ -1,5 +1,5 @@
 .player-table {
-  min-width: 640px;
+  min-width: 890px;
   width: 100%;
   position: relative;
   background: #FFFFFF33;
@@ -24,25 +24,6 @@
     font-size: 20pt;
     font-family: 'abril-titling';
   }
-  
-  .block-with-text {
-    display: flex;
-
-    .block-label {
-      text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black, 0 0 4px black;
-      text-align: center;
-      writing-mode: vertical-lr;
-      transform: rotate(180deg);
-      //color: white;
-      padding: 5px;
-      text-overflow: ellipsis;
-    }
-
-    &>div:not(.block-label) {
-      flex: 1;
-      min-height: 221px;
-    }
-  }
 
   .hand-wrapper {
     margin: 5px;
@@ -50,9 +31,25 @@
     border-radius: 10px;
     align-self: stretch;
     margin-bottom: 10px;
+
+    .block-label {
+      text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black, 0 0 4px black;
+      text-align: center;
+      color: white;
+      padding: 5px;
+      text-overflow: ellipsis;
+    }
   }
 
-  .visible-cards {
+  .columns {
+    display: grid;
+    justify-content: center;
+    grid-template-columns: repeat(7, 120px);
+    gap: 5px;
+    margin: 10px;
+  }
+
+  .visible-cards, .visible-tokens {
     display: flex;
     justify-content: center;
     gap: 5px;
@@ -62,6 +59,16 @@
       width: 120px;
 
       .card {
+        &:not(:first-child) {
+            margin-top: calc(-1 * var(--card-overlap));
+        }
+      }
+    }
+
+    .tokens {
+      width: 80px;
+
+      .token {
         &:not(:first-child) {
             margin-top: calc(-1 * var(--card-overlap));
         }

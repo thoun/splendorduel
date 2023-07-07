@@ -2039,8 +2039,35 @@ var CardsManager = /** @class */ (function (_super) {
         _this.game = game;
         return _this;
     }
+    CardsManager.prototype.getPower = function (power) {
+        switch (power) {
+            case 1: return _("Take another turn immediately after this one ends.");
+            case 2: return _("Place this card so that it overlaps a Jewel card with a bonus (see on the right). Treat this card’s <ICON> bonus as though it were the same color of the card it is overlapping.").replace('<ICON>', "<div class=\"token-icon\" data-type=\"9\"></div>") +
+                "<br><i>".concat(_("If you do not have a card with a bonus, you cannot purchase this card."), "</i>");
+            case 3: return _("Take 1 token matching the color of this card from the board. If there are no such tokens left, ignore this effect.");
+            case 4: return _("Take 1 Privilege. If none are available, take 1 from your opponent.");
+            case 5: return _("Take 1 Gem or Pearl token from your opponent. If your opponent has no such tokens, ignore this effect. You cannot take a Gold token from your opponent.");
+        }
+    };
     CardsManager.prototype.getTooltip = function (card) {
-        var message = "\n        <strong>".concat(_("Level:"), "</strong> ").concat(card.level, "\n\n        <strong>").concat(_("Color:"), "</strong> ").concat(this.game.getColor(card.color), "\n        <br>\n        <strong>").concat(_("Cost:"), "</strong> ").concat(JSON.stringify(card.cost), "\n        <br>\n        <strong>").concat(_("Provides:"), "</strong> ").concat(JSON.stringify(card.provides), "\n        <br>\n        <strong>").concat(_("Crowns:"), "</strong> ").concat(card.crowns, "\n        <br>\n        <strong>").concat(_("Points:"), "</strong> ").concat(card.points, "\n        <br>\n        <strong>").concat(_("Power:"), "</strong> ").concat(card.power, "\n        ");
+        var _this = this;
+        var message = "\n        <strong>".concat(_("Level:"), "</strong> ").concat(card.level, "\n        <br>\n        <strong>").concat(_("Color:"), "</strong> ").concat(this.game.getColor(card.color), "\n        <br>\n        <strong>").concat(_("Cost:"), "</strong> ").concat(Object.entries(card.cost).map(function (entry) {
+            return "".concat(entry[1], " <div class=\"token-icon\" data-type=\"").concat(entry[0], "\"></div>");
+        }).join(' &nbsp; '));
+        if (Object.values(card.provides).length) {
+            message += "<br>\n            <strong>".concat(_("Provides:"), "</strong> ").concat(Object.entries(card.provides).map(function (entry) {
+                return "".concat(entry[1], " ").concat(/*Number(entry[0]) == 9 ? '?' :*/ "<div class=\"token-icon\" data-type=\"".concat(entry[0], "\"></div>"));
+            }).join(' &nbsp; '));
+        }
+        if (card.points) {
+            message += "\n            <br>\n            <strong>".concat(_("Points:"), "</strong> ").concat(card.points, "\n            ");
+        }
+        if (card.crowns) {
+            message += "\n            <br>\n            <strong>".concat(_("Crowns:"), "</strong> ").concat(card.crowns);
+        }
+        if (card.power) {
+            message += "\n            <br>\n            <strong>".concat(_("Power:"), "</strong> ").concat(Array.isArray(card.power) ? card.power.map(function (power) { return _this.getPower(power); }).join(', ') : this.getPower(card.power), "\n            ");
+        }
         return message;
     };
     return CardsManager;
@@ -2351,45 +2378,45 @@ var PlayerTable = /** @class */ (function () {
         var _this = this;
         this.game = game;
         this.played = [];
+        this.tokens = [];
         this.limitSelection = null;
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.getPlayerId();
-        var html = "\n        <div id=\"player-table-".concat(this.playerId, "\" class=\"player-table\" style=\"--player-color: #").concat(player.color, ";\">\n            <div id=\"player-table-").concat(this.playerId, "-name\" class=\"name-wrapper\">").concat(player.name, "</div>\n        ");
-        if (this.currentPlayer) {
-            html += "\n            <div class=\"block-with-text hand-wrapper\">\n                <div class=\"block-label\">".concat(_('Your hand'), "</div>\n                <div id=\"player-table-").concat(this.playerId, "-hand\" class=\"hand cards\"></div>\n            </div>");
-        }
-        html += "\n            <div id=\"player-table-".concat(this.playerId, "-tokens\" class=\"tokens\"></div>\n            \n            <div class=\"visible-cards\">");
-        for (var i = 1; i <= 5; i++) {
-            html += "\n                <div id=\"player-table-".concat(this.playerId, "-played-").concat(i, "\" class=\"cards\"></div>\n                ");
-        }
-        html += "\n            </div>\n\n            <div id=\"player-table-".concat(this.playerId, "-royal-cards\"></div>\n            \n        </div>\n        ");
+        var html = "\n        <div id=\"player-table-".concat(this.playerId, "\" class=\"player-table\" style=\"--player-color: #").concat(player.color, ";\">\n            <div id=\"player-table-").concat(this.playerId, "-name\" class=\"name-wrapper\">").concat(player.name, "</div>\n            <div class=\"columns\">\n        ");
+        [1, 2, 3, 4, 5, 0, -1].forEach(function (i) {
+            html += "\n                <div id=\"player-table-".concat(_this.playerId, "-tokens-").concat(i, "\" class=\"tokens\"></div>\n                ");
+        });
+        [1, 2, 3, 4, 5, 9].forEach(function (i) {
+            html += "\n                <div id=\"player-table-".concat(_this.playerId, "-played-").concat(i, "\" class=\"cards\"></div>\n                ");
+        });
+        html += "\n                <div class=\"hand-wrapper\">\n                    <div class=\"block-label\">".concat(_('Reserved cards'), "</div>\n                    <div id=\"player-table-").concat(this.playerId, "-reserved\" class=\"cards\"></div>\n                </div>\n            </div>\n\n            <div id=\"player-table-").concat(this.playerId, "-royal-cards\"></div>\n            \n        </div>\n        ");
         dojo.place(html, document.getElementById('tables'));
-        if (this.currentPlayer) {
-            var handDiv = document.getElementById("player-table-".concat(this.playerId, "-hand"));
-            this.hand = new LineStock(this.game.cardsManager, handDiv);
-            this.hand.onCardClick = function (card) { return _this.game.onReservedCardClick(card); };
-            this.hand.addCards(player.reserved);
-        }
+        var reservedDiv = document.getElementById("player-table-".concat(this.playerId, "-reserved"));
+        this.reserved = new LineStock(this.game.cardsManager, reservedDiv);
+        this.reserved.onCardClick = function (card) { return _this.game.onReservedCardClick(card); };
+        this.reserved.addCards(player.reserved);
         this.voidStock = new VoidStock(this.game.cardsManager, document.getElementById("player-table-".concat(this.playerId, "-name")));
-        var _loop_3 = function (i) {
-            var playedDiv = document.getElementById("player-table-".concat(this_1.playerId, "-played-").concat(i));
-            this_1.played[i] = new LineStock(this_1.game.cardsManager, playedDiv, {
+        [1, 2, 3, 4, 5, 9].forEach(function (i) {
+            var playedDiv = document.getElementById("player-table-".concat(_this.playerId, "-played-").concat(i));
+            _this.played[i] = new LineStock(_this.game.cardsManager, playedDiv, {
                 direction: 'column',
                 center: false,
             });
-            this_1.played[i].addCards(player.cards.filter(function (card) { return Number(card.location.slice(-1)) == i; }));
+            _this.played[i].addCards(player.cards.filter(function (card) { return Number(card.location.slice(-1)) == i; }));
             playedDiv.style.setProperty('--card-overlap', '195px');
-        };
-        var this_1 = this;
-        for (var i = 1; i <= 5; i++) {
-            _loop_3(i);
-        }
+        });
         this.royalCards = new LineStock(this.game.royalCardsManager, document.getElementById("player-table-".concat(this.playerId, "-royal-cards")));
         this.royalCards.addCards(player.royalCards);
-        this.tokens = new LineStock(this.game.tokensManager, document.getElementById("player-table-".concat(this.playerId, "-tokens")), {
+        var tokensStockSettings = {
+            direction: 'column',
             center: false,
+        };
+        [1, 2, 3, 4, 5, 0, -1].forEach(function (i) {
+            var tokenDiv = document.getElementById("player-table-".concat(_this.playerId, "-tokens-").concat(i));
+            _this.tokens[i] = new LineStock(_this.game.tokensManager, tokenDiv, tokensStockSettings);
+            tokenDiv.style.setProperty('--card-overlap', '50px');
         });
-        this.tokens.addCards(player.tokens);
+        this.addTokens(player.tokens);
     }
     PlayerTable.prototype.updateCounter = function (type, count) {
         document.getElementById("player-table-".concat(this.playerId, "-boat")).dataset[type] = '' + count;
@@ -2401,9 +2428,9 @@ var PlayerTable = /** @class */ (function () {
     };
     PlayerTable.prototype.setHandSelectable = function (selectable, buyableCards) {
         if (buyableCards === void 0) { buyableCards = null; }
-        this.hand.setSelectionMode(selectable ? 'single' : 'none');
+        this.reserved.setSelectionMode(selectable ? 'single' : 'none');
         if (selectable) {
-            this.hand.setSelectableCards(buyableCards);
+            this.reserved.setSelectableCards(buyableCards);
         }
     };
     PlayerTable.prototype.addCard = function (card) {
@@ -2413,7 +2440,12 @@ var PlayerTable = /** @class */ (function () {
         return this.royalCards.addCard(card);
     };
     PlayerTable.prototype.removeTokens = function (tokens) {
-        this.tokens.removeCards(tokens);
+        var _this = this;
+        [1, 2, 3, 4, 5, 0, -1].map(function (i) { return _this.tokens[i]; }).forEach(function (stock) { return stock.removeCards(tokens); });
+    };
+    PlayerTable.prototype.addTokens = function (tokens) {
+        var _this = this;
+        return Promise.all([1, 2, 3, 4, 5, 0, -1].map(function (i) { return _this.tokens[i].addCards(tokens.filter(function (token) { return token.color == i; })); }));
     };
     return PlayerTable;
 }());
@@ -2477,7 +2509,7 @@ var SplendorDuel = /** @class */ (function () {
             onDimensionsChange: function () {
                 var tablesAndCenter = document.getElementById('tables-and-center');
                 var clientWidth = tablesAndCenter.clientWidth;
-                tablesAndCenter.classList.toggle('double-column', clientWidth > 1478); // TODO
+                tablesAndCenter.classList.toggle('double-column', clientWidth > 1730);
             },
         });
         new HelpManager(this, {
@@ -2652,7 +2684,7 @@ var SplendorDuel = /** @class */ (function () {
             dojo.place(html, "player_board_".concat(player.id));
             var reservedCounter = new ebg.counter();
             reservedCounter.create("reserved-counter-".concat(playerId));
-            reservedCounter.setValue(player.reservedCount);
+            reservedCounter.setValue(player.reserved.length);
             _this.reservedCounters[playerId] = reservedCounter;
             _this.privilegeCounters[playerId] = new ebg.counter();
             _this.privilegeCounters[playerId].create("privilege-counter-".concat(playerId));
@@ -2703,8 +2735,8 @@ var SplendorDuel = /** @class */ (function () {
         }
     };
     SplendorDuel.prototype.onBuyCardClick = function (card) {
-        var tokens = this.getCurrentPlayerTable().tokens.getCards();
-        var goldTokens = tokens.filter(function (token) { return token.type == 1; });
+        var _this = this;
+        var goldTokens = this.getCurrentPlayerTable().tokens[-1].getCards();
         var reductedCost = structuredClone(this.gamedatas.gamestate.args.reducedCosts[card.id]);
         var selectedTokens = [];
         var remaining = 0;
@@ -2712,7 +2744,7 @@ var SplendorDuel = /** @class */ (function () {
         Object.entries(reductedCost).forEach(function (entry) {
             var color = Number(entry[0]);
             var number = entry[1];
-            var tokensOfColor = tokens.filter(function (token) { return token.type == 2 && token.color == color; });
+            var tokensOfColor = _this.getCurrentPlayerTable().tokens[color].getCards();
             selectedTokens.push.apply(selectedTokens, tokensOfColor.slice(0, Math.min(number, tokensOfColor.length)));
             if (number > tokensOfColor.length) {
                 remaining += number - tokensOfColor.length;
@@ -2815,7 +2847,7 @@ var SplendorDuel = /** @class */ (function () {
         var notifs = [
             ['privileges', ANIMATION_MS],
             ['refill', undefined],
-            ['takeTokens', ANIMATION_MS],
+            ['takeTokens', undefined],
             ['reserveCard', ANIMATION_MS],
             ['buyCard', undefined],
             ['takeRoyalCard', undefined],
@@ -2852,8 +2884,7 @@ var SplendorDuel = /** @class */ (function () {
         return this.tableCenter.refillBoard(args.refilledTokens);
     };
     SplendorDuel.prototype.notif_takeTokens = function (args) {
-        // TODO
-        this.getPlayerTable(args.playerId).tokens.addCards(args.tokens);
+        return this.getPlayerTable(args.playerId).addTokens(args.tokens);
     };
     SplendorDuel.prototype.notif_reserveCard = function (args) {
         this.reservedCounters[args.playerId].incValue(1);
@@ -2882,6 +2913,7 @@ var SplendorDuel = /** @class */ (function () {
             case 3: return _("Green");
             case 4: return _("Black");
             case 5: return _("Red");
+            case 9: return _("Gray");
         }
     };
     /* This enable to inject translatable styled things to logs or action bar */

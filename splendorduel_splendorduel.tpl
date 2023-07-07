@@ -4,7 +4,10 @@
         <div id="table-center-wrapper">
             <div id="table-center">
                 <div id="bag"></div>
-                <div id="board"></div>
+                <div id="board-wrapper">
+                    <div id="score-tile"></div>
+                    <div id="board"></div>
+                </div>
                 <div id="table-cards"></div>
                 <div id="royal-cards"></div>
             </div>

@@ -88,7 +88,7 @@ class SplendorDuel implements SplendorDuelGame {
             onDimensionsChange: () => {
                 const tablesAndCenter = document.getElementById('tables-and-center');
                 const clientWidth = tablesAndCenter.clientWidth;
-                tablesAndCenter.classList.toggle('double-column', clientWidth > 1478); // TODO
+                tablesAndCenter.classList.toggle('double-column', clientWidth > 1730);
             },
         });
 
@@ -302,7 +302,7 @@ class SplendorDuel implements SplendorDuelGame {
 
             const reservedCounter = new ebg.counter();
             reservedCounter.create(`reserved-counter-${playerId}`);
-            reservedCounter.setValue(player.reservedCount);
+            reservedCounter.setValue(player.reserved.length);
             this.reservedCounters[playerId] = reservedCounter;
 
             this.privilegeCounters[playerId] = new ebg.counter();
@@ -392,8 +392,7 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     public onBuyCardClick(card: Card): void {
-        const tokens = this.getCurrentPlayerTable().tokens.getCards();
-        const goldTokens = tokens.filter(token => token.type == 1);
+        const goldTokens = this.getCurrentPlayerTable().tokens[-1].getCards();
         const reductedCost = structuredClone((this.gamedatas.gamestate.args as EnteringPlayActionArgs).reducedCosts[card.id]);
         let selectedTokens = [];
         let remaining = 0;
@@ -401,7 +400,7 @@ class SplendorDuel implements SplendorDuelGame {
         Object.entries(reductedCost).forEach(entry => {
             const color = Number(entry[0]);
             const number = entry[1] as number;
-            const tokensOfColor = tokens.filter(token => token.type == 2 && token.color == color);
+            const tokensOfColor =  this.getCurrentPlayerTable().tokens[color].getCards();
             selectedTokens.push(...tokensOfColor.slice(0, Math.min(number, tokensOfColor.length)));
             if (number > tokensOfColor.length) {
                 remaining += number - tokensOfColor.length;
@@ -525,7 +524,7 @@ class SplendorDuel implements SplendorDuelGame {
         const notifs = [
             ['privileges', ANIMATION_MS],
             ['refill', undefined],
-            ['takeTokens', ANIMATION_MS],
+            ['takeTokens', undefined],
             ['reserveCard', ANIMATION_MS],
             ['buyCard', undefined],
             ['takeRoyalCard', undefined],
@@ -569,8 +568,7 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     notif_takeTokens(args: NotifTakeTokensArgs) {
-        // TODO
-        this.getPlayerTable(args.playerId).tokens.addCards(args.tokens);
+        return this.getPlayerTable(args.playerId).addTokens(args.tokens);
     }
 
     notif_reserveCard(args: NotifReserveCardArgs) {
@@ -602,12 +600,13 @@ class SplendorDuel implements SplendorDuelGame {
 
     public getColor(color: number): string {
         switch (color) {
-            case 0: return _("Pearl")
+            case 0: return _("Pearl");
             case 1: return _("Blue");
             case 2: return _("White");
             case 3: return _("Green");
             case 4: return _("Black");
             case 5: return _("Red");
+            case 9: return _("Gray");
         }
     }
 

@@ -875,9 +875,25 @@ body > .card {
 }
 
 #table-center {
-  min-width: 818px;
+  min-width: 820px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
 }
-#table-center #board {
+#table-center #board-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+#table-center #board-wrapper #score-tile {
+  width: 240px;
+  height: 203px;
+  background: url("img/score-tile.jpg");
+  box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+}
+#table-center #board-wrapper #board {
   display: grid;
   grid-template-rows: repeat(5, 1fr);
   grid-template-columns: repeat(5, 1fr);
@@ -887,8 +903,10 @@ body > .card {
   padding: 10px;
   padding-right: 93px;
   box-sizing: border-box;
+  box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
 }
-#table-center #board .slot {
+#table-center #board-wrapper #board .slot {
   width: 80px;
   height: 80px;
 }
@@ -955,7 +973,7 @@ body > .card {
 }
 
 .player-table {
-  min-width: 640px;
+  min-width: 890px;
   width: 100%;
   position: relative;
   background: rgba(255, 255, 255, 0.2);
@@ -978,21 +996,6 @@ body > .card {
   font-size: 20pt;
   font-family: "abril-titling";
 }
-.player-table .block-with-text {
-  display: flex;
-}
-.player-table .block-with-text .block-label {
-  text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black, 0 0 4px black;
-  text-align: center;
-  writing-mode: vertical-lr;
-  transform: rotate(180deg);
-  padding: 5px;
-  text-overflow: ellipsis;
-}
-.player-table .block-with-text > div:not(.block-label) {
-  flex: 1;
-  min-height: 221px;
-}
 .player-table .hand-wrapper {
   margin: 5px;
   background: rgba(255, 255, 255, 0.5333333333);
@@ -1000,16 +1003,36 @@ body > .card {
   align-self: stretch;
   margin-bottom: 10px;
 }
-.player-table .visible-cards {
+.player-table .hand-wrapper .block-label {
+  text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black, 0 0 4px black;
+  text-align: center;
+  color: white;
+  padding: 5px;
+  text-overflow: ellipsis;
+}
+.player-table .columns {
+  display: grid;
+  justify-content: center;
+  grid-template-columns: repeat(7, 120px);
+  gap: 5px;
+  margin: 10px;
+}
+.player-table .visible-cards, .player-table .visible-tokens {
   display: flex;
   justify-content: center;
   gap: 5px;
   margin: 10px;
 }
-.player-table .visible-cards .cards {
+.player-table .visible-cards .cards, .player-table .visible-tokens .cards {
   width: 120px;
 }
-.player-table .visible-cards .cards .card:not(:first-child) {
+.player-table .visible-cards .cards .card:not(:first-child), .player-table .visible-tokens .cards .card:not(:first-child) {
+  margin-top: calc(-1 * var(--card-overlap));
+}
+.player-table .visible-cards .tokens, .player-table .visible-tokens .tokens {
+  width: 80px;
+}
+.player-table .visible-cards .tokens .token:not(:first-child), .player-table .visible-tokens .tokens .token:not(:first-child) {
   margin-top: calc(-1 * var(--card-overlap));
 }
 
