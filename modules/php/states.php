@@ -49,6 +49,21 @@ trait StateTrait {
         }
     }
 
+    function stTakeOpponentToken() {
+        $opponentId = $this->argTakeOpponentToken()['opponentId'];
+        $tokens = $this->getPlayerTokens($opponentId);
+
+        if (!$this->array_some($tokens, fn($token) => $token->type == 2)) {
+            self::notifyAllPlayers('log', clienttranslate("Card ability is skipped, as your opponent doesn't have any Gem or Pearl"), [
+            ]);
+
+            $playerId = intval($this->getActivePlayerId());
+            $id = intval($this->getGameStateValue(PLAYED_CARD));
+            $card = $this->getCardFromDb($this->cards->getCard($id));
+            $this->applyEndTurn($playerId, $card, true);
+        }
+    }
+
     function stNextPlayer() {
         $playerId = intval($this->getActivePlayerId());
 

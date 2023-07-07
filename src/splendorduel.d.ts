@@ -45,7 +45,7 @@ interface SplendorDuelGame extends Game {
 
     setTooltip(id: string, html: string): void;
     onTableTokenSelectionChange(tokens: Token[], valid: boolean): void;
-    onPlayerTokenSelectionChange(): void;
+    onPlayerTokenSelectionChange(tokens: Token[]): void;
     onTableCardClick(card: Card): void;
     onRoyalCardClick(card: RoyalCard): void;
     onReservedCardClick(card: Card): void;
@@ -75,6 +75,10 @@ interface EnteringPlaceJokerArgs {
 
 interface EnteringTakeBoardTokenArgs {
     color: number;
+}
+
+interface EnteringTakeOpponentTokenArgs {
+    opponentId: number;
 }
 
 // privileges

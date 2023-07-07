@@ -383,9 +383,9 @@ trait UtilTrait {
                     clienttranslate('${player_name} takes a privilege with the played card ability');
                 $this->takePrivilege($playerId, $message);
                 break;
-            case ST_PLAYER_TAKE_OPPONENT_TOKEN:
+            case POWER_TAKE_GEM_FROM_OPPONENT:
                 $this->setGameStateValue(PLAYED_CARD, $cardId);
-                $this->gamestate->jumpToState(ST_PLAYER_TAKE_BOARD_TOKEN);
+                $this->gamestate->jumpToState(ST_PLAYER_TAKE_OPPONENT_TOKEN);
                 return true;
         }
 

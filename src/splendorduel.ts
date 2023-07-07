@@ -136,6 +136,9 @@ class SplendorDuel implements SplendorDuelGame {
             case 'takeBoardToken':
                 this.onEnteringTakeBoardToken(args.args);
                 break;
+            case 'takeOpponentToken':
+                this.onEnteringTakeOpponentToken(args.args);
+                break;
             case 'discardTokens':
                 this.onEnteringDiscardTokens();
                 break;
@@ -195,9 +198,15 @@ class SplendorDuel implements SplendorDuelGame {
         }
     }
 
+    private onEnteringTakeOpponentToken(args: EnteringTakeOpponentTokenArgs) {
+        if ((this as any).isCurrentPlayerActive()) {
+            this.getPlayerTable(args.opponentId).setTokensSelectable(true, false);
+        }
+    }
+
     private onEnteringDiscardTokens() {
         if ((this as any).isCurrentPlayerActive()) {
-            this.getCurrentPlayerTable().setTokensSelectable(true);
+            this.getCurrentPlayerTable().setTokensSelectable(true, true);
         }
     }
 
@@ -212,6 +221,9 @@ class SplendorDuel implements SplendorDuelGame {
                 break;
             case 'placeJoker':
                 this.onLeavingPlaceJoker();
+                break;
+            case 'takeOpponentToken':
+                this.onLeavingTakeOpponentToken();
                 break;
             case 'discardTokens':
                 this.onLeavingDiscardTokens();
@@ -229,8 +241,12 @@ class SplendorDuel implements SplendorDuelGame {
         this.getCurrentPlayerTable()?.setColumnsSelectable([]);
     }
 
+    private onLeavingTakeOpponentToken() {
+        this.playersTables.forEach(playerTable => playerTable.setTokensSelectable(false, true));
+    }
+
     private onLeavingDiscardTokens() {
-        this.getCurrentPlayerTable()?.setTokensSelectable(false);
+        this.getCurrentPlayerTable()?.setTokensSelectable(false, true);
     }
 
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
@@ -260,6 +276,10 @@ class SplendorDuel implements SplendorDuelGame {
                 case 'playAction':
                 case 'takeBoardToken':
                     (this as any).addActionButton(`takeSelectedTokens_button`, _("Take selected token(s)"), () => this.takeSelectedTokens());
+                    document.getElementById(`takeSelectedTokens_button`).classList.add('disabled');
+                    break;
+                case 'takeOpponentToken':
+                    (this as any).addActionButton(`takeSelectedTokens_button`, _("Take selected token"), () => this.takeOpponentToken(this.tokensSelection[0].id));
                     document.getElementById(`takeSelectedTokens_button`).classList.add('disabled');
                     break;
                 case 'discardTokens':
@@ -435,10 +455,14 @@ class SplendorDuel implements SplendorDuelGame {
         document.getElementById('takeSelectedTokens_button')?.classList.toggle('disabled', !valid);
     }
 
-    public onPlayerTokenSelectionChange(): void {
-        this.tokensSelection = this.getCurrentPlayerTable().getSelectedTokens();
+    public onPlayerTokenSelectionChange(tokens: Token[]): void {
+        this.tokensSelection = tokens;
 
-        document.getElementById('discardSelectedTokens_button')?.classList.toggle('disabled', this.tokensSelection.length != this.gamedatas.gamestate.args.number);
+        if (this.gamedatas.gamestate.name == 'discardCards') {
+            document.getElementById('discardSelectedTokens_button')?.classList.toggle('disabled', this.tokensSelection.length != this.gamedatas.gamestate.args.number);
+        } else if (this.gamedatas.gamestate.name == 'takeOpponentToken') {
+            document.getElementById('takeSelectedTokens_button')?.classList.toggle('disabled', this.tokensSelection.length != 1);
+        }
     }
 
     public onTableCardClick(card: Card): void {
@@ -562,6 +586,16 @@ class SplendorDuel implements SplendorDuelGame {
         }
 
         this.takeAction('takeRoyalCard', {
+            id
+        });
+    }
+  	
+    public takeOpponentToken(id: number) {
+        if(!(this as any).checkAction('takeOpponentToken')) {
+            return;
+        }
+
+        this.takeAction('takeOpponentToken', {
             id
         });
     }

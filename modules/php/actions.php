@@ -254,4 +254,23 @@ trait ActionTrait {
 
         $this->gamestate->nextState('next');
     }
+
+    public function takeOpponentToken(int $id) {
+        self::checkAction('takeOpponentToken');
+
+        $playerId = intval($this->getActivePlayerId());
+        $opponentId = $this->getOpponentId($playerId);
+
+        $playerTokens = $this->getPlayerTokens($opponentId);
+        $token = $this->array_find($playerTokens, fn($token) => $token->id == $id);
+        if ($token == null) {
+            throw new BgaUserException("You must take a token from your opponent");
+        }
+
+        $this->applyTakeTokens($playerId, [$token]);
+
+        $id = intval($this->getGameStateValue(PLAYED_CARD));
+        $card = $this->getCardFromDb($this->cards->getCard($id));
+        $this->applyEndTurn($playerId, $card, true);
+    }
 }

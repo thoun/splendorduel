@@ -78,7 +78,7 @@ class PlayerTable {
         [1,2,3,4,5,0, -1].forEach(i => {
             const tokenDiv = document.getElementById(`player-table-${this.playerId}-tokens-${i}`);
             this.tokens[i] = new LineStock<Token>(this.game.tokensManager, tokenDiv, tokensStockSettings);
-            this.tokens[i].onSelectionChange = () => this.game.onPlayerTokenSelectionChange();
+            this.tokens[i].onSelectionChange = () => this.game.onPlayerTokenSelectionChange(this.getSelectedTokens());
             tokenDiv.style.setProperty('--card-overlap', '50px');
         });
         
@@ -124,8 +124,8 @@ class PlayerTable {
         );         
     }
     
-    public setTokensSelectable(selectable: boolean) {
-        [1,2,3,4,5,0,-1].forEach(i => this.tokens[i].setSelectionMode(selectable ? 'multiple' : 'none'));
+    public setTokensSelectable(selectable: boolean, goldAllowed: boolean) {
+        (goldAllowed || !selectable ? [1,2,3,4,5,0,-1] : [1,2,3,4,5,0]).forEach(i => this.tokens[i].setSelectionMode(selectable ? 'multiple' : 'none'));
     }
 
     public getSelectedTokens(): Token[] {

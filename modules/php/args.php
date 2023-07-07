@@ -80,6 +80,15 @@ trait ArgsTrait {
         ];
     }
 
+    function argTakeOpponentToken() {
+        $playerId = intval($this->getActivePlayerId());
+        $opponentId = $this->getOpponentId($playerId);
+
+        return [
+            'opponentId' => $opponentId,
+        ];
+    }
+
     function argDiscardTokens() {
         $playerId = intval($this->getActivePlayerId());
 
