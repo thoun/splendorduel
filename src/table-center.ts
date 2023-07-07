@@ -56,7 +56,7 @@ class TableCenter {
     }
     
     public refillBoard(refilledTokens: Token[]): Promise<any> {
-        return this.board.refill(refilledTokens);
+        return this.board.refill(refilledTokens, this.bag);
     }
     
     public setBoardSelectable(selectionType: 'privileges' | 'play' | 'effect' | null, canTakeGold: boolean = false, max: number = 3, color: number = null) {

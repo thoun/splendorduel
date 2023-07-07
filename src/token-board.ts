@@ -67,7 +67,7 @@ class TokenBoard {
             valid = validUpdated;
         }
 
-        this.game.onTokenSelectionChange(selection, valid);
+        this.game.onTableTokenSelectionChange(selection, valid);
     }
 
     private onPlayTokenSelectionChange(selection: Token[], tokens: Token[], valid: boolean, lastChange: Token) {
@@ -191,7 +191,7 @@ class TokenBoard {
         return valid;
     }
     
-    public refill(refilledTokens: Token[]): Promise<any> {
-        return this.stock.addCards(refilledTokens, undefined, undefined, 100);
+    public refill(refilledTokens: Token[], fromStock: CardStock<Token>): Promise<any> {
+        return this.stock.addCards(refilledTokens, { fromStock }, undefined, 350);
     }
 }

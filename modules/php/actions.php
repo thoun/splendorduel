@@ -130,7 +130,7 @@ trait ActionTrait {
 
         $tokens = $this->getTokensFromDb($this->tokens->getCards($tokensIds));
         if ($this->array_some($tokens, fn($token) => $token->location != 'player' && $token->locationArg != $playerId)) {
-            throw new BgaUserException("You must use you tokens to purchase the card");
+            throw new BgaUserException("You must use your own tokens to purchase the card");
         }
 
         $playerCards = $this->getCardsByLocation('player'.$playerId.'-%');
@@ -169,7 +169,7 @@ trait ActionTrait {
             'player_name' => $this->getPlayerName($playerId),
             'card' => $card,
             'fromReserved' => $fromReserved,
-            'tokens' => $tokens, // for logs
+            'tokens' => $tokens,
             'card_level' => $level, // for logs
             'spent_tokens' => $tokens, // for logs
         ]);
@@ -226,5 +226,28 @@ trait ActionTrait {
         ]);
 
         $this->applyEndTurn($playerId, $card, true);
+    }
+
+    public function discardTokens(array $ids) {
+        self::checkAction('discardTokens');
+
+        $playerId = intval($this->getActivePlayerId());
+
+        $playerTokens = $this->getPlayerTokens($playerId);
+        $tokens = array_values(array_filter($playerTokens, fn($token) => in_array($token->id, $ids)));
+        if (count($tokens) != count($ids)) {
+            throw new BgaUserException("You must discard your own tokens");
+        }
+
+        $this->tokens->moveCards($ids, 'bag');
+        
+        self::notifyAllPlayers('discardTokens', clienttranslate('${player_name} discards ${discarded_tokens} (10 tokens limit)'), [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'tokens' => $tokens,
+            'discarded_tokens' => $tokens, // for logs
+        ]);
+
+        $this->gamestate->nextState('next');
     }
 }

@@ -63,6 +63,11 @@ trait StateTrait {
         }
 
         if (boolval($this->getGameStateValue(PLAY_AGAIN))) {
+            self::notifyAllPlayers('log', clienttranslate('${player_name} takes another turn with played card effect'), [
+                'playerId' => $playerId,
+                'player_name' => $this->getPlayerName($playerId),
+            ]);
+
             $this->setGameStateValue(PLAY_AGAIN, 0);
         } else {
             $this->activeNextPlayer();

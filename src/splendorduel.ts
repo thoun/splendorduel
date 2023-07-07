@@ -121,6 +121,9 @@ class SplendorDuel implements SplendorDuelGame {
             case 'usePrivilege':
                 this.onEnteringUsePrivilege(args.args);
                 break;
+            case 'refillBoard':
+                this.onEnteringRefillBoard(args.args);
+                break;
             case 'playAction':
                 this.onEnteringPlayAction(args.args);
                 break;
@@ -130,12 +133,15 @@ class SplendorDuel implements SplendorDuelGame {
             case 'placeJoker':
                 this.onEnteringPlaceJoker(args.args);
                 break;
+            case 'discardTokens':
+                this.onEnteringDiscardTokens();
+                break;
         }
     }
     
     private setGamestateDescription(property: string = '') {
         const originalState = this.gamedatas.gamestates[this.gamedatas.gamestate.id];
-        this.gamedatas.gamestate.description = `${originalState['description' + property]}`; 
+        //this.gamedatas.gamestate.description = `${originalState['description' + property]}`; 
         this.gamedatas.gamestate.descriptionmyturn = `${originalState['descriptionmyturn' + property]}`;
         (this as any).updatePageTitle();
     }
@@ -143,6 +149,12 @@ class SplendorDuel implements SplendorDuelGame {
     private onEnteringUsePrivilege(args: EnteringUsePrivilegeArgs) {
         if ((this as any).isCurrentPlayerActive()) {
             this.tableCenter.setBoardSelectable('privileges', false, args.privileges);
+        }
+    }
+
+    private onEnteringRefillBoard(args: EnteringRefillBoardArgs) {
+        if (args.mustRefill) {
+            this.setGamestateDescription('MustRefill');
         }
     }
 
@@ -174,6 +186,12 @@ class SplendorDuel implements SplendorDuelGame {
         }
     }
 
+    private onEnteringDiscardTokens() {
+        if ((this as any).isCurrentPlayerActive()) {
+            this.getCurrentPlayerTable().setTokensSelectable(true);
+        }
+    }
+
     public onLeavingState(stateName: string) {
         log( 'Leaving state: '+stateName );
 
@@ -184,6 +202,9 @@ class SplendorDuel implements SplendorDuelGame {
                 break;
             case 'placeJoker':
                 this.onLeavingPlaceJoker();
+                break;
+            case 'discardTokens':
+                this.onLeavingDiscardTokens();
                 break;
         }
     }
@@ -196,6 +217,10 @@ class SplendorDuel implements SplendorDuelGame {
 
     private onLeavingPlaceJoker() {
         this.getCurrentPlayerTable()?.setColumnsSelectable([]);
+    }
+
+    private onLeavingDiscardTokens() {
+        this.getCurrentPlayerTable()?.setTokensSelectable(false);
     }
 
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
@@ -393,10 +418,16 @@ class SplendorDuel implements SplendorDuelGame {
         }
     }
     
-    public onTokenSelectionChange(tokens: Token[], valid: boolean): void {
+    public onTableTokenSelectionChange(tokens: Token[], valid: boolean): void {
         this.tokensSelection = tokens;
 
         document.getElementById('takeSelectedTokens_button')?.classList.toggle('disabled', !valid);
+    }
+
+    public onPlayerTokenSelectionChange(): void {
+        this.tokensSelection = this.getCurrentPlayerTable().getSelectedTokens();
+
+        document.getElementById('discardSelectedTokens_button')?.classList.toggle('disabled', this.tokensSelection.length != this.gamedatas.gamestate.args.number);
     }
 
     public onTableCardClick(card: Card): void {
@@ -459,6 +490,16 @@ class SplendorDuel implements SplendorDuelGame {
         });
     }
   	
+    public discardSelectedTokens() {
+        if(!(this as any).checkAction('discardTokens')) {
+            return;
+        }
+
+        this.takeAction('discardTokens', {
+            ids: this.tokensSelection.map(token => token.id).join(','), 
+        });
+    }
+  	
     public skip() {
         if(!(this as any).checkAction('skip')) {
             return;
@@ -514,14 +555,6 @@ class SplendorDuel implements SplendorDuelGame {
         });
     }
   	
-    public discardSelectedTokens() {
-        if(!(this as any).checkAction('discardTokens')) {
-            return;
-        }
-
-        this.takeAction('discardTokens'); // TODO
-    }
-  	
     public placeJoker(color: number) {
         if(!(this as any).checkAction('placeJoker')) {
             return;
@@ -560,6 +593,7 @@ class SplendorDuel implements SplendorDuelGame {
             ['reserveCard', undefined],
             ['buyCard', undefined],
             ['takeRoyalCard', undefined],
+            ['discardTokens', undefined],
             ['newTableCard', undefined],
             ['win', 1],
         ];
@@ -625,6 +659,10 @@ class SplendorDuel implements SplendorDuelGame {
         return this.getPlayerTable(args.playerId).addRoyalCard(args.card);
     }
 
+    notif_discardTokens(args: NotifDiscardTokensArgs) {
+        return this.tableCenter.removeTokens(args.tokens);
+    }
+
     notif_newTableCard(args: NotifNewTableCardArgs) {
         return this.tableCenter.replaceCard(args);
     }
@@ -651,7 +689,7 @@ class SplendorDuel implements SplendorDuelGame {
         try {
             if (log && args && !args.processed) {
                 
-                ['new_tokens', 'spent_tokens'].forEach(property => {                
+                ['new_tokens', 'spent_tokens', 'discarded_tokens'].forEach(property => {                
                     if (args[property] && (typeof args[property] !== 'string' || args[property][0] !== '<')) {
                         args[property] = args[property].map(token => `<div class="token-icon" data-type="${token.type == 1 ? -1 : token.color}"></div>`).join(' ');
                     }

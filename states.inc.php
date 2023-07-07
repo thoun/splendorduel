@@ -101,7 +101,8 @@ $playerActionsGameStates = [
         "name" => "refillBoard",
         "description" => clienttranslate('[OPTIONAL ACTION] ${actplayer} can replenish the board'),
         "descriptionmyturn" => clienttranslate('[OPTIONAL ACTION] ${you} can replenish the board'),
-        "descriptionmyturnMustRefill" => clienttranslate('${you} must replenish the board'), // TODO use
+        "descriptionMustRefill" => clienttranslate('[OPTIONAL ACTION] ${actplayer} can replenish the board'),
+        "descriptionmyturnMustRefill" => clienttranslate('${you} must replenish the board'),
         "type" => "activeplayer",    
         "args" => "argRefillBoard",
         "action" => "stRefillBoard",
@@ -200,7 +201,7 @@ $playerActionsGameStates = [
         "description" => clienttranslate('${actplayer} must discard ${number} tokens (10 tokens limit)'),
         "descriptionmyturn" => clienttranslate('${you} must discard ${number} tokens (10 tokens limit)'),
         "type" => "activeplayer",
-        "arg" => "argDiscardTokens",
+        "args" => "argDiscardTokens",
         "possibleactions" => [ 
             "discardTokens",
         ],

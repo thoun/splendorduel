@@ -49,6 +49,16 @@
         self::ajaxResponse();
     }
 
+    public function discardTokens() {
+        self::setAjaxMode();   
+
+        $idsStr = self::getArg( "ids", AT_numberlist, true );
+        $ids = array_map(fn($str) => intval($str), explode(',', $idsStr));
+        $this->game->discardTokens($ids);
+
+        self::ajaxResponse();
+    }
+
     public function skip() {
         self::setAjaxMode();
 

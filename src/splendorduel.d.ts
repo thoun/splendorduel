@@ -44,7 +44,8 @@ interface SplendorDuelGame extends Game {
     getCurrentPlayerTable(): PlayerTable | null;
 
     setTooltip(id: string, html: string): void;
-    onTokenSelectionChange(tokens: Token[], valid: boolean): void;
+    onTableTokenSelectionChange(tokens: Token[], valid: boolean): void;
+    onPlayerTokenSelectionChange(): void;
     onTableCardClick(card: Card): void;
     onRoyalCardClick(card: RoyalCard): void;
     onReservedCardClick(card: Card): void;
@@ -108,6 +109,12 @@ interface NotifBuyCardArgs extends NotifNewPlayerCardArgs {
 interface NotifTakeRoyalCardArgs {
     playerId: number;
     card: RoyalCard;
+}
+
+// discardTokens
+interface NotifDiscardTokensArgs {
+    playerId: number;
+    tokens: Token[];
 }
 
 // newTableCard

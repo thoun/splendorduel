@@ -2186,7 +2186,7 @@ var TokenBoard = /** @class */ (function () {
             }
             valid = validUpdated;
         }
-        this.game.onTokenSelectionChange(selection, valid);
+        this.game.onTableTokenSelectionChange(selection, valid);
     };
     TokenBoard.prototype.onPlayTokenSelectionChange = function (selection, tokens, valid, lastChange) {
         var goldTokens = selection.filter(function (card) { return card.type == 1; });
@@ -2302,8 +2302,8 @@ var TokenBoard = /** @class */ (function () {
         }
         return valid;
     };
-    TokenBoard.prototype.refill = function (refilledTokens) {
-        return this.stock.addCards(refilledTokens, undefined, undefined, 100);
+    TokenBoard.prototype.refill = function (refilledTokens, fromStock) {
+        return this.stock.addCards(refilledTokens, { fromStock: fromStock }, undefined, 350);
     };
     return TokenBoard;
 }());
@@ -2353,7 +2353,7 @@ var TableCenter = /** @class */ (function () {
         }
     };
     TableCenter.prototype.refillBoard = function (refilledTokens) {
-        return this.board.refill(refilledTokens);
+        return this.board.refill(refilledTokens, this.bag);
     };
     TableCenter.prototype.setBoardSelectable = function (selectionType, canTakeGold, max, color) {
         if (canTakeGold === void 0) { canTakeGold = false; }
@@ -2423,6 +2423,7 @@ var PlayerTable = /** @class */ (function () {
         [1, 2, 3, 4, 5, 0, -1].forEach(function (i) {
             var tokenDiv = document.getElementById("player-table-".concat(_this.playerId, "-tokens-").concat(i));
             _this.tokens[i] = new LineStock(_this.game.tokensManager, tokenDiv, tokensStockSettings);
+            _this.tokens[i].onSelectionChange = function () { return _this.game.onPlayerTokenSelectionChange(); };
             tokenDiv.style.setProperty('--card-overlap', '50px');
         });
         this.addTokens(player.tokens);
@@ -2460,6 +2461,14 @@ var PlayerTable = /** @class */ (function () {
         [1, 2, 3, 4, 5].forEach(function (i) {
             return document.getElementById("player-table-".concat(_this.playerId, "-played-").concat(i)).classList.toggle('selectable-for-joker', colors.includes(i));
         });
+    };
+    PlayerTable.prototype.setTokensSelectable = function (selectable) {
+        var _this = this;
+        [1, 2, 3, 4, 5, 0, -1].forEach(function (i) { return _this.tokens[i].setSelectionMode(selectable ? 'multiple' : 'none'); });
+    };
+    PlayerTable.prototype.getSelectedTokens = function () {
+        var _this = this;
+        return [1, 2, 3, 4, 5, 0, -1].map(function (i) { return _this.tokens[i].getSelection(); }).reduce(function (a, b) { return __spreadArray(__spreadArray([], a, true), b, true); }, []);
     };
     return PlayerTable;
 }());
@@ -2551,6 +2560,9 @@ var SplendorDuel = /** @class */ (function () {
             case 'usePrivilege':
                 this.onEnteringUsePrivilege(args.args);
                 break;
+            case 'refillBoard':
+                this.onEnteringRefillBoard(args.args);
+                break;
             case 'playAction':
                 this.onEnteringPlayAction(args.args);
                 break;
@@ -2560,18 +2572,26 @@ var SplendorDuel = /** @class */ (function () {
             case 'placeJoker':
                 this.onEnteringPlaceJoker(args.args);
                 break;
+            case 'discardTokens':
+                this.onEnteringDiscardTokens();
+                break;
         }
     };
     SplendorDuel.prototype.setGamestateDescription = function (property) {
         if (property === void 0) { property = ''; }
         var originalState = this.gamedatas.gamestates[this.gamedatas.gamestate.id];
-        this.gamedatas.gamestate.description = "".concat(originalState['description' + property]);
+        //this.gamedatas.gamestate.description = `${originalState['description' + property]}`; 
         this.gamedatas.gamestate.descriptionmyturn = "".concat(originalState['descriptionmyturn' + property]);
         this.updatePageTitle();
     };
     SplendorDuel.prototype.onEnteringUsePrivilege = function (args) {
         if (this.isCurrentPlayerActive()) {
             this.tableCenter.setBoardSelectable('privileges', false, args.privileges);
+        }
+    };
+    SplendorDuel.prototype.onEnteringRefillBoard = function (args) {
+        if (args.mustRefill) {
+            this.setGamestateDescription('MustRefill');
         }
     };
     SplendorDuel.prototype.onEnteringPlayAction = function (args) {
@@ -2599,6 +2619,11 @@ var SplendorDuel = /** @class */ (function () {
             this.getCurrentPlayerTable().setColumnsSelectable(args.colors);
         }
     };
+    SplendorDuel.prototype.onEnteringDiscardTokens = function () {
+        if (this.isCurrentPlayerActive()) {
+            this.getCurrentPlayerTable().setTokensSelectable(true);
+        }
+    };
     SplendorDuel.prototype.onLeavingState = function (stateName) {
         log('Leaving state: ' + stateName);
         switch (stateName) {
@@ -2608,6 +2633,9 @@ var SplendorDuel = /** @class */ (function () {
                 break;
             case 'placeJoker':
                 this.onLeavingPlaceJoker();
+                break;
+            case 'discardTokens':
+                this.onLeavingDiscardTokens();
                 break;
         }
     };
@@ -2620,6 +2648,10 @@ var SplendorDuel = /** @class */ (function () {
     SplendorDuel.prototype.onLeavingPlaceJoker = function () {
         var _a;
         (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setColumnsSelectable([]);
+    };
+    SplendorDuel.prototype.onLeavingDiscardTokens = function () {
+        var _a;
+        (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setTokensSelectable(false);
     };
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
     //                        action status bar (ie: the HTML links in the status bar).
@@ -2750,10 +2782,15 @@ var SplendorDuel = /** @class */ (function () {
             //this.cardsManager.setForHelp(i, `help-artifact-${i}`);
         }
     };
-    SplendorDuel.prototype.onTokenSelectionChange = function (tokens, valid) {
+    SplendorDuel.prototype.onTableTokenSelectionChange = function (tokens, valid) {
         var _a;
         this.tokensSelection = tokens;
         (_a = document.getElementById('takeSelectedTokens_button')) === null || _a === void 0 ? void 0 : _a.classList.toggle('disabled', !valid);
+    };
+    SplendorDuel.prototype.onPlayerTokenSelectionChange = function () {
+        var _a;
+        this.tokensSelection = this.getCurrentPlayerTable().getSelectedTokens();
+        (_a = document.getElementById('discardSelectedTokens_button')) === null || _a === void 0 ? void 0 : _a.classList.toggle('disabled', this.tokensSelection.length != this.gamedatas.gamestate.args.number);
     };
     SplendorDuel.prototype.onTableCardClick = function (card) {
         if (this.gamedatas.gamestate.name == 'reserveCard') {
@@ -2810,6 +2847,14 @@ var SplendorDuel = /** @class */ (function () {
             ids: this.tokensSelection.map(function (token) { return token.id; }).join(','),
         });
     };
+    SplendorDuel.prototype.discardSelectedTokens = function () {
+        if (!this.checkAction('discardTokens')) {
+            return;
+        }
+        this.takeAction('discardTokens', {
+            ids: this.tokensSelection.map(function (token) { return token.id; }).join(','),
+        });
+    };
     SplendorDuel.prototype.skip = function () {
         if (!this.checkAction('skip')) {
             return;
@@ -2853,12 +2898,6 @@ var SplendorDuel = /** @class */ (function () {
             id: id
         });
     };
-    SplendorDuel.prototype.discardSelectedTokens = function () {
-        if (!this.checkAction('discardTokens')) {
-            return;
-        }
-        this.takeAction('discardTokens'); // TODO
-    };
     SplendorDuel.prototype.placeJoker = function (color) {
         if (!this.checkAction('placeJoker')) {
             return;
@@ -2893,6 +2932,7 @@ var SplendorDuel = /** @class */ (function () {
             ['reserveCard', undefined],
             ['buyCard', undefined],
             ['takeRoyalCard', undefined],
+            ['discardTokens', undefined],
             ['newTableCard', undefined],
             ['win', 1],
         ];
@@ -2957,6 +2997,9 @@ var SplendorDuel = /** @class */ (function () {
     SplendorDuel.prototype.notif_takeRoyalCard = function (args) {
         return this.getPlayerTable(args.playerId).addRoyalCard(args.card);
     };
+    SplendorDuel.prototype.notif_discardTokens = function (args) {
+        return this.tableCenter.removeTokens(args.tokens);
+    };
     SplendorDuel.prototype.notif_newTableCard = function (args) {
         return this.tableCenter.replaceCard(args);
     };
@@ -2979,7 +3022,7 @@ var SplendorDuel = /** @class */ (function () {
     SplendorDuel.prototype.format_string_recursive = function (log, args) {
         try {
             if (log && args && !args.processed) {
-                ['new_tokens', 'spent_tokens'].forEach(function (property) {
+                ['new_tokens', 'spent_tokens', 'discarded_tokens'].forEach(function (property) {
                     if (args[property] && (typeof args[property] !== 'string' || args[property][0] !== '<')) {
                         args[property] = args[property].map(function (token) { return "<div class=\"token-icon\" data-type=\"".concat(token.type == 1 ? -1 : token.color, "\"></div>"); }).join(' ');
                     }
