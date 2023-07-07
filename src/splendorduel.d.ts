@@ -73,6 +73,10 @@ interface EnteringPlaceJokerArgs {
     colors: number[];
 }
 
+interface EnteringTakeBoardTokenArgs {
+    color: number;
+}
+
 // privileges
 interface NotifPrivilegesArgs {
     privileges: { [playerId: number]: number };

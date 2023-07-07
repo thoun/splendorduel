@@ -364,15 +364,12 @@ trait UtilTrait {
         ]);
     }
 
-    function applyPower(int $playerId, int $power, int $cardId = -1, bool $ignoreJoker = false) {
+    function applyPower(int $playerId, int $power, int $cardId = -1) {
         switch ($power) {
             case POWER_PLAY_AGAIN:
                 $this->setGameStateValue(PLAY_AGAIN, 1);
                 break;
             case POWER_MULTICOLOR:
-                if ($ignoreJoker) {
-                    return false;
-                }
                 $this->setGameStateValue(PLAYED_CARD, $cardId);
                 $this->gamestate->jumpToState(ST_PLAYER_PLACE_JOKER);
                 return true;
@@ -387,6 +384,7 @@ trait UtilTrait {
                 $this->takePrivilege($playerId, $message);
                 break;
             case ST_PLAYER_TAKE_OPPONENT_TOKEN:
+                $this->setGameStateValue(PLAYED_CARD, $cardId);
                 $this->gamestate->jumpToState(ST_PLAYER_TAKE_BOARD_TOKEN);
                 return true;
         }
@@ -394,7 +392,7 @@ trait UtilTrait {
         return false;
     }
 
-    function applyEndTurn(int $playerId, /*?Card | RoyalCard*/ $card = null, bool $ignoreJoker = false) {
+    function applyEndTurn(int $playerId, /*?Card | RoyalCard*/ $card = null, bool $ignorePower = false) {
         $takeRoyalCard = false;
 
         if ($card != null) {
@@ -412,14 +410,14 @@ trait UtilTrait {
                 }
             }
 
-            if ($card->power != null) {
+            if ($card->power != null && !$ignorePower) {
                 $redirected = false;
                 if (gettype($card->power) == 'array') {
                     foreach($card->power as $power) {
-                        $redirected = $redirected || $this->applyPower($playerId, $power, $card->id, $ignoreJoker);
+                        $redirected = $redirected || $this->applyPower($playerId, $power, $card->id);
                     }
                 } else {
-                    $redirected = $this->applyPower($playerId, $card->power, $card->id, $ignoreJoker);
+                    $redirected = $this->applyPower($playerId, $card->power, $card->id);
                 }
                 if ($redirected) {
                     return;

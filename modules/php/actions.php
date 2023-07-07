@@ -57,7 +57,11 @@ trait ActionTrait {
 
             if (count($tokens) == 1 && $tokens[0]->type == 1) {
                 $this->gamestate->nextState('reserveCard');
-            } else {
+            } else if ($statedId == ST_PLAYER_TAKE_BOARD_TOKEN) {
+                $id = intval($this->getGameStateValue(PLAYED_CARD));
+                $card = $this->getCardFromDb($this->cards->getCard($id));
+                $this->applyEndTurn($playerId, $card, true);
+            } {
                 $this->applyEndTurn($playerId);
             }
         }

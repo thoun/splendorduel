@@ -133,6 +133,9 @@ class SplendorDuel implements SplendorDuelGame {
             case 'placeJoker':
                 this.onEnteringPlaceJoker(args.args);
                 break;
+            case 'takeBoardToken':
+                this.onEnteringTakeBoardToken(args.args);
+                break;
             case 'discardTokens':
                 this.onEnteringDiscardTokens();
                 break;
@@ -186,6 +189,12 @@ class SplendorDuel implements SplendorDuelGame {
         }
     }
 
+    private onEnteringTakeBoardToken(args: EnteringTakeBoardTokenArgs) {
+        if ((this as any).isCurrentPlayerActive()) {
+            this.tableCenter.setBoardSelectable('effect', false, 1, args.color);
+        }
+    }
+
     private onEnteringDiscardTokens() {
         if ((this as any).isCurrentPlayerActive()) {
             this.getCurrentPlayerTable().setTokensSelectable(true);
@@ -198,6 +207,7 @@ class SplendorDuel implements SplendorDuelGame {
         switch (stateName) {
             case 'usePrivilege':
             case 'playAction':
+            case 'takeBoardToken':
                 this.onLeavingPlayAction();
                 break;
             case 'placeJoker':
@@ -232,7 +242,7 @@ class SplendorDuel implements SplendorDuelGame {
             switch (stateName) {
                 case 'usePrivilege':
                     const usePrivilegeArgs = args as EnteringUsePrivilegeArgs;
-                    (this as any).addActionButton(`takeSelectedTokens_button`, _("Take selected tokens"), () => this.takeSelectedTokens());
+                    (this as any).addActionButton(`takeSelectedTokens_button`, _("Take selected token(s)"), () => this.takeSelectedTokens());
                     document.getElementById(`takeSelectedTokens_button`).classList.add('disabled');
                     (this as any).addActionButton(`skip_button`, _("Skip"), () => this.skip());
                     if (usePrivilegeArgs.canSkipBoth) {
@@ -248,11 +258,12 @@ class SplendorDuel implements SplendorDuelGame {
                     }
                     break;
                 case 'playAction':
-                    (this as any).addActionButton(`takeSelectedTokens_button`, _("Take selected tokens"), () => this.takeSelectedTokens());
+                case 'takeBoardToken':
+                    (this as any).addActionButton(`takeSelectedTokens_button`, _("Take selected token(s)"), () => this.takeSelectedTokens());
                     document.getElementById(`takeSelectedTokens_button`).classList.add('disabled');
                     break;
                 case 'discardTokens':
-                    (this as any).addActionButton(`discardSelectedTokens_button`, _("Discard selected tokens"), () => this.discardSelectedTokens());
+                    (this as any).addActionButton(`discardSelectedTokens_button`, _("Discard selected token(s)"), () => this.discardSelectedTokens());
                     document.getElementById(`discardSelectedTokens_button`).classList.add('disabled');
                     break;
                     

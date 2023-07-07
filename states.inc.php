@@ -172,13 +172,13 @@ $playerActionsGameStates = [
 
     ST_PLAYER_TAKE_BOARD_TOKEN => [
         "name" => "takeBoardToken",
-        "description" => clienttranslate('${actplayer} must take a ${color} token from the board'),
-        "descriptionmyturn" => clienttranslate('${you} must take a ${color} token from the board'),
+        "description" => clienttranslate('${actplayer} must take a ${color_name} token from the board'),
+        "descriptionmyturn" => clienttranslate('${you} must take a ${color_name} token from the board'),
         "type" => "activeplayer",
         "args" => "argTakeBoardToken",
         "action" => "stTakeBoardToken",
         "possibleactions" => [ 
-            "takeBoardToken",
+            "takeTokens",
         ],
         "transitions" => $playedCardTransitions,
     ],

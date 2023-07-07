@@ -2162,7 +2162,7 @@ var TokenBoard = /** @class */ (function () {
         this.selectionType = selectionType;
         this.selectionColor = color;
         this.canTakeGold = canTakeGold;
-        if (selectionType === 'privileges') {
+        if (selectionType !== 'play') {
             this.stock.setSelectableCards(this.getDefaultPossibleSelection());
         }
     };
@@ -2572,6 +2572,9 @@ var SplendorDuel = /** @class */ (function () {
             case 'placeJoker':
                 this.onEnteringPlaceJoker(args.args);
                 break;
+            case 'takeBoardToken':
+                this.onEnteringTakeBoardToken(args.args);
+                break;
             case 'discardTokens':
                 this.onEnteringDiscardTokens();
                 break;
@@ -2619,6 +2622,11 @@ var SplendorDuel = /** @class */ (function () {
             this.getCurrentPlayerTable().setColumnsSelectable(args.colors);
         }
     };
+    SplendorDuel.prototype.onEnteringTakeBoardToken = function (args) {
+        if (this.isCurrentPlayerActive()) {
+            this.tableCenter.setBoardSelectable('effect', false, 1, args.color);
+        }
+    };
     SplendorDuel.prototype.onEnteringDiscardTokens = function () {
         if (this.isCurrentPlayerActive()) {
             this.getCurrentPlayerTable().setTokensSelectable(true);
@@ -2629,6 +2637,7 @@ var SplendorDuel = /** @class */ (function () {
         switch (stateName) {
             case 'usePrivilege':
             case 'playAction':
+            case 'takeBoardToken':
                 this.onLeavingPlayAction();
                 break;
             case 'placeJoker':
@@ -2662,7 +2671,7 @@ var SplendorDuel = /** @class */ (function () {
             switch (stateName) {
                 case 'usePrivilege':
                     var usePrivilegeArgs = args;
-                    this.addActionButton("takeSelectedTokens_button", _("Take selected tokens"), function () { return _this.takeSelectedTokens(); });
+                    this.addActionButton("takeSelectedTokens_button", _("Take selected token(s)"), function () { return _this.takeSelectedTokens(); });
                     document.getElementById("takeSelectedTokens_button").classList.add('disabled');
                     this.addActionButton("skip_button", _("Skip"), function () { return _this.skip(); });
                     if (usePrivilegeArgs.canSkipBoth) {
@@ -2678,11 +2687,12 @@ var SplendorDuel = /** @class */ (function () {
                     }
                     break;
                 case 'playAction':
-                    this.addActionButton("takeSelectedTokens_button", _("Take selected tokens"), function () { return _this.takeSelectedTokens(); });
+                case 'takeBoardToken':
+                    this.addActionButton("takeSelectedTokens_button", _("Take selected token(s)"), function () { return _this.takeSelectedTokens(); });
                     document.getElementById("takeSelectedTokens_button").classList.add('disabled');
                     break;
                 case 'discardTokens':
-                    this.addActionButton("discardSelectedTokens_button", _("Discard selected tokens"), function () { return _this.discardSelectedTokens(); });
+                    this.addActionButton("discardSelectedTokens_button", _("Discard selected token(s)"), function () { return _this.discardSelectedTokens(); });
                     document.getElementById("discardSelectedTokens_button").classList.add('disabled');
                     break;
             }

@@ -33,6 +33,22 @@ trait StateTrait {
         }
     }
 
+    function stTakeBoardToken() {
+        $color = $this->argTakeBoardToken()['color'];
+        $board = $this->getBoard();
+
+        if (!$this->array_some($board, fn($token) => $token->color == $color)) {
+            self::notifyAllPlayers('log', clienttranslate('Card ability is skipped, as there is no ${color_name} token on the board'), [
+                'color_name' => $this->getColor($color), // for logs
+            ]);
+
+            $playerId = intval($this->getActivePlayerId());
+            $id = intval($this->getGameStateValue(PLAYED_CARD));
+            $card = $this->getCardFromDb($this->cards->getCard($id));
+            $this->applyEndTurn($playerId, $card, true);
+        }
+    }
+
     function stNextPlayer() {
         $playerId = intval($this->getActivePlayerId());
 

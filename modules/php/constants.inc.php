@@ -19,8 +19,8 @@ define('MULTICOLOR', 9);
  */
 define('POWER_PLAY_AGAIN', 1);
 define('POWER_MULTICOLOR', 2);
-define('POWER_TAKE_GEM_FROM_TABLE', 3); // TOTEST
-define('POWER_TAKE_PRIVILEGE', 4); // TOTEST
+define('POWER_TAKE_GEM_FROM_TABLE', 3);
+define('POWER_TAKE_PRIVILEGE', 4);
 define('POWER_TAKE_GEM_FROM_OPPONENT', 5); // TOTEST
 
 /*

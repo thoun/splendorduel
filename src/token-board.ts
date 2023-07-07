@@ -42,7 +42,7 @@ class TokenBoard {
         this.selectionColor = color;
         this.canTakeGold = canTakeGold;
 
-        if (selectionType === 'privileges') {
+        if (selectionType !== 'play') {
             this.stock.setSelectableCards(this.getDefaultPossibleSelection());
         }
     }

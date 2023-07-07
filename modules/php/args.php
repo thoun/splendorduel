@@ -70,6 +70,16 @@ trait ArgsTrait {
         ];
     }
 
+    function argTakeBoardToken() {
+        $id = intval($this->getGameStateValue(PLAYED_CARD));
+        $card = $this->getCardFromDb($this->cards->getCard($id));
+
+        return [
+            'color' => $card->color,
+            'color_name' => $this->getColor($card->color), // for title
+        ];
+    }
+
     function argDiscardTokens() {
         $playerId = intval($this->getActivePlayerId());
 
