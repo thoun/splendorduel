@@ -48,6 +48,7 @@ interface SplendorDuelGame extends Game {
     onTableCardClick(card: Card): void;
     onRoyalCardClick(card: RoyalCard): void;
     onReservedCardClick(card: Card): void;
+    onColumnClick(color: number): void;
 }
 
 interface EnteringUsePrivilegeArgs {
@@ -65,6 +66,10 @@ interface EnteringPlayActionArgs {
     canBuyCard: boolean;
     buyableCards: Card[];
     reducedCosts: { [card: number]: { [color: number]: number } };
+}
+
+interface EnteringPlaceJokerArgs {
+    colors: number[];
 }
 
 // privileges
@@ -86,7 +91,6 @@ interface NotifTakeTokensArgs {
 interface NotifNewPlayerCardArgs {
     playerId: number;
     card: Card;
-    level: number;
 }
 
 // reserveCard

@@ -127,6 +127,9 @@ class SplendorDuel implements SplendorDuelGame {
             case 'reserveCard':
                 this.onEnteringReserveCard();
                 break;
+            case 'placeJoker':
+                this.onEnteringPlaceJoker(args.args);
+                break;
         }
     }
     
@@ -165,6 +168,12 @@ class SplendorDuel implements SplendorDuelGame {
         this.tableCenter.setCardsSelectable(true, [], true);
     }
 
+    private onEnteringPlaceJoker(args: EnteringPlaceJokerArgs) {
+        if ((this as any).isCurrentPlayerActive()) {
+            this.getCurrentPlayerTable().setColumnsSelectable(args.colors);
+        }
+    }
+
     public onLeavingState(stateName: string) {
         log( 'Leaving state: '+stateName );
 
@@ -173,6 +182,9 @@ class SplendorDuel implements SplendorDuelGame {
             case 'playAction':
                 this.onLeavingPlayAction();
                 break;
+            case 'placeJoker':
+                this.onLeavingPlaceJoker();
+                break;
         }
     }
 
@@ -180,6 +192,10 @@ class SplendorDuel implements SplendorDuelGame {
         this.tableCenter.setBoardSelectable(null);
         this.tableCenter.setCardsSelectable(false);
         this.getCurrentPlayerTable()?.setHandSelectable(false);
+    }
+
+    private onLeavingPlaceJoker() {
+        this.getCurrentPlayerTable()?.setColumnsSelectable([]);
     }
 
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
@@ -426,6 +442,12 @@ class SplendorDuel implements SplendorDuelGame {
     public onReservedCardClick(card: Card): void {
         this.onBuyCardClick(card);
     }
+
+    public onColumnClick(color: number): void {
+        if (this.gamedatas.gamestate.name == 'placeJoker') {
+            this.placeJoker(color);
+        }
+    }
   	
     public takeSelectedTokens() {
         if(!(this as any).checkAction('takeTokens')) {
@@ -498,6 +520,16 @@ class SplendorDuel implements SplendorDuelGame {
         }
 
         this.takeAction('discardTokens'); // TODO
+    }
+  	
+    public placeJoker(color: number) {
+        if(!(this as any).checkAction('placeJoker')) {
+            return;
+        }
+
+        this.takeAction('placeJoker', {
+            color
+        });
     }
 
     public takeAction(action: string, data?: any) {
@@ -582,9 +614,11 @@ class SplendorDuel implements SplendorDuelGame {
             this.reservedCounters[args.playerId].incValue(-1);
         }
         await this.getPlayerTable(args.playerId).addCard(args.card);
-        await this.tableCenter.removeTokens(args.tokens);
+        if (args.tokens?.length) {
+            await this.tableCenter.removeTokens(args.tokens);
+        }
 
-        return true;
+        return Promise.resolve(true);
     }
 
     notif_takeRoyalCard(args: NotifTakeRoyalCardArgs) {
@@ -624,7 +658,7 @@ class SplendorDuel implements SplendorDuelGame {
                 });
 
                 for (const property in args) {
-                    if (['card_level'].includes(property) && args[property][0] != '<') {
+                    if (['card_level', 'color_name'].includes(property) && args[property][0] != '<') {
                         args[property] = `<strong>${_(args[property])}</strong>`;
                     }
                 }

@@ -27,7 +27,7 @@
 
   .hand-wrapper {
     background: #FFFFFF88;
-    border-radius: 10px;
+    border-radius: 8px;
 
     .block-label {
       text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black, 0 0 4px black;
@@ -46,12 +46,17 @@
     margin: 10px;
 
     .cards {
-      width: 120px;
-
+      border-radius: 8px;
+      
       .card {
         &:not(:first-child) {
             margin-top: calc(-1 * var(--card-overlap));
         }
+      }
+
+      &.selectable-for-joker {
+        outline: 4px dashed orange;
+        cursor: pointer;
       }
     }
 

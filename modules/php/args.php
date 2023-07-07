@@ -58,6 +58,18 @@ trait ArgsTrait {
         ] + $buyableCardsAndCosts;
     }
 
+    function argPlaceJoker() {
+        $playerId = intval($this->getActivePlayerId());
+
+        $cards = $this->getCardsByLocation('player'.$playerId.'-%');
+
+        $colors = array_values(array_filter([1,2,3,4,5], fn($color) => $this->array_some($cards, fn($card) => $card->color == $color)));
+
+        return [
+            'colors' => $colors,
+        ];
+    }
+
     function argDiscardTokens() {
         $playerId = intval($this->getActivePlayerId());
 

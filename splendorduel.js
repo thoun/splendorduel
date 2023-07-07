@@ -2042,7 +2042,7 @@ var CardsManager = /** @class */ (function (_super) {
     CardsManager.prototype.getPower = function (power) {
         switch (power) {
             case 1: return _("Take another turn immediately after this one ends.");
-            case 2: return _("Place this card so that it overlaps a Jewel card with a bonus (see on the right). Treat this card’s <ICON> bonus as though it were the same color of the card it is overlapping.").replace('<ICON>', "<div class=\"token-icon\" data-type=\"9\"></div>") +
+            case 2: return _("Place this card so that it overlaps a Jewel card with a bonus (see on the right). Treat this card’s <ICON_MULTI> bonus as though it were the same color of the card it is overlapping.").replace('<ICON_MULTI>', "<div class=\"token-icon\" data-type=\"9\"></div>") +
                 "<br><i>".concat(_("If you do not have a card with a bonus, you cannot purchase this card."), "</i>");
             case 3: return _("Take 1 token matching the color of this card from the board. If there are no such tokens left, ignore this effect.");
             case 4: return _("Take 1 Privilege. If none are available, take 1 from your opponent.");
@@ -2407,7 +2407,12 @@ var PlayerTable = /** @class */ (function () {
                 center: false,
             });
             _this.played[i].addCards(player.cards.filter(function (card) { return Number(card.location.slice(-1)) == i; }));
-            playedDiv.style.setProperty('--card-overlap', '195px');
+            playedDiv.addEventListener('click', function () {
+                if (playedDiv.classList.contains('selectable-for-joker')) {
+                    _this.game.onColumnClick(i);
+                }
+            });
+            playedDiv.style.setProperty('--card-overlap', '135px');
         });
         this.royalCards = new LineStock(this.game.royalCardsManager, document.getElementById("player-table-".concat(this.playerId, "-royal-cards")));
         this.royalCards.addCards(player.royalCards);
@@ -2449,6 +2454,12 @@ var PlayerTable = /** @class */ (function () {
     };
     PlayerTable.prototype.addReservedCard = function (card) {
         return this.reserved.addCard(this.currentPlayer ? card : __assign(__assign({}, card), { index: undefined }));
+    };
+    PlayerTable.prototype.setColumnsSelectable = function (colors) {
+        var _this = this;
+        [1, 2, 3, 4, 5].forEach(function (i) {
+            return document.getElementById("player-table-".concat(_this.playerId, "-played-").concat(i)).classList.toggle('selectable-for-joker', colors.includes(i));
+        });
     };
     return PlayerTable;
 }());
@@ -2546,6 +2557,9 @@ var SplendorDuel = /** @class */ (function () {
             case 'reserveCard':
                 this.onEnteringReserveCard();
                 break;
+            case 'placeJoker':
+                this.onEnteringPlaceJoker(args.args);
+                break;
         }
     };
     SplendorDuel.prototype.setGamestateDescription = function (property) {
@@ -2580,12 +2594,20 @@ var SplendorDuel = /** @class */ (function () {
     SplendorDuel.prototype.onEnteringReserveCard = function () {
         this.tableCenter.setCardsSelectable(true, [], true);
     };
+    SplendorDuel.prototype.onEnteringPlaceJoker = function (args) {
+        if (this.isCurrentPlayerActive()) {
+            this.getCurrentPlayerTable().setColumnsSelectable(args.colors);
+        }
+    };
     SplendorDuel.prototype.onLeavingState = function (stateName) {
         log('Leaving state: ' + stateName);
         switch (stateName) {
             case 'usePrivilege':
             case 'playAction':
                 this.onLeavingPlayAction();
+                break;
+            case 'placeJoker':
+                this.onLeavingPlaceJoker();
                 break;
         }
     };
@@ -2594,6 +2616,10 @@ var SplendorDuel = /** @class */ (function () {
         this.tableCenter.setBoardSelectable(null);
         this.tableCenter.setCardsSelectable(false);
         (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setHandSelectable(false);
+    };
+    SplendorDuel.prototype.onLeavingPlaceJoker = function () {
+        var _a;
+        (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setColumnsSelectable([]);
     };
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
     //                        action status bar (ie: the HTML links in the status bar).
@@ -2771,6 +2797,11 @@ var SplendorDuel = /** @class */ (function () {
     SplendorDuel.prototype.onReservedCardClick = function (card) {
         this.onBuyCardClick(card);
     };
+    SplendorDuel.prototype.onColumnClick = function (color) {
+        if (this.gamedatas.gamestate.name == 'placeJoker') {
+            this.placeJoker(color);
+        }
+    };
     SplendorDuel.prototype.takeSelectedTokens = function () {
         if (!this.checkAction('takeTokens')) {
             return;
@@ -2827,6 +2858,14 @@ var SplendorDuel = /** @class */ (function () {
             return;
         }
         this.takeAction('discardTokens'); // TODO
+    };
+    SplendorDuel.prototype.placeJoker = function (color) {
+        if (!this.checkAction('placeJoker')) {
+            return;
+        }
+        this.takeAction('placeJoker', {
+            color: color
+        });
     };
     SplendorDuel.prototype.takeAction = function (action, data) {
         data = data || {};
@@ -2894,20 +2933,23 @@ var SplendorDuel = /** @class */ (function () {
         return this.getPlayerTable(args.playerId).addReservedCard(args.card);
     };
     SplendorDuel.prototype.notif_buyCard = function (args) {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         if (args.fromReserved) {
                             this.reservedCounters[args.playerId].incValue(-1);
                         }
                         return [4 /*yield*/, this.getPlayerTable(args.playerId).addCard(args.card)];
                     case 1:
-                        _a.sent();
+                        _b.sent();
+                        if (!((_a = args.tokens) === null || _a === void 0 ? void 0 : _a.length)) return [3 /*break*/, 3];
                         return [4 /*yield*/, this.tableCenter.removeTokens(args.tokens)];
                     case 2:
-                        _a.sent();
-                        return [2 /*return*/, true];
+                        _b.sent();
+                        _b.label = 3;
+                    case 3: return [2 /*return*/, Promise.resolve(true)];
                 }
             });
         });
@@ -2943,7 +2985,7 @@ var SplendorDuel = /** @class */ (function () {
                     }
                 });
                 for (var property in args) {
-                    if (['card_level'].includes(property) && args[property][0] != '<') {
+                    if (['card_level', 'color_name'].includes(property) && args[property][0] != '<') {
                         args[property] = "<strong>".concat(_(args[property]), "</strong>");
                     }
                 }

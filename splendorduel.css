@@ -1009,7 +1009,7 @@ body > .card {
 }
 .player-table .hand-wrapper {
   background: rgba(255, 255, 255, 0.5333333333);
-  border-radius: 10px;
+  border-radius: 8px;
 }
 .player-table .hand-wrapper .block-label {
   text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black, 0 0 4px black;
@@ -1026,10 +1026,14 @@ body > .card {
   margin: 10px;
 }
 .player-table .columns .cards {
-  width: 120px;
+  border-radius: 8px;
 }
 .player-table .columns .cards .card:not(:first-child) {
   margin-top: calc(-1 * var(--card-overlap));
+}
+.player-table .columns .cards.selectable-for-joker {
+  outline: 4px dashed orange;
+  cursor: pointer;
 }
 .player-table .columns .tokens {
   align-items: center;

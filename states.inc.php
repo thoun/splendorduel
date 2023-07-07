@@ -89,6 +89,7 @@ $playerActionsGameStates = [
         "possibleactions" => [ 
             "takeTokens",
             "skip",
+            "skipBoth",
         ],
         "transitions" => [
             "next" => ST_PLAYER_REFILL_BOARD,

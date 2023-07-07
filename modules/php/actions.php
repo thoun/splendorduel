@@ -111,7 +111,6 @@ trait ActionTrait {
             'player_name' => $this->getPlayerName($playerId),
             'card' => $card,
             'fromDeck' => $fromDeck,
-            'level' => $level,
             'card_level' => $level, // for logs
         ]);
 
@@ -143,8 +142,7 @@ trait ActionTrait {
             throw new BgaUserException("You can't purchase this card with the selected tokens");
         }
 
-        $level = $card->level;
-        
+        $level = $card->level;        
 
         $message = null;
         
@@ -171,7 +169,6 @@ trait ActionTrait {
             'player_name' => $this->getPlayerName($playerId),
             'card' => $card,
             'fromReserved' => $fromReserved,
-            'level' => $level,
             'tokens' => $tokens, // for logs
             'card_level' => $level, // for logs
             'spent_tokens' => $tokens, // for logs
@@ -199,5 +196,35 @@ trait ActionTrait {
         ]);
 
         $this->applyEndTurn($playerId, $card);
+    }
+
+    public function placeJoker(int $color) {
+        self::checkAction('placeJoker');
+
+        $playerId = intval($this->getActivePlayerId());
+
+        $args = $this->argPlaceJoker();
+        if (!in_array($color, $args['colors'])) {
+            throw new BgaUserException("Invalid column");
+        }
+        
+        $id = intval($this->getGameStateValue(PLAYED_CARD));
+        $card = $this->getCardFromDb($this->cards->getCard($id));
+
+        $location = 'player'.$playerId.'-'.$color;
+        $locationArg = intval($this->cards->countCardInLocation($location));
+        $this->cards->moveCard($card->id, $location, $locationArg);
+        $card->location = $location;
+        $card->locationArg = $locationArg;
+        
+        self::notifyAllPlayers('buyCard', clienttranslate('${player_name} places the <ICON_MULTI> card on ${color_name} column'), [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'card' => $card,
+            'fromReserved' => false,
+            'color_name' => $this->getColor($color), // for logs
+        ]);
+
+        $this->applyEndTurn($playerId, $card, true);
     }
 }

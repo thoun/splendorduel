@@ -364,12 +364,15 @@ trait UtilTrait {
         ]);
     }
 
-    function applyPower(int $playerId, int $power, int $cardId = -1) {
+    function applyPower(int $playerId, int $power, int $cardId = -1, bool $ignoreJoker = false) {
         switch ($power) {
             case POWER_PLAY_AGAIN:
                 $this->setGameStateValue(PLAY_AGAIN, 1);
                 break;
             case POWER_MULTICOLOR:
+                if ($ignoreJoker) {
+                    return false;
+                }
                 $this->setGameStateValue(PLAYED_CARD, $cardId);
                 $this->gamestate->jumpToState(ST_PLAYER_PLACE_JOKER);
                 return true;
@@ -391,7 +394,7 @@ trait UtilTrait {
         return false;
     }
 
-    function applyEndTurn(int $playerId, /*?Card | RoyalCard*/ $card = null) {
+    function applyEndTurn(int $playerId, /*?Card | RoyalCard*/ $card = null, bool $ignoreJoker = false) {
         $takeRoyalCard = false;
 
         if ($card != null) {
@@ -413,10 +416,10 @@ trait UtilTrait {
                 $redirected = false;
                 if (gettype($card->power) == 'array') {
                     foreach($card->power as $power) {
-                        $redirected = $redirected || $this->applyPower($playerId, $power, $card->id);
+                        $redirected = $redirected || $this->applyPower($playerId, $power, $card->id, $ignoreJoker);
                     }
                 } else {
-                    $redirected = $this->applyPower($playerId, $card->power, $card->id);
+                    $redirected = $this->applyPower($playerId, $card->power, $card->id, $ignoreJoker);
                 }
                 if ($redirected) {
                     return;
@@ -501,7 +504,7 @@ trait UtilTrait {
         $cost = $initialCost; // copy
         
         foreach($playerCards as $card) {
-            foreach($card->produces as $color => $count) {
+            foreach($card->provides as $color => $count) {
                 if ($color == MULTICOLOR) {
                     $color = intval(substr($card->location, -1));
                 }
@@ -577,6 +580,18 @@ trait UtilTrait {
                     ]);
                 }
             }
+        }
+    }
+
+    function getColor(int $color) {
+        switch ($color) {
+            case 0: return clienttranslate("Pearl");
+            case 1: return clienttranslate("Blue");
+            case 2: return clienttranslate("White");
+            case 3: return clienttranslate("Green");
+            case 4: return clienttranslate("Black");
+            case 5: return clienttranslate("Red");
+            case 9: return clienttranslate("Gray");
         }
     }
 }

@@ -103,6 +103,15 @@
 
         self::ajaxResponse();
     }
+
+    public function placeJoker() {
+        self::setAjaxMode();     
+
+        $color = self::getArg("color", AT_posint, true);
+        $this->game->placeJoker($color);
+
+        self::ajaxResponse();
+    }
   }
   
 

@@ -60,7 +60,12 @@ class PlayerTable {
                 center: false,
             });
             this.played[i].addCards(player.cards.filter(card => Number(card.location.slice(-1)) == i));
-            playedDiv.style.setProperty('--card-overlap', '195px');
+            playedDiv.addEventListener('click', () => {
+                if (playedDiv.classList.contains('selectable-for-joker')) {
+                    this.game.onColumnClick(i);
+                }
+            });
+            playedDiv.style.setProperty('--card-overlap', '135px');
         });
         
         this.royalCards = new LineStock<RoyalCard>(this.game.royalCardsManager, document.getElementById(`player-table-${this.playerId}-royal-cards`));
@@ -110,5 +115,11 @@ class PlayerTable {
     
     public addReservedCard(card: Card): Promise<any> {
         return this.reserved.addCard(this.currentPlayer ? card : { ...card, index: undefined });
+    }
+
+    public setColumnsSelectable(colors: number[]) {
+        [1,2,3,4,5].forEach(i => 
+            document.getElementById(`player-table-${this.playerId}-played-${i}`).classList.toggle('selectable-for-joker', colors.includes(i))
+        );         
     }
 }
