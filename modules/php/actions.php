@@ -104,8 +104,6 @@ trait ActionTrait {
             clienttranslate('${player_name} reserves a level ${card_level} card from the deck') :
             clienttranslate('${player_name} reserves a visible level ${card_level} card');
 
-        $newCard = $fromDeck ? null : $this->getCardFromDb($this->cards->pickCardForLocation('deck'.$level, 'table'.$level, $card->locationArg));
-
         $this->cards->moveCard($id, 'reserved', $playerId);
         
         self::notifyAllPlayers('reserveCard', $message, [
@@ -113,9 +111,6 @@ trait ActionTrait {
             'player_name' => $this->getPlayerName($playerId),
             'card' => $card,
             'fromDeck' => $fromDeck,
-            'newCard' => $newCard,
-            'cardDeckCount' => intval($this->cards->countCardInLocation('deck'.$level)),
-            'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'.$level))),
             'level' => $level,
             'card_level' => $level, // for logs
         ]);
@@ -163,8 +158,6 @@ trait ActionTrait {
                 clienttranslate('${player_name} purchases a visible level ${card_level} card for free');
         }
 
-        $newCard = $fromReserved ? null : $this->getCardFromDb($this->cards->pickCardForLocation('deck'.$level, 'table'.$level, $card->locationArg));
-
         $location = 'player'.$playerId.'-'.$card->color;
         $locationArg = intval($this->cards->countCardInLocation($location));
         $this->cards->moveCard($card->id, $location, $locationArg);
@@ -178,9 +171,6 @@ trait ActionTrait {
             'player_name' => $this->getPlayerName($playerId),
             'card' => $card,
             'fromReserved' => $fromReserved,
-            'newCard' => $newCard,
-            'cardDeckCount' => intval($this->cards->countCardInLocation('deck'.$level)),
-            'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'.$level))),
             'level' => $level,
             'tokens' => $tokens, // for logs
             'card_level' => $level, // for logs

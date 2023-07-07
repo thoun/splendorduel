@@ -87,9 +87,6 @@ interface NotifTakeTokensArgs {
 interface NotifNewPlayerCardArgs {
     playerId: number;
     card: Card;
-    newCard: Card | null;
-    cardDeckCount: number;
-    cardDeckTop: Card | null;
     level: number;
 }
 
@@ -108,6 +105,14 @@ interface NotifBuyCardArgs extends NotifNewPlayerCardArgs {
 interface NotifTakeRoyalCardArgs {
     playerId: number;
     card: RoyalCard;
+}
+
+// newTableCard
+interface NotifNewTableCardArgs { // TODO
+    newCard: Card;
+    cardDeckCount: number;
+    cardDeckTop: Card | null;
+    level: number;
 }
 
 // win

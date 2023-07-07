@@ -100,7 +100,6 @@ $playerActionsGameStates = [
         "name" => "refillBoard",
         "description" => clienttranslate('[OPTIONAL ACTION] ${actplayer} can replenish the board'),
         "descriptionmyturn" => clienttranslate('[OPTIONAL ACTION] ${you} can replenish the board'),
-        "descriptionMustRefill" => clienttranslate('${actplayer} must replenish the board'), // TODO use
         "descriptionmyturnMustRefill" => clienttranslate('${you} must replenish the board'), // TODO use
         "type" => "activeplayer",    
         "args" => "argRefillBoard",

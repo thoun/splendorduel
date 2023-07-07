@@ -36,6 +36,8 @@ trait StateTrait {
     function stNextPlayer() {
         $playerId = intval($this->getActivePlayerId());
 
+        $this->refillCards();
+
         $endReason = $this->getEndReason($playerId);
 
         if ($endReason > 0) {

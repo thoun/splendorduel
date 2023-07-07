@@ -562,4 +562,21 @@ trait UtilTrait {
             'reducedCosts' => $reducedCosts,
         ];
     }
+
+    function refillCards() {
+        for ($level = 1; $level <= 3; $level++) {
+            for ($i = 1; $i <= 6 - $level; $i++) {
+                if (count($this->getCardsByLocation('table'.$level, $i)) == 0 && count($this->getCardsByLocation('deck'.$level)) > 0) {
+                    $newCard = $this->getCardFromDb($this->cards->pickCardForLocation('deck'.$level, 'table'.$level, $i));
+        
+                    self::notifyAllPlayers('newTableCard', '', [
+                        'newCard' => $newCard,
+                        'cardDeckCount' => intval($this->cards->countCardInLocation('deck'.$level)),
+                        'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'.$level))),
+                        'level' => $level,
+                    ]);
+                }
+            }
+        }
+    }
 }
