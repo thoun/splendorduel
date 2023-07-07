@@ -43,7 +43,7 @@ class Token {
         $this->location = $dbCard['card_location'] ?? $dbCard['location'];
         $this->locationArg = intval($dbCard['card_location_arg'] ?? $dbCard['location_arg']);
         $this->type = array_key_exists('card_type', $dbCard) || array_key_exists('type', $dbCard) ? intval($dbCard['card_type'] ?? $dbCard['type']) : null;
-        $this->color = array_key_exists('card_type_arg', $dbCard) || array_key_exists('type_arg', $dbCard) ? intval($dbCard['card_type_arg'] ?? $dbCard['type_arg']) : null;
+        $this->color = $this->type == 1 ? -1 : (array_key_exists('card_type_arg', $dbCard) || array_key_exists('type_arg', $dbCard) ? intval($dbCard['card_type_arg'] ?? $dbCard['type_arg']) : null);
 
         if ($this->location == 'board') {
             $coordinates = BOARD_COORDINATES[$this->locationArg];

@@ -2365,8 +2365,12 @@ var TableCenter = /** @class */ (function () {
         this.game.cardsManager.removeCard(args.card);
     };
     TableCenter.prototype.replaceCard = function (args) {
-        this.cards[args.level].addCard(args.newCard);
+        var promise = this.cards[args.level].addCard(args.newCard);
         this.cardsDecks[args.level].setCardNumber(args.cardDeckCount, args.cardDeckTop);
+        return promise;
+    };
+    TableCenter.prototype.removeTokens = function (tokens) {
+        return this.bag.addCards(tokens);
     };
     return TableCenter;
 }());
@@ -2439,13 +2443,12 @@ var PlayerTable = /** @class */ (function () {
     PlayerTable.prototype.addRoyalCard = function (card) {
         return this.royalCards.addCard(card);
     };
-    PlayerTable.prototype.removeTokens = function (tokens) {
-        var _this = this;
-        [1, 2, 3, 4, 5, 0, -1].map(function (i) { return _this.tokens[i]; }).forEach(function (stock) { return stock.removeCards(tokens); });
-    };
     PlayerTable.prototype.addTokens = function (tokens) {
         var _this = this;
         return Promise.all([1, 2, 3, 4, 5, 0, -1].map(function (i) { return _this.tokens[i].addCards(tokens.filter(function (token) { return token.color == i; })); }));
+    };
+    PlayerTable.prototype.addReservedCard = function (card) {
+        return this.reserved.addCard(this.currentPlayer ? card : __assign(__assign({}, card), { index: undefined }));
     };
     return PlayerTable;
 }());
@@ -2848,7 +2851,7 @@ var SplendorDuel = /** @class */ (function () {
             ['privileges', ANIMATION_MS],
             ['refill', undefined],
             ['takeTokens', undefined],
-            ['reserveCard', ANIMATION_MS],
+            ['reserveCard', undefined],
             ['buyCard', undefined],
             ['takeRoyalCard', undefined],
             ['newTableCard', undefined],
@@ -2888,13 +2891,26 @@ var SplendorDuel = /** @class */ (function () {
     };
     SplendorDuel.prototype.notif_reserveCard = function (args) {
         this.reservedCounters[args.playerId].incValue(1);
-        this.tableCenter.reserveCard(args);
+        return this.getPlayerTable(args.playerId).addReservedCard(args.card);
     };
     SplendorDuel.prototype.notif_buyCard = function (args) {
-        this.reservedCounters[args.playerId].incValue(1);
-        var promise = this.getPlayerTable(args.playerId).addCard(args.card);
-        this.getPlayerTable(args.playerId).removeTokens(args.tokens);
-        return promise;
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (args.fromReserved) {
+                            this.reservedCounters[args.playerId].incValue(-1);
+                        }
+                        return [4 /*yield*/, this.getPlayerTable(args.playerId).addCard(args.card)];
+                    case 1:
+                        _a.sent();
+                        return [4 /*yield*/, this.tableCenter.removeTokens(args.tokens)];
+                    case 2:
+                        _a.sent();
+                        return [2 /*return*/, true];
+                }
+            });
+        });
     };
     SplendorDuel.prototype.notif_takeRoyalCard = function (args) {
         return this.getPlayerTable(args.playerId).addRoyalCard(args.card);

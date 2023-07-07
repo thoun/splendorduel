@@ -525,7 +525,7 @@ class SplendorDuel implements SplendorDuelGame {
             ['privileges', ANIMATION_MS],
             ['refill', undefined],
             ['takeTokens', undefined],
-            ['reserveCard', ANIMATION_MS],
+            ['reserveCard', undefined],
             ['buyCard', undefined],
             ['takeRoyalCard', undefined],
             ['newTableCard', undefined],
@@ -574,16 +574,17 @@ class SplendorDuel implements SplendorDuelGame {
     notif_reserveCard(args: NotifReserveCardArgs) {
         this.reservedCounters[args.playerId].incValue(1);
         
-        this.tableCenter.reserveCard(args);
+        return this.getPlayerTable(args.playerId).addReservedCard(args.card);
     }
 
-    notif_buyCard(args: NotifBuyCardArgs) {
-        this.reservedCounters[args.playerId].incValue(1);
-        const promise = this.getPlayerTable(args.playerId).addCard(args.card);
+    async notif_buyCard(args: NotifBuyCardArgs) {
+        if (args.fromReserved) {
+            this.reservedCounters[args.playerId].incValue(-1);
+        }
+        await this.getPlayerTable(args.playerId).addCard(args.card);
+        await this.tableCenter.removeTokens(args.tokens);
 
-        this.getPlayerTable(args.playerId).removeTokens(args.tokens);
-
-        return promise
+        return true;
     }
 
     notif_takeRoyalCard(args: NotifTakeRoyalCardArgs) {

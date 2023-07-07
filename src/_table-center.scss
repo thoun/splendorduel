@@ -13,15 +13,29 @@
 
   #board-wrapper {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     gap: 20px;
-    
-    #score-tile {
-      width: 240px;
-      height: 203px;
-      background: url('img/score-tile.jpg');
-      box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.5);
-      border-radius: 4px;
+
+    #bag-and-score-tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+
+      #bag {
+        width: 240px;
+        height: 220px;
+        background: url('img/bag.png');
+      }
+
+      #score-tile {
+        width: 240px;
+        height: 203px;
+        background: url('img/score-tile.jpg');
+        box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.5);
+        border-radius: 4px;
+      }
+
     }
 
     #board {

@@ -3,9 +3,11 @@
     <div id="tables-and-center">
         <div id="table-center-wrapper">
             <div id="table-center">
-                <div id="bag"></div>
                 <div id="board-wrapper">
-                    <div id="score-tile"></div>
+                    <div id="bag-and-score-tile">
+                        <div id="bag"></div>
+                        <div id="score-tile"></div>
+                    </div>
                     <div id="board"></div>
                 </div>
                 <div id="table-cards"></div>

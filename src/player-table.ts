@@ -103,12 +103,12 @@ class PlayerTable {
     public addRoyalCard(card: RoyalCard): Promise<any> {
         return this.royalCards.addCard(card);
     }
-    
-    public removeTokens(tokens: Token[]) {
-        [1,2,3,4,5,0,-1].map(i => this.tokens[i]).forEach(stock => stock.removeCards(tokens));
-    }
 
     public addTokens(tokens: Token[]): Promise<any> {
         return Promise.all([1,2,3,4,5,0,-1].map(i => this.tokens[i].addCards(tokens.filter(token => token.color == i))));
+    }
+    
+    public addReservedCard(card: Card): Promise<any> {
+        return this.reserved.addCard(this.currentPlayer ? card : { ...card, index: undefined });
     }
 }

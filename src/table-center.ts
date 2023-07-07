@@ -67,8 +67,14 @@ class TableCenter {
         this.game.cardsManager.removeCard(args.card);
     }
     
-    public replaceCard(args: NotifNewTableCardArgs) {
-        this.cards[args.level].addCard(args.newCard);
+    public replaceCard(args: NotifNewTableCardArgs): Promise<any> {
+        const promise = this.cards[args.level].addCard(args.newCard);
         this.cardsDecks[args.level].setCardNumber(args.cardDeckCount, args.cardDeckTop);
+
+        return promise;
+    }
+    
+    public removeTokens(tokens: Token[]): Promise<any> {
+        return this.bag.addCards(tokens);
     }
 }
