@@ -468,7 +468,7 @@ trait UtilTrait {
     function getEndReason(int $playerId) {
         $cards = $this->getCardsByLocation('player'.$playerId.'-%');
         $totalPoints = 0;
-        $pointsByColor = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
+        $pointsByColor = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0, 9 => 0];
         $crowns = 0;
         foreach($cards as $card) {
             $totalPoints += $card->points;

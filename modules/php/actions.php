@@ -115,6 +115,9 @@ trait ActionTrait {
             'player_name' => $this->getPlayerName($playerId),
             'card' => $card,
             'fromDeck' => $fromDeck,
+            'level' => $level,
+            'cardDeckCount' => intval($this->cards->countCardInLocation('deck'.$level)),
+            'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'.$level))),
             'card_level' => $level, // for logs
         ]);
 
@@ -191,7 +194,7 @@ trait ActionTrait {
             throw new BgaUserException("You must take a royal card from the table");
         }
 
-        $this->cards->moveCard($card->id, 'player', $playerId);
+        $this->royalCards->moveCard($card->id, 'player', $playerId);
         
         self::notifyAllPlayers('takeRoyalCard', clienttranslate('${player_name} takes a royal card'), [
             'playerId' => $playerId,

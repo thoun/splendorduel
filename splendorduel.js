@@ -2472,6 +2472,10 @@ var PlayerTable = /** @class */ (function () {
         var _this = this;
         (goldAllowed || !selectable ? [1, 2, 3, 4, 5, 0, -1] : [1, 2, 3, 4, 5, 0]).forEach(function (i) { return _this.tokens[i].setSelectionMode(selectable ? 'multiple' : 'none'); });
     };
+    PlayerTable.prototype.getTokens = function () {
+        var _this = this;
+        return [1, 2, 3, 4, 5, 0, -1].map(function (i) { return _this.tokens[i].getCards(); }).reduce(function (a, b) { return __spreadArray(__spreadArray([], a, true), b, true); }, []);
+    };
     PlayerTable.prototype.getSelectedTokens = function () {
         var _this = this;
         return [1, 2, 3, 4, 5, 0, -1].map(function (i) { return _this.tokens[i].getSelection(); }).reduce(function (a, b) { return __spreadArray(__spreadArray([], a, true), b, true); }, []);
@@ -2514,6 +2518,7 @@ var SplendorDuel = /** @class */ (function () {
         this.reservedCounters = [];
         this.crownCounters = [];
         this.strongestColumnCounters = [];
+        this.tokenCounters = [];
         this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
     }
     /*
@@ -2680,6 +2685,9 @@ var SplendorDuel = /** @class */ (function () {
             case 'takeBoardToken':
                 this.onLeavingPlayAction();
                 break;
+            case 'reserveCard':
+                this.onLeavingReserveCard();
+                break;
             case 'placeJoker':
                 this.onLeavingPlaceJoker();
                 break;
@@ -2699,6 +2707,9 @@ var SplendorDuel = /** @class */ (function () {
         this.tableCenter.setBoardSelectable(null);
         this.tableCenter.setCardsSelectable(false);
         (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setHandSelectable(false);
+    };
+    SplendorDuel.prototype.onLeavingReserveCard = function () {
+        this.tableCenter.setCardsSelectable(false);
     };
     SplendorDuel.prototype.onLeavingPlaceJoker = function () {
         var _a;
@@ -2809,7 +2820,7 @@ var SplendorDuel = /** @class */ (function () {
         var _this = this;
         Object.values(gamedatas.players).forEach(function (player) {
             var playerId = Number(player.id);
-            var html = "<div class=\"counters\">\n                <div id=\"crown-counter-wrapper-".concat(player.id, "\" class=\"crown-counter\">\n                    <div class=\"crown icon\"></div>\n                    <span id=\"crown-counter-").concat(player.id, "\"></span>\n                </div>\n\n                <div id=\"strongest-column-counter-wrapper-").concat(player.id, "\" class=\"strongest-column-counter\">\n                    <div class=\"card-column icon\"></div> \n                    <span id=\"strongest-column-counter-").concat(player.id, "\"></span>\n                </div>\n            </div>\n            \n            <div class=\"counters\">\n                <div id=\"privilege-counter-wrapper-").concat(player.id, "\" class=\"privilege-counter\">\n                    <div class=\"privilege icon\"></div>\n                    <span id=\"privilege-counter-").concat(player.id, "\"></span>\n                </div>\n\n                <div id=\"reserved-counter-wrapper-").concat(player.id, "\" class=\"reserved-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"reserved-counter-").concat(player.id, "\"></span>\n                </div>\n            </div>");
+            var html = "<div class=\"counters\">\n                <div id=\"crown-counter-wrapper-".concat(player.id, "\" class=\"crown-counter\">\n                    <div class=\"crown icon\"></div>\n                    <span id=\"crown-counter-").concat(player.id, "\"></span>\n                </div>\n\n                <div id=\"strongest-column-counter-wrapper-").concat(player.id, "\" class=\"strongest-column-counter\">\n                    <div class=\"card-column icon\"></div> \n                    <span id=\"strongest-column-counter-").concat(player.id, "\"></span>\n                </div>\n            </div>\n            \n            <div class=\"counters\">\n                <div id=\"privilege-counter-wrapper-").concat(player.id, "\" class=\"privilege-counter\">\n                    <div class=\"privilege icon\"></div>\n                    <span id=\"privilege-counter-").concat(player.id, "\"></span>\n                </div>\n\n                <div id=\"reserved-counter-wrapper-").concat(player.id, "\" class=\"reserved-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"reserved-counter-").concat(player.id, "\"></span>\n                </div>\n            </div>\n            \n            <div class=\"counters\">\n                <div>\n                    Tokens\n                </div>\n\n                <div id=\"token-counter-wrapper-").concat(player.id, "\" class=\"token-counter\">\n                    <span id=\"token-counter-").concat(player.id, "\"></span> / 10\n                </div>\n            </div>");
             dojo.place(html, "player_board_".concat(player.id));
             _this.crownCounters[playerId] = new ebg.counter();
             _this.crownCounters[playerId].create("crown-counter-".concat(playerId));
@@ -2831,6 +2842,9 @@ var SplendorDuel = /** @class */ (function () {
             _this.privilegeCounters[playerId] = new ebg.counter();
             _this.privilegeCounters[playerId].create("privilege-counter-".concat(playerId));
             _this.privilegeCounters[playerId].setValue(player.privileges);
+            _this.tokenCounters[playerId] = new ebg.counter();
+            _this.tokenCounters[playerId].create("token-counter-".concat(playerId));
+            _this.tokenCounters[playerId].setValue(player.tokens.length);
         });
         this.setTooltipToClass('crown-counter', _('Crowns'));
         this.setTooltipToClass('strongest-column-counter', _('Points of the strongest column'));
@@ -2848,9 +2862,9 @@ var SplendorDuel = /** @class */ (function () {
         var table = new PlayerTable(this, gamedatas.players[playerId]);
         this.playersTables.push(table);
     };
-    SplendorDuel.prototype.setScore = function (playerId, score) {
+    SplendorDuel.prototype.incScore = function (playerId, inc) {
         var _a;
-        (_a = this.scoreCtrl[playerId]) === null || _a === void 0 ? void 0 : _a.toValue(score);
+        (_a = this.scoreCtrl[playerId]) === null || _a === void 0 ? void 0 : _a.incValue(inc);
     };
     SplendorDuel.prototype.getHelpHtml = function () {
         var html = "\n        <div id=\"help-popin\">\n            <h1>".concat(_("Assets"), "</h2>\n            <div class=\"help-section\">\n                <div class=\"icon vp\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Victory Point</strong>. The player moves their token forward 1 space on the Score Track."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon recruit\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Recruit</strong>: The player adds 1 Recruit token to their ship."), " ").concat(_("It is not possible to have more than 3."), " ").concat(_("A recruit allows a player to draw the Viking card of their choice when Recruiting or replaces a Viking card during Exploration."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon bracelet\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Silver Bracelet</strong>: The player adds 1 Silver Bracelet token to their ship."), " ").concat(_("It is not possible to have more than 3."), " ").concat(_("They are used for Trading."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon reputation\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Reputation Point</strong>: The player moves their token forward 1 space on the Reputation Track."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon take-card\"></div>\n                <div class=\"help-label\">").concat(_("Draw <strong>the first Viking card</strong> from the deck: It is placed in the player’s Crew Zone (without taking any assets)."), "</div>\n            </div>\n\n            <h1>").concat(_("Powers of the artifacts (variant option)"), "</h1>\n        ");
@@ -3062,20 +3076,26 @@ var SplendorDuel = /** @class */ (function () {
         return this.tableCenter.refillBoard(args.refilledTokens);
     };
     SplendorDuel.prototype.notif_takeTokens = function (args) {
-        return this.getPlayerTable(args.playerId).addTokens(args.tokens);
+        var tokens = args.tokens, playerId = args.playerId;
+        this.tokenCounters[playerId].incValue(tokens.length);
+        return this.getPlayerTable(playerId).addTokens(tokens);
     };
     SplendorDuel.prototype.notif_reserveCard = function (args) {
         this.reservedCounters[args.playerId].incValue(1);
-        return this.getPlayerTable(args.playerId).addReservedCard(args.card);
+        var promise = this.getPlayerTable(args.playerId).addReservedCard(args.card);
+        if (args.fromDeck) {
+            this.tableCenter.cardsDecks[args.level].setCardNumber(args.cardDeckCount, args.cardDeckTop);
+        }
+        return promise;
     };
     SplendorDuel.prototype.notif_buyCard = function (args) {
         var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var card, playerId, playerTable;
+            var card, playerId, tokens, playerTable;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        card = args.card, playerId = args.playerId;
+                        card = args.card, playerId = args.playerId, tokens = args.tokens;
                         if (args.fromReserved) {
                             this.reservedCounters[playerId].incValue(-1);
                         }
@@ -3083,15 +3103,17 @@ var SplendorDuel = /** @class */ (function () {
                     case 1:
                         _b.sent();
                         if (!((_a = args.tokens) === null || _a === void 0 ? void 0 : _a.length)) return [3 /*break*/, 3];
-                        return [4 /*yield*/, this.tableCenter.removeTokens(args.tokens)];
+                        this.tokenCounters[playerId].incValue(-tokens.length);
+                        return [4 /*yield*/, this.tableCenter.removeTokens(tokens)];
                     case 2:
                         _b.sent();
                         _b.label = 3;
                     case 3:
-                        if (card.location !== "playe".concat(playerId, "-9") || !card.power.includes(2)) {
+                        if (card.location !== "player".concat(playerId, "-9") || !card.power.includes(2)) {
                             playerTable = this.getPlayerTable(playerId);
                             this.crownCounters[playerId].toValue(playerTable.getCrowns());
                             this.strongestColumnCounters[playerId].toValue(playerTable.getStrongestColumn());
+                            this.incScore(playerId, card.points);
                         }
                         return [2 /*return*/, Promise.resolve(true)];
                 }
@@ -3099,16 +3121,20 @@ var SplendorDuel = /** @class */ (function () {
         });
     };
     SplendorDuel.prototype.notif_takeRoyalCard = function (args) {
-        return this.getPlayerTable(args.playerId).addRoyalCard(args.card);
+        var card = args.card, playerId = args.playerId;
+        this.incScore(playerId, card.points);
+        return this.getPlayerTable(args.playerId).addRoyalCard(card);
     };
     SplendorDuel.prototype.notif_discardTokens = function (args) {
-        return this.tableCenter.removeTokens(args.tokens);
+        var tokens = args.tokens, playerId = args.playerId;
+        this.tokenCounters[playerId].incValue(-tokens.length);
+        return this.tableCenter.removeTokens(tokens);
     };
     SplendorDuel.prototype.notif_newTableCard = function (args) {
         return this.tableCenter.replaceCard(args);
     };
     SplendorDuel.prototype.notif_win = function (args) {
-        this.setScore(args.playerId, 1);
+        //this.setScore(args.playerId, 1);
     };
     SplendorDuel.prototype.getColor = function (color) {
         switch (color) {

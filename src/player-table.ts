@@ -128,6 +128,10 @@ class PlayerTable {
         (goldAllowed || !selectable ? [1,2,3,4,5,0,-1] : [1,2,3,4,5,0]).forEach(i => this.tokens[i].setSelectionMode(selectable ? 'multiple' : 'none'));
     }
 
+    public getTokens(): Token[] {
+        return [1,2,3,4,5,0,-1].map(i => this.tokens[i].getCards()).reduce((a, b) => [...a, ...b], []);
+    }
+
     public getSelectedTokens(): Token[] {
         return [1,2,3,4,5,0,-1].map(i => this.tokens[i].getSelection()).reduce((a, b) => [...a, ...b], []);
     }

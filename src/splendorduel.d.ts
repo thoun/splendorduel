@@ -106,6 +106,9 @@ interface NotifNewPlayerCardArgs {
 // reserveCard
 interface NotifReserveCardArgs extends NotifNewPlayerCardArgs {
     fromDeck: boolean;
+    level: number;
+    cardDeckCount: number;
+    cardDeckTop: Card | null;
 }
 
 // buyCard

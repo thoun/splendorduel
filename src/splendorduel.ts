@@ -35,6 +35,7 @@ class SplendorDuel implements SplendorDuelGame {
     private reservedCounters: Counter[] = [];
     private crownCounters: Counter[] = [];
     private strongestColumnCounters: Counter[] = [];
+    private tokenCounters: Counter[] = [];
 
     private tokensSelection: Token[];
     
@@ -228,6 +229,9 @@ class SplendorDuel implements SplendorDuelGame {
             case 'takeBoardToken':
                 this.onLeavingPlayAction();
                 break;
+            case 'reserveCard':
+                this.onLeavingReserveCard();
+                break;
             case 'placeJoker':
                 this.onLeavingPlaceJoker();
                 break;
@@ -247,6 +251,10 @@ class SplendorDuel implements SplendorDuelGame {
         this.tableCenter.setBoardSelectable(null);
         this.tableCenter.setCardsSelectable(false);
         this.getCurrentPlayerTable()?.setHandSelectable(false);
+    }
+
+    private onLeavingReserveCard() {
+        this.tableCenter.setCardsSelectable(false);
     }
 
     private onLeavingPlaceJoker() {
@@ -397,6 +405,16 @@ class SplendorDuel implements SplendorDuelGame {
                     <div class="player-hand-card"></div> 
                     <span id="reserved-counter-${player.id}"></span>
                 </div>
+            </div>
+            
+            <div class="counters">
+                <div>
+                    Tokens
+                </div>
+
+                <div id="token-counter-wrapper-${player.id}" class="token-counter">
+                    <span id="token-counter-${player.id}"></span> / 10
+                </div>
             </div>`;
 
             dojo.place(html, `player_board_${player.id}`);
@@ -424,6 +442,10 @@ class SplendorDuel implements SplendorDuelGame {
             this.privilegeCounters[playerId] = new ebg.counter();
             this.privilegeCounters[playerId].create(`privilege-counter-${playerId}`);
             this.privilegeCounters[playerId].setValue(player.privileges);
+
+            this.tokenCounters[playerId] = new ebg.counter();
+            this.tokenCounters[playerId].create(`token-counter-${playerId}`);
+            this.tokenCounters[playerId].setValue(player.tokens.length);
         });
 
         this.setTooltipToClass('crown-counter', _('Crowns'));
@@ -445,8 +467,8 @@ class SplendorDuel implements SplendorDuelGame {
         this.playersTables.push(table);
     }
 
-    private setScore(playerId: number, score: number) {
-        (this as any).scoreCtrl[playerId]?.toValue(score);
+    private incScore(playerId: number, inc: number) {
+        (this as any).scoreCtrl[playerId]?.incValue(inc);
     }
 
     private getHelpHtml() {
@@ -725,40 +747,54 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     notif_takeTokens(args: NotifTakeTokensArgs) {
-        return this.getPlayerTable(args.playerId).addTokens(args.tokens);
+        const { tokens, playerId } = args;
+        this.tokenCounters[playerId].incValue(tokens.length);
+        return this.getPlayerTable(playerId).addTokens(tokens);
     }
 
     notif_reserveCard(args: NotifReserveCardArgs) {
         this.reservedCounters[args.playerId].incValue(1);
         
-        return this.getPlayerTable(args.playerId).addReservedCard(args.card);
+        const promise = this.getPlayerTable(args.playerId).addReservedCard(args.card);
+
+        if (args.fromDeck) {
+            this.tableCenter.cardsDecks[args.level].setCardNumber(args.cardDeckCount, args.cardDeckTop);
+        }
+
+        return promise;
     }
 
     async notif_buyCard(args: NotifBuyCardArgs) {
-        const { card, playerId } = args;
+        const { card, playerId, tokens } = args;
         if (args.fromReserved) {
             this.reservedCounters[playerId].incValue(-1);
         }
         await this.getPlayerTable(playerId).addCard(card);
         if (args.tokens?.length) {
-            await this.tableCenter.removeTokens(args.tokens);
+            this.tokenCounters[playerId].incValue(-tokens.length);
+            await this.tableCenter.removeTokens(tokens);
         }
 
-        if (card.location !== `playe${playerId}-9` || !card.power.includes(2)) {
+        if (card.location !== `player${playerId}-9` || !card.power.includes(2)) {
             const playerTable = this.getPlayerTable(playerId);
             this.crownCounters[playerId].toValue(playerTable.getCrowns());
             this.strongestColumnCounters[playerId].toValue(playerTable.getStrongestColumn());
+            this.incScore(playerId, card.points);
         }
 
         return Promise.resolve(true);
     }
 
     notif_takeRoyalCard(args: NotifTakeRoyalCardArgs) {
-        return this.getPlayerTable(args.playerId).addRoyalCard(args.card);
+        const { card, playerId } = args;
+        this.incScore(playerId, card.points);
+        return this.getPlayerTable(args.playerId).addRoyalCard(card);
     }
 
     notif_discardTokens(args: NotifDiscardTokensArgs) {
-        return this.tableCenter.removeTokens(args.tokens);
+        const { tokens, playerId } = args;
+        this.tokenCounters[playerId].incValue(-tokens.length);
+        return this.tableCenter.removeTokens(tokens);
     }
 
     notif_newTableCard(args: NotifNewTableCardArgs) {
@@ -766,7 +802,7 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     notif_win(args: NotifWinArgs) {
-        this.setScore(args.playerId, 1);
+        //this.setScore(args.playerId, 1);
     }
 
     public getColor(color: number): string {
