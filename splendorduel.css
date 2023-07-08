@@ -905,6 +905,7 @@ body > .card {
   border-radius: 4px;
 }
 #table-center #board-wrapper #board {
+  position: relative;
   display: grid;
   grid-template-rows: repeat(5, 1fr);
   grid-template-columns: repeat(5, 1fr);
@@ -920,6 +921,22 @@ body > .card {
 #table-center #board-wrapper #board .slot {
   width: 80px;
   height: 80px;
+}
+#table-center #board-wrapper .board-tooltip-zone {
+  position: absolute;
+  right: 11px;
+  width: 70px;
+  height: 70px;
+  border-radius: 8px;
+}
+#table-center #board-wrapper .board-tooltip-zone[data-index="0"] {
+  top: 106px;
+}
+#table-center #board-wrapper .board-tooltip-zone[data-index="1"] {
+  top: 186px;
+}
+#table-center #board-wrapper .board-tooltip-zone[data-index="2"] {
+  top: 260px;
 }
 #table-center #table-cards {
   display: grid;

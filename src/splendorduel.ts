@@ -139,6 +139,9 @@ class SplendorDuel implements SplendorDuelGame {
             case 'takeOpponentToken':
                 this.onEnteringTakeOpponentToken(args.args);
                 break;
+            case 'takeRoyalCard':
+                this.onEnteringTakeRoyalCard();
+                break;
             case 'discardTokens':
                 this.onEnteringDiscardTokens();
                 break;
@@ -204,6 +207,10 @@ class SplendorDuel implements SplendorDuelGame {
         }
     }
 
+    private onEnteringTakeRoyalCard() {
+        this.tableCenter.setRoyalCardsSelectable(true);
+    }
+
     private onEnteringDiscardTokens() {
         if ((this as any).isCurrentPlayerActive()) {
             this.getCurrentPlayerTable().setTokensSelectable(true, true);
@@ -225,6 +232,9 @@ class SplendorDuel implements SplendorDuelGame {
             case 'takeOpponentToken':
                 this.onLeavingTakeOpponentToken();
                 break;
+            case 'takeRoyalCard':
+                this.onLeavingTakeRoyalCard();
+                break;
             case 'discardTokens':
                 this.onLeavingDiscardTokens();
                 break;
@@ -243,6 +253,11 @@ class SplendorDuel implements SplendorDuelGame {
 
     private onLeavingTakeOpponentToken() {
         this.playersTables.forEach(playerTable => playerTable.setTokensSelectable(false, true));
+    }
+
+    private onLeavingTakeRoyalCard() {
+        this.tableCenter.setRoyalCardsSelectable(false);
+        this.getCurrentPlayerTable()?.setHandSelectable(false);
     }
 
     private onLeavingDiscardTokens() {
@@ -458,7 +473,7 @@ class SplendorDuel implements SplendorDuelGame {
     public onPlayerTokenSelectionChange(tokens: Token[]): void {
         this.tokensSelection = tokens;
 
-        if (this.gamedatas.gamestate.name == 'discardCards') {
+        if (this.gamedatas.gamestate.name == 'discardTokens') {
             document.getElementById('discardSelectedTokens_button')?.classList.toggle('disabled', this.tokensSelection.length != this.gamedatas.gamestate.args.number);
         } else if (this.gamedatas.gamestate.name == 'takeOpponentToken') {
             document.getElementById('takeSelectedTokens_button')?.classList.toggle('disabled', this.tokensSelection.length != 1);

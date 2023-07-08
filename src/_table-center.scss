@@ -39,6 +39,7 @@
     }
 
     #board {
+      position: relative;
       display: grid;
       grid-template-rows: repeat(5, 1fr);
       grid-template-columns: repeat(5, 1fr);
@@ -55,6 +56,18 @@
         width: 80px;
         height: 80px;
       }
+    }
+
+    .board-tooltip-zone {
+      position: absolute;
+      right: 11px;
+      width: 70px;
+      height: 70px;
+      border-radius: 8px;
+
+      &[data-index="0"] { top: 106px; }
+      &[data-index="1"] { top: 186px; }
+      &[data-index="2"] { top: 260px; }
     }
   }
 

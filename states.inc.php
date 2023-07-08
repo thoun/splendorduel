@@ -163,7 +163,6 @@ $playerActionsGameStates = [
         "description" => clienttranslate('${actplayer} must take a Royal card'),
         "descriptionmyturn" => clienttranslate('${you} must take a Royal card'),
         "type" => "activeplayer",
-        "args" => "argTakeRoyalCard",
         "possibleactions" => [ 
             "takeRoyalCard",
         ],

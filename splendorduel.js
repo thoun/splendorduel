@@ -2142,6 +2142,14 @@ var TokenBoard = /** @class */ (function () {
         });
         this.stock.addCards(board);
         this.stock.onSelectionChange = function (selection, lastChange) { return _this.onTokenSelectionChange(selection, lastChange); };
+        [
+            _("If you take <strong>2 Pearls</strong> during the Mandatory Action, your opponent takes 1 Privilege."),
+            _("If you <strong>replenish the Game Board</strong>, your opponent takes 1 Privilege."),
+            _("If you take <strong>3 tokens of the same color</strong> during the Mandatory Action, your opponent takes 1 Privilege."),
+        ].forEach(function (sentence, index) {
+            document.getElementById("board").insertAdjacentHTML('beforeend', "<div id=\"board-tooltip-zone-".concat(index, "\" class=\"board-tooltip-zone\" data-index=\"").concat(index, "\"></div>"));
+            _this.game.setTooltip("board-tooltip-zone-".concat(index), sentence);
+        });
     }
     TokenBoard.prototype.getDefaultPossibleSelection = function () {
         var _this = this;
@@ -2339,6 +2347,7 @@ var TableCenter = /** @class */ (function () {
         });
         this.royalCards.onCardClick = function (card) { return _this.game.onRoyalCardClick(card); };
         this.royalCards.addCards(gamedatas.royalCards);
+        this.game.setTooltip('score-tile', "\n            ".concat(_("If you have 20 or more Prestige points, you win!"), "\n            <br><br>\n            ").concat(_("If you have 10 or more Crowns, you win!"), "\n            <br><br>\n            ").concat(_("If you have 10 or more Prestige points on cards of the same color, you win! A <ICON_MULTI> card is considered to be of the same color as the cards it is grouped with").replace('<ICON_MULTI>', "<div class=\"token-icon\" data-type=\"9\"></div>"), "\n        "));
     }
     TableCenter.prototype.setCardsSelectable = function (selectable, selectableCards, all) {
         if (selectableCards === void 0) { selectableCards = []; }
@@ -2371,6 +2380,9 @@ var TableCenter = /** @class */ (function () {
     };
     TableCenter.prototype.removeTokens = function (tokens) {
         return this.bag.addCards(tokens);
+    };
+    TableCenter.prototype.setRoyalCardsSelectable = function (selectable) {
+        this.royalCards.setSelectionMode(selectable ? 'single' : 'none');
     };
     return TableCenter;
 }());
@@ -2578,6 +2590,9 @@ var SplendorDuel = /** @class */ (function () {
             case 'takeOpponentToken':
                 this.onEnteringTakeOpponentToken(args.args);
                 break;
+            case 'takeRoyalCard':
+                this.onEnteringTakeRoyalCard();
+                break;
             case 'discardTokens':
                 this.onEnteringDiscardTokens();
                 break;
@@ -2635,6 +2650,9 @@ var SplendorDuel = /** @class */ (function () {
             this.getPlayerTable(args.opponentId).setTokensSelectable(true, false);
         }
     };
+    SplendorDuel.prototype.onEnteringTakeRoyalCard = function () {
+        this.tableCenter.setRoyalCardsSelectable(true);
+    };
     SplendorDuel.prototype.onEnteringDiscardTokens = function () {
         if (this.isCurrentPlayerActive()) {
             this.getCurrentPlayerTable().setTokensSelectable(true, true);
@@ -2654,6 +2672,9 @@ var SplendorDuel = /** @class */ (function () {
             case 'takeOpponentToken':
                 this.onLeavingTakeOpponentToken();
                 break;
+            case 'takeRoyalCard':
+                this.onLeavingTakeRoyalCard();
+                break;
             case 'discardTokens':
                 this.onLeavingDiscardTokens();
                 break;
@@ -2671,6 +2692,11 @@ var SplendorDuel = /** @class */ (function () {
     };
     SplendorDuel.prototype.onLeavingTakeOpponentToken = function () {
         this.playersTables.forEach(function (playerTable) { return playerTable.setTokensSelectable(false, true); });
+    };
+    SplendorDuel.prototype.onLeavingTakeRoyalCard = function () {
+        var _a;
+        this.tableCenter.setRoyalCardsSelectable(false);
+        (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setHandSelectable(false);
     };
     SplendorDuel.prototype.onLeavingDiscardTokens = function () {
         var _a;
@@ -2818,7 +2844,7 @@ var SplendorDuel = /** @class */ (function () {
     SplendorDuel.prototype.onPlayerTokenSelectionChange = function (tokens) {
         var _a, _b;
         this.tokensSelection = tokens;
-        if (this.gamedatas.gamestate.name == 'discardCards') {
+        if (this.gamedatas.gamestate.name == 'discardTokens') {
             (_a = document.getElementById('discardSelectedTokens_button')) === null || _a === void 0 ? void 0 : _a.classList.toggle('disabled', this.tokensSelection.length != this.gamedatas.gamestate.args.number);
         }
         else if (this.gamedatas.gamestate.name == 'takeOpponentToken') {

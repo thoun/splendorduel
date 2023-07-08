@@ -22,6 +22,15 @@ class TokenBoard {
         });
         this.stock.addCards(board);
         this.stock.onSelectionChange = (selection: Token[], lastChange: Token) => this.onTokenSelectionChange(selection, lastChange);
+        
+        [
+            _("If you take <strong>2 Pearls</strong> during the Mandatory Action, your opponent takes 1 Privilege."),
+            _("If you <strong>replenish the Game Board</strong>, your opponent takes 1 Privilege."),
+            _("If you take <strong>3 tokens of the same color</strong> during the Mandatory Action, your opponent takes 1 Privilege."),
+        ].forEach((sentence, index) => {
+            document.getElementById(`board`).insertAdjacentHTML('beforeend', `<div id="board-tooltip-zone-${index}" class="board-tooltip-zone" data-index="${index}"></div>`);
+            this.game.setTooltip(`board-tooltip-zone-${index}`, sentence);
+        });
     }
 
     private getDefaultPossibleSelection(): Token[] {

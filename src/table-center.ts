@@ -41,6 +41,14 @@ class TableCenter {
         });
         this.royalCards.onCardClick = card => this.game.onRoyalCardClick(card);
         this.royalCards.addCards(gamedatas.royalCards);
+
+        this.game.setTooltip('score-tile', `
+            ${_("If you have 20 or more Prestige points, you win!")}
+            <br><br>
+            ${_("If you have 10 or more Crowns, you win!")}
+            <br><br>
+            ${_("If you have 10 or more Prestige points on cards of the same color, you win! A <ICON_MULTI> card is considered to be of the same color as the cards it is grouped with").replace('<ICON_MULTI>', `<div class="token-icon" data-type="9"></div>`)}
+        `);
     }
     
     public setCardsSelectable(selectable: boolean, selectableCards: Card[] = [], all: boolean = false) {
@@ -76,5 +84,9 @@ class TableCenter {
     
     public removeTokens(tokens: Token[]): Promise<any> {
         return this.bag.addCards(tokens);
+    }
+    
+    public setRoyalCardsSelectable(selectable: boolean) {
+        this.royalCards.setSelectionMode(selectable ? 'single' : 'none');
     }
 }

@@ -23,32 +23,9 @@ trait DebugUtilTrait {
         //$this->debugLastTurn();
     }
 
-    function debugSetScore($score) {
-		$this->DbQuery("UPDATE player SET `player_score` = $score");
-    }
-    
-    function debugSetPlayerScore($playerId, $score) {
-		$this->DbQuery("UPDATE player SET `player_score` = $score WHERE player_id = $playerId");
-    }
-
-    function debugSetReputation($score) {
-		$this->DbQuery("UPDATE player SET `player_reputation` = $score");
-    }
-    
-    function debugSetPlayerReputation($playerId, $score) {
-		$this->DbQuery("UPDATE player SET `player_reputation` = $score WHERE player_id = $playerId");
-    }
-    
-    function debugEmpty() {
-		$this->cards->moveAllCardsInLocation('deck', 'void');
-        $this->cards->moveAllCardsInLocation('discard', 'void');
-    }
-
-    function debugAddDestinations($playerId, $letter, $number) {
-        for ($i = 0; $i < $number; $i++) {
-            $destinationIndex = intval($this->tokens->countCardInLocation('played'.$playerId));
-            $this->tokens->pickCardForLocation('deck'.$letter, 'played'.$playerId, $destinationIndex);
-        }
+    function debugTokens() {
+        $playerId = intval($this->getActivePlayerId());
+        $this->tokens->moveAllCardsInLocation('board', 'player', null, $playerId);
     }
 
     public function debugReplacePlayersIds() {
