@@ -40,6 +40,7 @@ interface SplendorDuelGame extends Game {
     getPlayerId(): number;
     getPlayer(playerId: number): SplendorDuelPlayer;
     getColor(color: number): string;
+    getPower(power: number): string;
     getGameStateName(): string;
     getCurrentPlayerTable(): PlayerTable | null;
 

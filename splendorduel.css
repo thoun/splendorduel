@@ -1134,21 +1134,14 @@ html, .mode_3d #game_play_area_background {
   background-repeat: no-repeat;
   background-position: center;
   vertical-align: middle;
-  border-radius: 50%;
 }
-.icon.vp, .icon[data-type="1"] {
+.icon.crown {
   background-position-x: 0%;
 }
-.icon.reputation, .icon[data-type="4"] {
-  background-position-x: 25%;
-}
-.icon.bracelet, .icon[data-type="2"] {
+.icon.card-column {
   background-position-x: 50%;
 }
-.icon.recruit, .icon[data-type="3"] {
-  background-position-x: 75%;
-}
-.icon.take-card, .icon[data-type="5"] {
+.icon.privilege {
   background-position-x: 100%;
 }
 
@@ -1160,14 +1153,6 @@ html, .mode_3d #game_play_area_background {
 .dijitTooltipContents .icon, .dijitTooltipContents .color {
   width: 20px;
   height: 20px;
-}
-
-.privilege-icon {
-  display: inline-block;
-  width: 19px;
-  height: 57px;
-  background-size: auto 100%;
-  background-image: url("img/privilege.png");
 }
 
 .token-icon {

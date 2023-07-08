@@ -4,7 +4,7 @@ interface RoyalCard {
     locationArg: number;
     index: number;
     points: number;
-    power: number | null;
+    power: number[];
 }
 
 class RoyalCardsManager extends CardManager<RoyalCard> {
@@ -27,9 +27,13 @@ class RoyalCardsManager extends CardManager<RoyalCard> {
     private getTooltip(card: RoyalCard): string {
         let message = `
         <strong>${_("Points:")}</strong> ${card.points}
-        <br>
-        <strong>${_("Power:")}</strong> ${card.power}
         `;
+        if (card.power.length) {
+            message += `
+            <br>
+            <strong>${_("Power:")}</strong> ${card.power.map(power => this.game.getPower(power)).join(', ')}
+            `;
+        }
  
         return message;
     }

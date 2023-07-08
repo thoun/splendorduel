@@ -308,7 +308,7 @@ trait UtilTrait {
             throw new BgaUserException("Not enough privileges");
         }
 
-        if ($this->array_some($tokens, fn($token) => $token->id == 1)) {
+        if ($this->array_some($tokens, fn($token) => $token->type == 1)) {
             throw new BgaUserException("You can't take gold tokens this way");
         }
     }
@@ -399,8 +399,8 @@ trait UtilTrait {
             if (property_exists($card, 'crowns') && $card->crowns > 0) {
                 $cards = $this->getCardsByLocation('player'.$playerId.'-%');
                 $crownsAfter = 0;
-                foreach($cards as $card) {
-                    $crownsAfter += $card->crowns;
+                foreach($cards as $iCard) {
+                    $crownsAfter += $iCard->crowns;
                 }
                 $crownsBefore = $crownsAfter - $card->crowns;
 
@@ -410,14 +410,10 @@ trait UtilTrait {
                 }
             }
 
-            if ($card->power != null && !$ignorePower) {
+            if (!$ignorePower) {
                 $redirected = false;
-                if (gettype($card->power) == 'array') {
-                    foreach($card->power as $power) {
-                        $redirected = $redirected || $this->applyPower($playerId, $power, $card->id);
-                    }
-                } else {
-                    $redirected = $this->applyPower($playerId, $card->power, $card->id);
+                foreach ($card->power as $power) {
+                    $redirected = $redirected || $this->applyPower($playerId, $power, $card->id);
                 }
                 if ($redirected) {
                     return;
@@ -549,7 +545,7 @@ trait UtilTrait {
 
         // ignore multi color if we don't have a colored card
         if (!$hasColoredCards) {
-            $possibleCards = array_values(array_filter($possibleCards, fn($card) => gettype($card->power) == 'array' ? !in_array(POWER_MULTICOLOR, $card->power) : $card->power != POWER_MULTICOLOR));
+            $possibleCards = array_values(array_filter($possibleCards, fn($card) => !in_array(POWER_MULTICOLOR, $card->power)));
         }
 
         $buyableCards = array_values(array_filter($possibleCards, fn($card) => $this->canBuyCard($card, $tokens, $cards)));

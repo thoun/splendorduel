@@ -33,6 +33,8 @@ class SplendorDuel implements SplendorDuelGame {
     private playersTables: PlayerTable[] = [];
     private privilegeCounters: Counter[] = [];
     private reservedCounters: Counter[] = [];
+    private crownCounters: Counter[] = [];
+    private strongestColumnCounters: Counter[] = [];
 
     private tokensSelection: Token[];
     
@@ -373,9 +375,21 @@ class SplendorDuel implements SplendorDuelGame {
         Object.values(gamedatas.players).forEach(player => {
             const playerId = Number(player.id);
 
-            let html = `<div class="counters">            
+            let html = `<div class="counters">
+                <div id="crown-counter-wrapper-${player.id}" class="crown-counter">
+                    <div class="crown icon"></div>
+                    <span id="crown-counter-${player.id}"></span>
+                </div>
+
+                <div id="strongest-column-counter-wrapper-${player.id}" class="strongest-column-counter">
+                    <div class="card-column icon"></div> 
+                    <span id="strongest-column-counter-${player.id}"></span>
+                </div>
+            </div>
+            
+            <div class="counters">
                 <div id="privilege-counter-wrapper-${player.id}" class="privilege-counter">
-                    <div class="privilege-icon"></div>
+                    <div class="privilege icon"></div>
                     <span id="privilege-counter-${player.id}"></span>
                 </div>
 
@@ -387,16 +401,33 @@ class SplendorDuel implements SplendorDuelGame {
 
             dojo.place(html, `player_board_${player.id}`);
 
-            const reservedCounter = new ebg.counter();
-            reservedCounter.create(`reserved-counter-${playerId}`);
-            reservedCounter.setValue(player.reserved.length);
-            this.reservedCounters[playerId] = reservedCounter;
+            this.crownCounters[playerId] = new ebg.counter();
+            this.crownCounters[playerId].create(`crown-counter-${playerId}`);
+            this.crownCounters[playerId].setValue(player.cards.map(card => card.crowns).reduce((a, b) => a + b, 0));
+
+            let strongestColumnValue = 0;
+            [1,2,3,4,5,9].forEach(color => {
+                // we ignore multicolor in gray column as they will move to another column
+                const colorPoints = player.cards.filter(card => card.location === `player${playerId}-${color}` && (color !== 9 || !card.power.includes(2))).map(card => card.points).reduce((a, b) => a + b, 0);
+                if (colorPoints > strongestColumnValue) {
+                    strongestColumnValue = colorPoints;
+                }
+            });
+            this.strongestColumnCounters[playerId] = new ebg.counter();
+            this.strongestColumnCounters[playerId].create(`strongest-column-counter-${playerId}`);
+            this.strongestColumnCounters[playerId].setValue(strongestColumnValue);
+
+            this.reservedCounters[playerId] = new ebg.counter();
+            this.reservedCounters[playerId].create(`reserved-counter-${playerId}`);
+            this.reservedCounters[playerId].setValue(player.reserved.length);
 
             this.privilegeCounters[playerId] = new ebg.counter();
             this.privilegeCounters[playerId].create(`privilege-counter-${playerId}`);
             this.privilegeCounters[playerId].setValue(player.privileges);
         });
 
+        this.setTooltipToClass('crown-counter', _('Crowns'));
+        this.setTooltipToClass('strongest-column-counter', _('Points of the strongest column'));
         this.setTooltipToClass('privilege-counter', _('Privilege scrolls'));
         this.setTooltipToClass('reserved-counter', _('Reserved cards'));
     }
@@ -704,12 +735,19 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     async notif_buyCard(args: NotifBuyCardArgs) {
+        const { card, playerId } = args;
         if (args.fromReserved) {
-            this.reservedCounters[args.playerId].incValue(-1);
+            this.reservedCounters[playerId].incValue(-1);
         }
-        await this.getPlayerTable(args.playerId).addCard(args.card);
+        await this.getPlayerTable(playerId).addCard(card);
         if (args.tokens?.length) {
             await this.tableCenter.removeTokens(args.tokens);
+        }
+
+        if (card.location !== `playe${playerId}-9` || !card.power.includes(2)) {
+            const playerTable = this.getPlayerTable(playerId);
+            this.crownCounters[playerId].toValue(playerTable.getCrowns());
+            this.strongestColumnCounters[playerId].toValue(playerTable.getStrongestColumn());
         }
 
         return Promise.resolve(true);
@@ -740,6 +778,17 @@ class SplendorDuel implements SplendorDuelGame {
             case 4: return _("Black");
             case 5: return _("Red");
             case 9: return _("Gray");
+        }
+    }
+
+    public getPower(power: number): string {
+        switch (power) {
+            case 1: return _("Take another turn immediately after this one ends.");
+            case 2: return _("Place this card so that it overlaps a Jewel card with a bonus (see on the right). Treat this card’s <ICON_MULTI> bonus as though it were the same color of the card it is overlapping.").replace('<ICON_MULTI>', `<div class="token-icon" data-type="9"></div>`) +
+                `<br><i>${_("If you do not have a card with a bonus, you cannot purchase this card.")}</i>`;
+            case 3: return _("Take 1 token matching the color of this card from the board. If there are no such tokens left, ignore this effect.");
+            case 4: return _("Take 1 Privilege. If none are available, take 1 from your opponent.");
+            case 5: return _("Take 1 Gem or Pearl token from your opponent. If your opponent has no such tokens, ignore this effect. You cannot take a Gold token from your opponent.");
         }
     }
 

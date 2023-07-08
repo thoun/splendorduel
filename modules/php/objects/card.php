@@ -8,9 +8,9 @@ class CardType {
     public ?array $cost;
     public ?array $provides;
     public ?int $crowns;
-    public /*?int | ?array*/ $power;
+    public array $power;
   
-    public function __construct(int $color, array $cost, array $provides = [], int $points = 0, int $crowns = 0, /*?int | ?array*/ $power = null) {
+    public function __construct(int $color, array $cost, array $provides = [], int $points = 0, int $crowns = 0, array $power = []) {
         $this->color = $color;
         $this->cost = $cost;
         $this->provides = $provides;

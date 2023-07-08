@@ -2039,16 +2039,6 @@ var CardsManager = /** @class */ (function (_super) {
         _this.game = game;
         return _this;
     }
-    CardsManager.prototype.getPower = function (power) {
-        switch (power) {
-            case 1: return _("Take another turn immediately after this one ends.");
-            case 2: return _("Place this card so that it overlaps a Jewel card with a bonus (see on the right). Treat this card’s <ICON_MULTI> bonus as though it were the same color of the card it is overlapping.").replace('<ICON_MULTI>', "<div class=\"token-icon\" data-type=\"9\"></div>") +
-                "<br><i>".concat(_("If you do not have a card with a bonus, you cannot purchase this card."), "</i>");
-            case 3: return _("Take 1 token matching the color of this card from the board. If there are no such tokens left, ignore this effect.");
-            case 4: return _("Take 1 Privilege. If none are available, take 1 from your opponent.");
-            case 5: return _("Take 1 Gem or Pearl token from your opponent. If your opponent has no such tokens, ignore this effect. You cannot take a Gold token from your opponent.");
-        }
-    };
     CardsManager.prototype.getTooltip = function (card) {
         var _this = this;
         var message = "\n        <strong>".concat(_("Level:"), "</strong> ").concat(card.level, "\n        <br>\n        <strong>").concat(_("Color:"), "</strong> ").concat(this.game.getColor(card.color), "\n        <br>\n        <strong>").concat(_("Cost:"), "</strong> ").concat(Object.entries(card.cost).map(function (entry) {
@@ -2065,8 +2055,8 @@ var CardsManager = /** @class */ (function (_super) {
         if (card.crowns) {
             message += "\n            <br>\n            <strong>".concat(_("Crowns:"), "</strong> ").concat(card.crowns);
         }
-        if (card.power) {
-            message += "\n            <br>\n            <strong>".concat(_("Power:"), "</strong> ").concat(Array.isArray(card.power) ? card.power.map(function (power) { return _this.getPower(power); }).join(', ') : this.getPower(card.power), "\n            ");
+        if (card.power.length) {
+            message += "\n            <br>\n            <strong>".concat(_("Power:"), "</strong> ").concat(card.power.map(function (power) { return _this.game.getPower(power); }).join(', '), "\n            ");
         }
         return message;
     };
@@ -2092,7 +2082,11 @@ var RoyalCardsManager = /** @class */ (function (_super) {
         return _this;
     }
     RoyalCardsManager.prototype.getTooltip = function (card) {
-        var message = "\n        <strong>".concat(_("Points:"), "</strong> ").concat(card.points, "\n        <br>\n        <strong>").concat(_("Power:"), "</strong> ").concat(card.power, "\n        ");
+        var _this = this;
+        var message = "\n        <strong>".concat(_("Points:"), "</strong> ").concat(card.points, "\n        ");
+        if (card.power.length) {
+            message += "\n            <br>\n            <strong>".concat(_("Power:"), "</strong> ").concat(card.power.map(function (power) { return _this.game.getPower(power); }).join(', '), "\n            ");
+        }
         return message;
     };
     return RoyalCardsManager;
@@ -2482,6 +2476,24 @@ var PlayerTable = /** @class */ (function () {
         var _this = this;
         return [1, 2, 3, 4, 5, 0, -1].map(function (i) { return _this.tokens[i].getSelection(); }).reduce(function (a, b) { return __spreadArray(__spreadArray([], a, true), b, true); }, []);
     };
+    PlayerTable.prototype.getCrowns = function () {
+        var _this = this;
+        var crowns = 0;
+        [1, 2, 3, 4, 5, 9].forEach(function (i) { return _this.played[i].getCards().forEach(function (card) { return crowns += card.crowns; }); });
+        return crowns;
+    };
+    PlayerTable.prototype.getStrongestColumn = function () {
+        var _this = this;
+        var strongestColumnValue = 0;
+        [1, 2, 3, 4, 5, 9].forEach(function (color) {
+            // we ignore multicolor in gray column as they will move to another column
+            var colorPoints = _this.played[color].getCards().filter(function (card) { return color !== 9 || !card.power.includes(2); }).map(function (card) { return card.points; }).reduce(function (a, b) { return a + b; }, 0);
+            if (colorPoints > strongestColumnValue) {
+                strongestColumnValue = colorPoints;
+            }
+        });
+        return strongestColumnValue;
+    };
     return PlayerTable;
 }());
 var ANIMATION_MS = 500;
@@ -2500,6 +2512,8 @@ var SplendorDuel = /** @class */ (function () {
         this.playersTables = [];
         this.privilegeCounters = [];
         this.reservedCounters = [];
+        this.crownCounters = [];
+        this.strongestColumnCounters = [];
         this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
     }
     /*
@@ -2795,16 +2809,31 @@ var SplendorDuel = /** @class */ (function () {
         var _this = this;
         Object.values(gamedatas.players).forEach(function (player) {
             var playerId = Number(player.id);
-            var html = "<div class=\"counters\">            \n                <div id=\"privilege-counter-wrapper-".concat(player.id, "\" class=\"privilege-counter\">\n                    <div class=\"privilege-icon\"></div>\n                    <span id=\"privilege-counter-").concat(player.id, "\"></span>\n                </div>\n\n                <div id=\"reserved-counter-wrapper-").concat(player.id, "\" class=\"reserved-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"reserved-counter-").concat(player.id, "\"></span>\n                </div>\n            </div>");
+            var html = "<div class=\"counters\">\n                <div id=\"crown-counter-wrapper-".concat(player.id, "\" class=\"crown-counter\">\n                    <div class=\"crown icon\"></div>\n                    <span id=\"crown-counter-").concat(player.id, "\"></span>\n                </div>\n\n                <div id=\"strongest-column-counter-wrapper-").concat(player.id, "\" class=\"strongest-column-counter\">\n                    <div class=\"card-column icon\"></div> \n                    <span id=\"strongest-column-counter-").concat(player.id, "\"></span>\n                </div>\n            </div>\n            \n            <div class=\"counters\">\n                <div id=\"privilege-counter-wrapper-").concat(player.id, "\" class=\"privilege-counter\">\n                    <div class=\"privilege icon\"></div>\n                    <span id=\"privilege-counter-").concat(player.id, "\"></span>\n                </div>\n\n                <div id=\"reserved-counter-wrapper-").concat(player.id, "\" class=\"reserved-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"reserved-counter-").concat(player.id, "\"></span>\n                </div>\n            </div>");
             dojo.place(html, "player_board_".concat(player.id));
-            var reservedCounter = new ebg.counter();
-            reservedCounter.create("reserved-counter-".concat(playerId));
-            reservedCounter.setValue(player.reserved.length);
-            _this.reservedCounters[playerId] = reservedCounter;
+            _this.crownCounters[playerId] = new ebg.counter();
+            _this.crownCounters[playerId].create("crown-counter-".concat(playerId));
+            _this.crownCounters[playerId].setValue(player.cards.map(function (card) { return card.crowns; }).reduce(function (a, b) { return a + b; }, 0));
+            var strongestColumnValue = 0;
+            [1, 2, 3, 4, 5, 9].forEach(function (color) {
+                // we ignore multicolor in gray column as they will move to another column
+                var colorPoints = player.cards.filter(function (card) { return card.location === "player".concat(playerId, "-").concat(color) && (color !== 9 || !card.power.includes(2)); }).map(function (card) { return card.points; }).reduce(function (a, b) { return a + b; }, 0);
+                if (colorPoints > strongestColumnValue) {
+                    strongestColumnValue = colorPoints;
+                }
+            });
+            _this.strongestColumnCounters[playerId] = new ebg.counter();
+            _this.strongestColumnCounters[playerId].create("strongest-column-counter-".concat(playerId));
+            _this.strongestColumnCounters[playerId].setValue(strongestColumnValue);
+            _this.reservedCounters[playerId] = new ebg.counter();
+            _this.reservedCounters[playerId].create("reserved-counter-".concat(playerId));
+            _this.reservedCounters[playerId].setValue(player.reserved.length);
             _this.privilegeCounters[playerId] = new ebg.counter();
             _this.privilegeCounters[playerId].create("privilege-counter-".concat(playerId));
             _this.privilegeCounters[playerId].setValue(player.privileges);
         });
+        this.setTooltipToClass('crown-counter', _('Crowns'));
+        this.setTooltipToClass('strongest-column-counter', _('Points of the strongest column'));
         this.setTooltipToClass('privilege-counter', _('Privilege scrolls'));
         this.setTooltipToClass('reserved-counter', _('Reserved cards'));
     };
@@ -3042,13 +3071,15 @@ var SplendorDuel = /** @class */ (function () {
     SplendorDuel.prototype.notif_buyCard = function (args) {
         var _a;
         return __awaiter(this, void 0, void 0, function () {
+            var card, playerId, playerTable;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
+                        card = args.card, playerId = args.playerId;
                         if (args.fromReserved) {
-                            this.reservedCounters[args.playerId].incValue(-1);
+                            this.reservedCounters[playerId].incValue(-1);
                         }
-                        return [4 /*yield*/, this.getPlayerTable(args.playerId).addCard(args.card)];
+                        return [4 /*yield*/, this.getPlayerTable(playerId).addCard(card)];
                     case 1:
                         _b.sent();
                         if (!((_a = args.tokens) === null || _a === void 0 ? void 0 : _a.length)) return [3 /*break*/, 3];
@@ -3056,7 +3087,13 @@ var SplendorDuel = /** @class */ (function () {
                     case 2:
                         _b.sent();
                         _b.label = 3;
-                    case 3: return [2 /*return*/, Promise.resolve(true)];
+                    case 3:
+                        if (card.location !== "playe".concat(playerId, "-9") || !card.power.includes(2)) {
+                            playerTable = this.getPlayerTable(playerId);
+                            this.crownCounters[playerId].toValue(playerTable.getCrowns());
+                            this.strongestColumnCounters[playerId].toValue(playerTable.getStrongestColumn());
+                        }
+                        return [2 /*return*/, Promise.resolve(true)];
                 }
             });
         });
@@ -3082,6 +3119,16 @@ var SplendorDuel = /** @class */ (function () {
             case 4: return _("Black");
             case 5: return _("Red");
             case 9: return _("Gray");
+        }
+    };
+    SplendorDuel.prototype.getPower = function (power) {
+        switch (power) {
+            case 1: return _("Take another turn immediately after this one ends.");
+            case 2: return _("Place this card so that it overlaps a Jewel card with a bonus (see on the right). Treat this card’s <ICON_MULTI> bonus as though it were the same color of the card it is overlapping.").replace('<ICON_MULTI>', "<div class=\"token-icon\" data-type=\"9\"></div>") +
+                "<br><i>".concat(_("If you do not have a card with a bonus, you cannot purchase this card."), "</i>");
+            case 3: return _("Take 1 token matching the color of this card from the board. If there are no such tokens left, ignore this effect.");
+            case 4: return _("Take 1 Privilege. If none are available, take 1 from your opponent.");
+            case 5: return _("Take 1 Gem or Pearl token from your opponent. If your opponent has no such tokens, ignore this effect. You cannot take a Gold token from your opponent.");
         }
     };
     /* This enable to inject translatable styled things to logs or action bar */
