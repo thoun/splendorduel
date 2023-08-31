@@ -2129,13 +2129,23 @@ var TokenBoard = /** @class */ (function () {
                 slotsIds.push(JSON.stringify([row, column]));
             }
         }
-        this.stock = new SlotStock(game.tokensManager, document.getElementById("board"), {
+        var boardDiv = document.getElementById("board");
+        this.stock = new SlotStock(game.tokensManager, boardDiv, {
             slotsIds: slotsIds,
             mapCardToSlot: function (card) { return JSON.stringify([card.row, card.column]); },
             gap: '0',
         });
         this.stock.addCards(board);
         this.stock.onSelectionChange = function (selection, lastChange) { return _this.onTokenSelectionChange(selection, lastChange); };
+        boardDiv.addEventListener('mousedown', function (event) { return _this.onMouseDown(event); });
+        boardDiv.addEventListener('mousemove', function (event) { return _this.onMouseMove(event); });
+        boardDiv.addEventListener('mouseup', function (event) { return _this.onMouseUp(event); });
+        document.addEventListener('mouseup', function (event) { return _this.onMouseUp(null); });
+        document.addEventListener('keyup', function (event) {
+            if (event.key == 'Escape') {
+                _this.onMouseUp(null);
+            }
+        });
         [
             _("If you take <strong>2 Pearls</strong> during the Mandatory Action, your opponent takes 1 Privilege."),
             _("If you <strong>replenish the Game Board</strong>, your opponent takes 1 Privilege."),
@@ -2306,6 +2316,122 @@ var TokenBoard = /** @class */ (function () {
     };
     TokenBoard.prototype.refill = function (refilledTokens, fromStock) {
         return this.stock.addCards(refilledTokens, { fromStock: fromStock }, undefined, 350);
+    };
+    TokenBoard.prototype.checkPlayTakeGems = function (tokens) {
+        var gold = tokens.filter(function (token) { return token.type == 1; });
+        var gems = tokens.filter(function (token) { return token.type == 2; });
+        if (gold.length > 0) {
+            if (gold.length > 1) {
+                return false;
+            }
+            else if (gems.length > 0) {
+                return false;
+            }
+        }
+        else {
+            if (gems.length > 3) {
+                return false;
+            }
+            gems = gems.sort(function (a, b) { return a.row == b.row ? a.column - b.column : a.row - b.row; });
+            var rowDiff = null;
+            var colDiff = null;
+            var invalid = false;
+            for (var i = 1; i < gems.length; i++) {
+                if (rowDiff === null && colDiff === null) {
+                    rowDiff = gems[i].row - gems[i - 1].row;
+                    colDiff = gems[i].column - gems[i - 1].column;
+                }
+                else {
+                    if ((gems[i].row - gems[i - 1].row != rowDiff) || (gems[i].column - gems[i - 1].column != colDiff)) {
+                        invalid = true;
+                    }
+                }
+                if (rowDiff < -1 || rowDiff > 1 || colDiff < -1 || colDiff > 1) {
+                    invalid = true;
+                }
+            }
+            if (invalid) {
+                return false;
+            }
+        }
+        return true;
+    };
+    TokenBoard.prototype.completeSelection = function (from, to) {
+        var selection = from.id == to.id ? [from] : [from, to];
+        if (selection.length > 1 && (Math.abs(selection[0].row - selection[1].row) == 2 || Math.abs(selection[0].column - selection[1].column) == 2)) {
+            var middle_1 = this.stock.getCards().find(function (token) { return token.row == Math.floor((selection[0].row + selection[1].row) / 2) && token.column == Math.floor((selection[0].column + selection[1].column) / 2); });
+            if (middle_1 && !selection.some(function (s) { return s.id == middle_1.id; })) {
+                return __spreadArray(__spreadArray([], selection, true), [middle_1], false);
+            }
+        }
+        return selection;
+    };
+    TokenBoard.prototype.mouseSelectionValid = function (from, to) {
+        var selection = this.completeSelection(from, to);
+        return this.checkPlayTakeGems(selection);
+    };
+    TokenBoard.prototype.getTokenFromMouseEvent = function (event) {
+        var _a;
+        var tokenDiv = (_a = event.target) === null || _a === void 0 ? void 0 : _a.closest('.token');
+        return tokenDiv ? this.stock.getCards().find(function (card) { return tokenDiv.id == "token-".concat(card.id); }) : null;
+    };
+    TokenBoard.prototype.onMouseDown = function (event) {
+        this.mouseSelectionStart = this.getTokenFromMouseEvent(event);
+        this.mouseSelectionInitialCoordinates = [event.screenX, event.screenY];
+    };
+    TokenBoard.prototype.getTokenCenterCoordinates = function (token) {
+        return [50 + (token.column - 1) * 83.2, 50 + (token.row - 1) * 83.2];
+    };
+    TokenBoard.prototype.onMouseMove = function (event) {
+        if (!this.mouseSelectionStart || !this.mouseSelectionInitialCoordinates) {
+            return;
+        }
+        var mouseMovementDistance = Math.sqrt(Math.pow(this.mouseSelectionInitialCoordinates[0] - event.screenX, 2) + Math.pow(this.mouseSelectionInitialCoordinates[1] - event.screenY, 2));
+        if (mouseMovementDistance < 10) {
+            return;
+        }
+        var mouseSelectionEnd = this.getTokenFromMouseEvent(event);
+        if (!mouseSelectionEnd) {
+            return;
+        }
+        this.stock.unselectAll();
+        var fromCoordinates = this.getTokenCenterCoordinates(this.mouseSelectionStart);
+        if (!this.mouseSelection) {
+            this.mouseSelection = document.createElement('div');
+            this.mouseSelection.id = 'mouse-selection';
+            this.mouseSelection.style.left = "".concat(fromCoordinates[0] - 40, "px");
+            this.mouseSelection.style.top = "".concat(fromCoordinates[1] - 40, "px");
+            document.getElementById("board").appendChild(this.mouseSelection);
+        }
+        this.mouseSelection.dataset.valid = this.mouseSelectionValid(this.mouseSelectionStart, mouseSelectionEnd).toString();
+        var toCoordinates = this.getTokenCenterCoordinates(mouseSelectionEnd);
+        var xDiff = toCoordinates[0] - fromCoordinates[0];
+        var yDiff = toCoordinates[1] - fromCoordinates[1];
+        var distance = Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2)) + 80;
+        var angle = Math.atan(yDiff / xDiff);
+        this.mouseSelection.style.width = "".concat(distance, "px");
+        this.mouseSelection.style.transform = "rotate(".concat(xDiff < 0 ? Math.PI + angle : angle, "rad)");
+    };
+    TokenBoard.prototype.onMouseUp = function (event) {
+        var _this = this;
+        var _a;
+        if (event && this.mouseSelectionStart) {
+            var mouseMovementDistance = Math.sqrt(Math.pow(this.mouseSelectionInitialCoordinates[0] - event.screenX, 2) + Math.pow(this.mouseSelectionInitialCoordinates[1] - event.screenY, 2));
+            if (mouseMovementDistance >= 10) {
+                var mouseSelectionEnd = this.getTokenFromMouseEvent(event);
+                if (mouseSelectionEnd && this.mouseSelectionValid(this.mouseSelectionStart, mouseSelectionEnd)) {
+                    var selection = this.completeSelection(this.mouseSelectionStart, mouseSelectionEnd);
+                    this.stock.unselectAll();
+                    selection.forEach(function (card) { return _this.stock.selectCard(card); });
+                    this.onTokenSelectionChange(selection, mouseSelectionEnd);
+                }
+            }
+            event.stopImmediatePropagation();
+        }
+        this.mouseSelectionStart = null;
+        this.mouseSelectionInitialCoordinates = null;
+        (_a = this.mouseSelection) === null || _a === void 0 ? void 0 : _a.remove();
+        this.mouseSelection = null;
     };
     return TokenBoard;
 }());
@@ -2945,16 +3071,18 @@ var SplendorDuel = /** @class */ (function () {
         if (!this.checkAction('takeTokens')) {
             return;
         }
+        var tokensIds = this.tokensSelection.map(function (token) { return token.id; }).sort(function (a, b) { return a - b; });
         this.takeAction('takeTokens', {
-            ids: this.tokensSelection.map(function (token) { return token.id; }).join(','),
+            ids: tokensIds.join(','),
         });
     };
     SplendorDuel.prototype.discardSelectedTokens = function () {
         if (!this.checkAction('discardTokens')) {
             return;
         }
+        var tokensIds = this.tokensSelection.map(function (token) { return token.id; }).sort(function (a, b) { return a - b; });
         this.takeAction('discardTokens', {
-            ids: this.tokensSelection.map(function (token) { return token.id; }).join(','),
+            ids: tokensIds.join(','),
         });
     };
     SplendorDuel.prototype.skip = function () {
@@ -2987,9 +3115,10 @@ var SplendorDuel = /** @class */ (function () {
         if (!this.checkAction('buyCard')) {
             return;
         }
+        var tokensIds = this.tokensSelection.map(function (token) { return token.id; }).sort(function (a, b) { return a - b; });
         this.takeAction('buyCard', {
             id: id,
-            tokensIds: this.tokensSelection.map(function (token) { return token.id; }).join(','),
+            tokensIds: tokensIds.join(','),
         });
     };
     SplendorDuel.prototype.takeRoyalCard = function (id) {

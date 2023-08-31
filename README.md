@@ -34,8 +34,7 @@ Make sure ftp-sync.json and node_modules are in .gitignore
 
 # Rules, confirmed by the publisher
 The empty space left buy a card is refilled only at the end of the turn.
-When a player must refill, we only change the title on his sde, not on everyone side (so the opponent doesn't know if he must refill or if he can play a secret reserved card)
+When a player must refill, we only change the title on his side, not on everyone side (so the opponent doesn't know if he must refill or if he can play a secret reserved card)
 If there's only one possibility to pay, we preselect, but we let the user confirm.
-
 # TODO
-make pay selection
+make pay selection. If there's only one possibility to pay, we preselect, but we let the user confirm. TODO

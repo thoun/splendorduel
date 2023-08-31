@@ -944,6 +944,20 @@ body > .card {
   gap: 10px;
 }
 
+#mouse-selection {
+  --selection-color: red;
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  transform-origin: 40px 40px;
+  box-shadow: 0 0 5px 5px var(--selection-color);
+  border-radius: 40px;
+  pointer-events: none;
+}
+#mouse-selection[data-valid=true] {
+  --selection-color: green;
+}
+
 .player-board {
   background-color: white;
 }
@@ -1023,6 +1037,7 @@ body > .card {
   align-items: center;
   font-size: 20pt;
   font-family: "abril-titling";
+  text-shadow: 0 0 1px white, 0 0 2px white, 0 0 3px white;
 }
 .player-table .hand-wrapper {
   background: rgba(255, 255, 255, 0.5333333333);

@@ -588,8 +588,10 @@ class SplendorDuel implements SplendorDuelGame {
             return;
         }
 
+        const tokensIds = this.tokensSelection.map(token => token.id).sort((a, b) => a - b);
+
         this.takeAction('takeTokens', {
-            ids: this.tokensSelection.map(token => token.id).join(','), 
+            ids: tokensIds.join(','), 
         });
     }
   	
@@ -598,8 +600,10 @@ class SplendorDuel implements SplendorDuelGame {
             return;
         }
 
+        const tokensIds = this.tokensSelection.map(token => token.id).sort((a, b) => a - b);
+
         this.takeAction('discardTokens', {
-            ids: this.tokensSelection.map(token => token.id).join(','), 
+            ids: tokensIds.join(','), 
         });
     }
   	
@@ -642,9 +646,11 @@ class SplendorDuel implements SplendorDuelGame {
             return;
         }
 
+        const tokensIds = this.tokensSelection.map(token => token.id).sort((a, b) => a - b);
+
         this.takeAction('buyCard', {
             id,
-            tokensIds: this.tokensSelection.map(token => token.id).join(','), 
+            tokensIds: tokensIds.join(','), 
         });
     }
   	
