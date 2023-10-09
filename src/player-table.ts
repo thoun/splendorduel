@@ -127,6 +127,14 @@ class PlayerTable {
     public setTokensSelectable(selectable: boolean, goldAllowed: boolean) {
         (goldAllowed || !selectable ? [1,2,3,4,5,0,-1] : [1,2,3,4,5,0]).forEach(i => this.tokens[i].setSelectionMode(selectable ? 'multiple' : 'none'));
     }
+    
+    public setTokensSelectableByType(allowedTypes: number[], preselection: Token[]) {
+        [1,2,3,4,5,0,-1].forEach(i => {
+            this.tokens[i].setSelectionMode(allowedTypes.includes(i) ? 'multiple' : 'none');
+            this.tokens[i].unselectAll();
+            this.tokens[i].getCards().filter(card => preselection.some(token => token.id == card.id)).forEach(token => this.tokens[i].selectCard(token));
+        });
+    }
 
     public getTokens(): Token[] {
         return [1,2,3,4,5,0,-1].map(i => this.tokens[i].getCards()).reduce((a, b) => [...a, ...b], []);

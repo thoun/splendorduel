@@ -38,6 +38,9 @@ class SplendorDuel implements SplendorDuelGame {
     private tokenCounters: Counter[] = [];
 
     private tokensSelection: Token[];
+    private selectedCard: Card;
+    private selectedCardReducedCost: { [color: number]: number };
+    private originalTextChooseAction: string;
     
     private TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
 
@@ -530,27 +533,38 @@ class SplendorDuel implements SplendorDuelGame {
             document.getElementById('discardSelectedTokens_button')?.classList.toggle('disabled', this.tokensSelection.length != this.gamedatas.gamestate.args.number);
         } else if (this.gamedatas.gamestate.name == 'takeOpponentToken') {
             document.getElementById('takeSelectedTokens_button')?.classList.toggle('disabled', this.tokensSelection.length != 1);
+        } else if (this.gamedatas.gamestate.name == 'playAction') {
+            if (this.selectedCard) {
+                this.setChooseTokenCostButtonLabelAndState();
+            }
         }
     }
 
     public onTableCardClick(card: Card): void {
         if (this.gamedatas.gamestate.name == 'reserveCard') {
             this.reserveCard(card.id);
-        } else {
-            this.onBuyCardClick(card);
+        } else if (this.gamedatas.gamestate.name == 'playAction') {
+            if (card != this.selectedCard) {
+                if (this.selectedCard) {
+                    this.cancelChooseTokenCost();
+                }
+                this.onBuyCardClick(card);
+            }
         }
     }
 
     public onBuyCardClick(card: Card): void {
+        this.selectedCard = card;
+
         const goldTokens = this.getCurrentPlayerTable().tokens[-1].getCards();
         const reductedCost = structuredClone((this.gamedatas.gamestate.args as EnteringPlayActionArgs).reducedCosts[card.id]);
-        let selectedTokens = [];
+        let selectedTokens: Token[] = [];
         let remaining = 0;
         let remainingOfColors = 0;
         Object.entries(reductedCost).forEach(entry => {
             const color = Number(entry[0]);
             const number = entry[1] as number;
-            const tokensOfColor =  this.getCurrentPlayerTable().tokens[color].getCards();
+            const tokensOfColor = this.getCurrentPlayerTable().tokens[color].getCards();
             selectedTokens.push(...tokensOfColor.slice(0, Math.min(number, tokensOfColor.length)));
             if (number > tokensOfColor.length) {
                 remaining += number - tokensOfColor.length;
@@ -558,15 +572,78 @@ class SplendorDuel implements SplendorDuelGame {
                 remainingOfColors += tokensOfColor.length - number;
             }
         });
-        if (selectedTokens.length && goldTokens.length > 0) {
-            console.warn('Paying with color tokens when player could have wanted to pay with gold')
-        }
         if (remaining > 0) {
             selectedTokens.push(...goldTokens.slice(0, remaining));
         }
 
-        this.tokensSelection = selectedTokens;
-        this.buyCard(card.id);
+        // can use more gold to pay
+        if (goldTokens.length > remaining) {
+            this.tokensSelection = [];
+        } else {
+            this.tokensSelection = selectedTokens;
+        }
+        const allowedTypes = Object.keys(reductedCost).map(type => Number(type));
+        if (!allowedTypes.includes(-1)) {
+            allowedTypes.push(-1);
+        }
+        this.selectedCardReducedCost = reductedCost;
+        this.setActionBarChooseTokenCost();
+        this.getCurrentPlayerTable().setTokensSelectableByType(allowedTypes, this.tokensSelection);
+    }
+
+    private setChooseTokenCostButtonLabelAndState() {
+        const selection = this.getCurrentPlayerTable().getSelectedTokens();
+        const label = selection.length ? 
+            _('Pay ${cost}').replace('${cost}',
+                selection.map(token => `<div class="token-icon" data-type="${token.type == 1 ? -1 : token.color}"></div>`).join('') // TODO sort
+            ) : 
+            _('Take for free');
+
+        document.getElementById(`chooseTokenCost-button`).innerHTML = label;
+        let valid = selection.length == Object.values(this.selectedCardReducedCost).reduce((a, b) => a + b, 0); // TODO more control
+        document.getElementById(`chooseTokenCost-button`).classList.toggle('disabled', !valid);
+    }
+
+    private setActionBarChooseTokenCost() {
+        const question = _("You must select the tokens to pay ${cost}").replace('${cost}', 
+            Object.entries(this.selectedCardReducedCost).map(([color, number]) => `<div class="token-icon" data-type="${color}"></div>`).join('') // TODO duplicate for numbers
+        );
+        this.setChooseActionGamestateDescription(question);
+
+        document.getElementById(`generalactions`).innerHTML = '';
+        (this as any).addActionButton(`chooseTokenCost-button`, ``, () => this.buyCard());
+        this.setChooseTokenCostButtonLabelAndState();
+        (this as any).addActionButton(`cancelChooseTokenCost-button`, _("Cancel"), () => this.cancelChooseTokenCost(), null, null, 'gray');
+    }
+    
+    private setChooseActionGamestateDescription(newText?: string) {
+        if (!this.originalTextChooseAction) {
+            this.originalTextChooseAction = document.getElementById('pagemaintitletext').innerHTML;
+        }
+
+        document.getElementById('pagemaintitletext').innerHTML = newText ?? this.originalTextChooseAction;
+    }
+
+    public cancelChooseTokenCost() {
+        this.setActionBarChooseAction(true);
+        this.selectedCard = null;
+        this.tokensSelection = null;
+
+        document.getElementById(`chooseTokenCost-button`)?.remove();
+        document.getElementById(`cancelChooseTokenCost-button`)?.remove();
+    }
+    
+    private setActionBarChooseAction(fromCancel: boolean) {
+        document.getElementById(`generalactions`).innerHTML = '';
+        if (fromCancel) {
+            this.setChooseActionGamestateDescription();
+        }
+        /*if (this.actionTimerId) {
+            window.clearInterval(this.actionTimerId);
+        }*/
+
+        this.onUpdateActionButtons(this.gamedatas.gamestate.name, this.gamedatas.gamestate.args);
+        this.onEnteringState(this.gamedatas.gamestate.name, { args: this.gamedatas.gamestate.args });
     }
 
     public onRoyalCardClick(card: RoyalCard): void {
@@ -641,7 +718,7 @@ class SplendorDuel implements SplendorDuelGame {
         });
     }
   	
-    public buyCard(id: number) {
+    public buyCard() {
         if(!(this as any).checkAction('buyCard')) {
             return;
         }
@@ -649,7 +726,7 @@ class SplendorDuel implements SplendorDuelGame {
         const tokensIds = this.tokensSelection.map(token => token.id).sort((a, b) => a - b);
 
         this.takeAction('buyCard', {
-            id,
+            id: this.selectedCard.id,
             tokensIds: tokensIds.join(','), 
         });
     }
