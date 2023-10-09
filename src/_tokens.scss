@@ -10,7 +10,6 @@
           border-radius: 50%;
           background-size: auto 100%;
           background-image: url('img/tokens.png');
-          border: 5px solid transparent;
 
           &>* {
               pointer-events: none;
@@ -47,7 +46,6 @@
 
     &[data-type="1"] .card-side {
         background-position-x: 0;
-        border-color: #FFCE37;
     }
 
     @for $color from 0 through 5 {
@@ -55,13 +53,6 @@
             background-position-x: #{($color + 1) * 100% / 6};
         }
     }
-
-    &[data-type="2"][data-color="0"] .card-side { border-color: #E49AC3; }
-    &[data-type="2"][data-color="1"] .card-side { border-color: #0273AE; }
-    &[data-type="2"][data-color="2"] .card-side { border-color: #FFFFFF; }
-    &[data-type="2"][data-color="3"] .card-side { border-color: #00A965; }
-    &[data-type="2"][data-color="4"] .card-side { border-color: #28272B; }
-    &[data-type="2"][data-color="5"] .card-side { border-color: #EF405E; }
 }
 
 @keyframes selectable-card-animation {
@@ -71,4 +62,13 @@
   100% { 
     box-shadow: 0 0 5px 3px rgb(255, 212, 131);
   }
+}
+
+.compressed-token-icons {
+    display: inline-block;
+    margin-left: 20px;
+    
+    .token-icon {
+        margin-left: -20px;
+    }
 }

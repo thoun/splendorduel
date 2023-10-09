@@ -595,18 +595,22 @@ class SplendorDuel implements SplendorDuelGame {
         const selection = this.getCurrentPlayerTable().getSelectedTokens();
         const label = selection.length ? 
             _('Pay ${cost}').replace('${cost}',
-                selection.map(token => `<div class="token-icon" data-type="${token.type == 1 ? -1 : token.color}"></div>`).join('') // TODO sort
+                `<div class="compressed-token-icons">${
+                    selection.map(token => `<div class="token-icon" data-type="${token.type == 1 ? -1 : token.color}"></div>`).join('')
+                 }</div>`
             ) : 
             _('Take for free');
 
         document.getElementById(`chooseTokenCost-button`).innerHTML = label;
-        let valid = selection.length == Object.values(this.selectedCardReducedCost).reduce((a, b) => a + b, 0); // TODO more control
+        let valid = selection.length == Object.values(this.selectedCardReducedCost).reduce((a, b) => a + b, 0); // TODO more controls
         document.getElementById(`chooseTokenCost-button`).classList.toggle('disabled', !valid);
     }
 
     private setActionBarChooseTokenCost() {
         const question = _("You must select the tokens to pay ${cost}").replace('${cost}', 
-            Object.entries(this.selectedCardReducedCost).map(([color, number]) => `<div class="token-icon" data-type="${color}"></div>`).join('') // TODO duplicate for numbers
+            `<div class="compressed-token-icons">${
+                Object.entries(this.selectedCardReducedCost).map(([color, number]) => new Array(number).fill(0).map(() => `<div class="token-icon" data-type="${color}"></div>`).join('')).join('')
+            }</div>`
         );
         this.setChooseActionGamestateDescription(question);
 

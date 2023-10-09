@@ -3087,20 +3087,18 @@ var SplendorDuel = /** @class */ (function () {
     SplendorDuel.prototype.setChooseTokenCostButtonLabelAndState = function () {
         var selection = this.getCurrentPlayerTable().getSelectedTokens();
         var label = selection.length ?
-            _('Pay ${cost}').replace('${cost}', selection.map(function (token) { return "<div class=\"token-icon\" data-type=\"".concat(token.type == 1 ? -1 : token.color, "\"></div>"); }).join('') // TODO sort
-            ) :
+            _('Pay ${cost}').replace('${cost}', "<div class=\"compressed-token-icons\">".concat(selection.map(function (token) { return "<div class=\"token-icon\" data-type=\"".concat(token.type == 1 ? -1 : token.color, "\"></div>"); }).join(''), "</div>")) :
             _('Take for free');
         document.getElementById("chooseTokenCost-button").innerHTML = label;
-        var valid = selection.length == Object.values(this.selectedCardReducedCost).reduce(function (a, b) { return a + b; }, 0); // TODO more control
+        var valid = selection.length == Object.values(this.selectedCardReducedCost).reduce(function (a, b) { return a + b; }, 0); // TODO more controls
         document.getElementById("chooseTokenCost-button").classList.toggle('disabled', !valid);
     };
     SplendorDuel.prototype.setActionBarChooseTokenCost = function () {
         var _this = this;
-        var question = _("You must select the tokens to pay ${cost}").replace('${cost}', Object.entries(this.selectedCardReducedCost).map(function (_a) {
+        var question = _("You must select the tokens to pay ${cost}").replace('${cost}', "<div class=\"compressed-token-icons\">".concat(Object.entries(this.selectedCardReducedCost).map(function (_a) {
             var color = _a[0], number = _a[1];
-            return "<div class=\"token-icon\" data-type=\"".concat(color, "\"></div>");
-        }).join('') // TODO duplicate for numbers
-        );
+            return new Array(number).fill(0).map(function () { return "<div class=\"token-icon\" data-type=\"".concat(color, "\"></div>"); }).join('');
+        }).join(''), "</div>"));
         this.setChooseActionGamestateDescription(question);
         document.getElementById("generalactions").innerHTML = '';
         this.addActionButton("chooseTokenCost-button", "", function () { return _this.buyCard(); });
