@@ -966,9 +966,6 @@ body > .card {
 .player-board .counters > div {
   flex: 1;
 }
-.player-board .counters > div:last-child {
-  flex: 2;
-}
 .player-board .player-hand-card {
   display: inline-block;
   width: 32px;
@@ -979,27 +976,126 @@ body > .card {
   background-position: center;
   vertical-align: middle;
 }
-.player-board .reputation-legend {
-  font-size: 75%;
-  vertical-align: middle;
+.player-board .spl_miniplayerboard {
+  margin-top: 10px;
+  font-family: "abril-titling";
 }
-.player-board .reputation-legend .icon {
-  width: 20px;
-  height: 20px;
-  margin-right: 2px;
-}
-
-#first-player {
-  background: #6199b0;
-  color: white;
-  height: 20px;
-  font-size: 14px;
-  display: inline-flex;
-  justify-content: center;
+.player-board .spl_miniplayerboard .spl_ressources_container {
   align-items: center;
-  border-radius: 10px;
+  display: flex;
+  margin-top: 4px;
+}
+.player-board .spl_miniplayerboard .spl_ressources_container .spl_ressources {
+  margin: auto auto -10px;
+  position: relative;
+}
+.player-board .spl_miniplayerboard .spl_ressources_container .spl_ressources .spl_minigem {
+  background-image: url(img/oleum-small.webp);
+  background-size: auto 100%;
+  height: 14.266px;
+  position: absolute;
+  right: -6px;
+  top: -6px;
+  width: 16px;
+  z-index: 1;
+}
+.player-board .spl_miniplayerboard .spl_ressources_container .spl_ressources .spl_minigem[data-color="1"] {
+  background-position-x: 25%;
+}
+.player-board .spl_miniplayerboard .spl_ressources_container .spl_ressources .spl_minigem[data-color="2"] {
+  background-position-x: 0%;
+}
+.player-board .spl_miniplayerboard .spl_ressources_container .spl_ressources .spl_minigem[data-color="3"] {
+  background-position-x: 100%;
+}
+.player-board .spl_miniplayerboard .spl_ressources_container .spl_ressources .spl_minigem[data-color="4"] {
+  background-position-x: 50%;
+}
+.player-board .spl_miniplayerboard .spl_ressources_container .spl_ressources .spl_minigem[data-color="5"] {
+  background-position-x: 75%;
+}
+.player-board .spl_miniplayerboard .spl_cardcount {
+  display: inline-block;
+  text-align: center;
   user-select: none;
-  padding: 0 10px;
+  color: white;
+  text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black;
+  font-size: 24px;
+  border: 2px solid #000;
+  border-radius: 25%;
+  position: relative;
+  width: 26px;
+  height: 35px;
+  margin: auto;
+  z-index: 0;
+  line-height: 32px;
+}
+.player-board .spl_miniplayerboard .spl_cardcount[data-color="1"] {
+  background: radial-gradient(ellipse, #5bcbf5 30%, #193180);
+}
+.player-board .spl_miniplayerboard .spl_cardcount[data-color="2"] {
+  background: radial-gradient(ellipse, #fff 30%, #cecfd1);
+}
+.player-board .spl_miniplayerboard .spl_cardcount[data-color="3"] {
+  background: radial-gradient(ellipse, #80c341 30%, #006830);
+}
+.player-board .spl_miniplayerboard .spl_cardcount[data-color="4"] {
+  background: radial-gradient(ellipse, #000 30%, #413b3a);
+}
+.player-board .spl_miniplayerboard .spl_cardcount[data-color="5"] {
+  background: radial-gradient(ellipse, #f36f21 30%, #a21b1f);
+}
+.player-board .spl_miniplayerboard .spl_cardcount.empty {
+  opacity: 0.4;
+}
+.player-board .spl_miniplayerboard .spl_coinpile {
+  background-image: url("img/tokens.png");
+  background-size: auto 100%;
+  border-radius: 50%;
+  height: 28px;
+  left: -1px;
+  margin: auto 2px;
+  position: relative;
+  top: -10px;
+  width: 28px;
+  z-index: 1;
+  text-align: center;
+  user-select: none;
+  color: white;
+  text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black;
+  font-size: 20px;
+  line-height: 28px;
+}
+.player-board .spl_miniplayerboard .spl_coinpile.empty {
+  visibility: hidden;
+}
+.player-board .spl_miniplayerboard .spl_coinpile[data-type="1"] {
+  background-position-x: 0;
+}
+.player-board .spl_miniplayerboard .spl_coinpile[data-type="2"][data-color="0"] {
+  background-position-x: 16.6666666667%;
+}
+.player-board .spl_miniplayerboard .spl_coinpile[data-type="2"][data-color="1"] {
+  background-position-x: 33.3333333333%;
+}
+.player-board .spl_miniplayerboard .spl_coinpile[data-type="2"][data-color="2"] {
+  background-position-x: 50%;
+}
+.player-board .spl_miniplayerboard .spl_coinpile[data-type="2"][data-color="3"] {
+  background-position-x: 66.6666666667%;
+}
+.player-board .spl_miniplayerboard .spl_coinpile[data-type="2"][data-color="4"] {
+  background-position-x: 83.3333333333%;
+}
+.player-board .spl_miniplayerboard .spl_coinpile[data-type="2"][data-color="5"] {
+  background-position-x: 100%;
+}
+.player-board .token-counter {
+  /*font-family: "abril-titling";
+  color: white;
+  text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black;
+  font-size: 20px;*/
+  text-align: right;
 }
 
 .player-table {

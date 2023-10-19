@@ -19,10 +19,6 @@
 
     >div {
       flex: 1;
-
-      &:last-child {
-        flex: 2;
-      }
     }
   }
 
@@ -37,28 +33,135 @@
     vertical-align: middle;
   }
 
-  .reputation-legend {
-    .icon {
-      width: 20px;
-      height: 20px;
-      margin-right: 2px;
+  .spl_miniplayerboard {
+    margin-top: 10px;
+    font-family: "abril-titling";
+
+    .spl_ressources_container {
+      align-items: center;
+      display: flex;
+      margin-top: 4px;
+      
+      .spl_ressources {
+        margin: auto auto -10px;
+        position: relative;
+        
+        .spl_minigem {
+          background-image: url(img/oleum-small.webp);
+          background-size: auto 100%;
+          height: 14.266px;
+          position: absolute;
+          right: -6px;
+          top: -6px;
+          width: 16px;
+          z-index: 1;
+  
+          &[data-color="1"] {
+            background-position-x: 25%;
+          }
+      
+          &[data-color="2"] {
+            background-position-x: 0%;
+          }
+      
+          &[data-color="3"] {
+            background-position-x: 100%;
+          }
+      
+          &[data-color="4"] {
+            background-position-x: 50%;
+          }
+      
+          &[data-color="5"] {
+            background-position-x: 75%;
+          }
+        }
+      }
     }
 
-    font-size: 75%;
-    vertical-align: middle;
+    .spl_cardcount {
+      display: inline-block;
+
+      text-align: center;
+      user-select: none;
+      color: white;
+      text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black;
+      font-size: 24px;
+        
+      border: 2px solid #000;
+      border-radius: 25%;
+      position: relative;
+      width: 26px;
+      height: 35px;
+      margin: auto;
+      z-index: 0;
+      line-height: 32px;
+  
+      &[data-color="1"] {
+        background: radial-gradient(ellipse, #5bcbf5 30%, #193180);
+      }
+  
+      &[data-color="2"] {
+        background: radial-gradient(ellipse, #fff 30%, #cecfd1);
+      }
+  
+      &[data-color="3"] {
+        background: radial-gradient(ellipse, #80c341 30%, #006830);
+      }
+  
+      &[data-color="4"] {
+        background: radial-gradient(ellipse, #000 30%, #413b3a);
+      }
+  
+      &[data-color="5"] {
+        background: radial-gradient(ellipse, #f36f21 30%, #a21b1f);
+      }
+
+      &.empty {
+        opacity: 0.4;
+      }
+    }
+
+    .spl_coinpile {
+      background-image: url('img/tokens.png');
+      background-size: auto 100%;
+      border-radius: 50%;
+      height: 28px;
+      left: -1px;
+      margin: auto 2px;
+      position: relative;
+      top: -10px;
+      width: 28px;
+      z-index: 1;
+      text-align: center;
+      user-select: none;
+      color: white;
+      text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black;
+      font-size: 20px;
+      line-height: 28px;
+
+      &.empty {
+        visibility: hidden;
+      }
+
+      &[data-type="1"] {
+        background-position-x: 0;
+      }
+
+      @for $color from 0 through 5 {
+        &[data-type="2"][data-color="#{$color}"] {
+          background-position-x: #{($color + 1) * 100% / 6};
+        }
+      }
+    }
   }
 
-}
+  .token-counter {
+    /*font-family: "abril-titling";
+    color: white;
+    text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black;
+    font-size: 20px;*/
+    text-align: right;
+  }
 
-#first-player {
-  background: #6199b0;
-  color: white;
-  height: 20px;
-  font-size: 14px;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 10px;
-  user-select: none;
-  padding: 0 10px;
 }
