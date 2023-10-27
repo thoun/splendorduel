@@ -149,17 +149,4 @@ class PlayerTable {
         [1,2,3,4,5,9].forEach(i => this.played[i].getCards().forEach(card => crowns += card.crowns));
         return crowns;
     }
-    
-    public getStrongestColumn(): number {
-        let strongestColumnValue = 0;
-        [1,2,3,4,5,9].forEach(color => {
-            // we ignore multicolor in gray column as they will move to another column
-            const colorPoints = this.played[color].getCards().filter(card => color !== 9 || !card.power.includes(2)).map(card => card.points).reduce((a, b) => a + b, 0);
-            if (colorPoints > strongestColumnValue) {
-                strongestColumnValue = colorPoints;
-            }
-        });
-        
-        return strongestColumnValue;
-    }
 }

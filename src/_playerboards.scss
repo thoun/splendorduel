@@ -39,7 +39,8 @@
 
     .spl_ressources_container {
       align-items: center;
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
       margin-top: 4px;
       
       .spl_ressources {
@@ -78,6 +79,19 @@
         }
       }
     }
+
+    .card-points {
+      text-align: center;
+      user-select: none;
+      color: white;
+      text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black;
+      font-size: 20px;
+      line-height: 42px;
+
+      &.hidden {
+        visibility: hidden;
+      }
+    } 
 
     .spl_cardcount {
       display: inline-block;

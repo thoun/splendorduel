@@ -982,7 +982,8 @@ body > .card {
 }
 .player-board .spl_miniplayerboard .spl_ressources_container {
   align-items: center;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
   margin-top: 4px;
 }
 .player-board .spl_miniplayerboard .spl_ressources_container .spl_ressources {
@@ -1013,6 +1014,17 @@ body > .card {
 }
 .player-board .spl_miniplayerboard .spl_ressources_container .spl_ressources .spl_minigem[data-color="5"] {
   background-position-x: 75%;
+}
+.player-board .spl_miniplayerboard .card-points {
+  text-align: center;
+  user-select: none;
+  color: white;
+  text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black;
+  font-size: 20px;
+  line-height: 42px;
+}
+.player-board .spl_miniplayerboard .card-points.hidden {
+  visibility: hidden;
 }
 .player-board .spl_miniplayerboard .spl_cardcount {
   display: inline-block;

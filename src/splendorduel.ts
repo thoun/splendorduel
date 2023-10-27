@@ -24,7 +24,6 @@ class SplendorDuel implements SplendorDuelGame {
     private privilegeCounters: Counter[] = [];
     private reservedCounters: Counter[] = [];
     private crownCounters: Counter[] = [];
-    private strongestColumnCounters: Counter[] = [];
     private tokenCounters: Counter[] = [];
 
     private tokensSelection: Token[];
@@ -193,7 +192,7 @@ class SplendorDuel implements SplendorDuelGame {
 
         if ((this as any).isCurrentPlayerActive()) {
             this.setNotice(args);
-            
+
             if (args.canTakeTokens) {
                 this.tableCenter.setBoardSelectable('play', args.canReserve, 3);
             }
@@ -402,11 +401,6 @@ class SplendorDuel implements SplendorDuelGame {
                     <span id="crown-counter-${player.id}"></span>
                 </div>
 
-                <div id="strongest-column-counter-wrapper-${player.id}" class="strongest-column-counter">
-                    <div class="card-column icon"></div> 
-                    <span id="strongest-column-counter-${player.id}"></span>
-                </div>
-
                 <div id="reserved-counter-wrapper-${player.id}" class="reserved-counter">
                     <div class="player-hand-card"></div> 
                     <span id="reserved-counter-${player.id}"></span>
@@ -417,11 +411,20 @@ class SplendorDuel implements SplendorDuelGame {
             <div class="spl_miniplayerboard">
                 <div class="spl_ressources_container">`;
 
+                [1, 2, 3, 4, 5, 9].forEach(color => {
+                html += `            
+                    <div id="player-${playerId}-counters-card-points-${color}" class="card-points card-column icon"></div>`;
+                });
+
+            html += `
+            </div>
+            <div class="spl_ressources_container">`;
+
             for (let color = 1; color <= 5; color++) {
             html += `            
                 <div class="spl_ressources">
                     <div class="spl_minigem" data-color="${color}"></div>
-                    <div id="player-${playerId}-counters-card-${color}" class="spl_cardcount spl_coloreditem spl_depleted" data-color="${color}">
+                    <div id="player-${playerId}-counters-card-${color}" class="spl_cardcount" data-color="${color}">
                     </div>
                     <div id="player-${playerId}-counters-token-${color}" class="spl_coinpile" data-type="2" data-color="${color}">
                     </div>
@@ -449,18 +452,6 @@ class SplendorDuel implements SplendorDuelGame {
             this.crownCounters[playerId].create(`crown-counter-${playerId}`);
             this.crownCounters[playerId].setValue(player.cards.map(card => card.crowns).reduce((a, b) => a + b, 0));
 
-            let strongestColumnValue = 0;
-            [1,2,3,4,5,9].forEach(color => {
-                // we ignore multicolor in gray column as they will move to another column
-                const colorPoints = player.cards.filter(card => card.location === `player${playerId}-${color}` && (color !== 9 || !card.power.includes(2))).map(card => card.points).reduce((a, b) => a + b, 0);
-                if (colorPoints > strongestColumnValue) {
-                    strongestColumnValue = colorPoints;
-                }
-            });
-            this.strongestColumnCounters[playerId] = new ebg.counter();
-            this.strongestColumnCounters[playerId].create(`strongest-column-counter-${playerId}`);
-            this.strongestColumnCounters[playerId].setValue(strongestColumnValue);
-
             this.reservedCounters[playerId] = new ebg.counter();
             this.reservedCounters[playerId].create(`reserved-counter-${playerId}`);
             this.reservedCounters[playerId].setValue(player.reserved.length);
@@ -473,6 +464,11 @@ class SplendorDuel implements SplendorDuelGame {
             this.tokenCounters[playerId].create(`token-counter-${playerId}`);
             this.tokenCounters[playerId].setValue(player.tokens.length);
 
+            [1,2,3,4,5,9].forEach(color => {
+                // we ignore multicolor in gray column as they will move to another column
+                const colorPoints = player.cards.filter(card => card.location === `player${playerId}-${color}` && (color !== 9 || !card.power.includes(2))).map(card => card.points).reduce((a, b) => a + b, 0);
+                this.setCardPointsCounter(playerId, color, colorPoints);
+            });
             
             [1,2,3,4,5].forEach(color => {
                 const produce = player.cards.filter(card => card.location === `player${playerId}-${color}`).map(card => Object.values(card.provides).reduce((a, b) => a + b, 0)).reduce((a, b) => a + b, 0);
@@ -488,6 +484,17 @@ class SplendorDuel implements SplendorDuelGame {
         this.setTooltipToClass('strongest-column-counter', _('Points of the strongest column'));
         this.setTooltipToClass('privilege-counter', _('Privilege scrolls'));
         this.setTooltipToClass('reserved-counter', _('Reserved cards'));
+    }
+    
+    private setCardPointsCounter(playerId: number, color: number, points: number) {
+        const counterDiv = document.getElementById(`player-${playerId}-counters-card-points-${color}`);
+        counterDiv.innerHTML = `${points ? points : ''}`;
+        counterDiv.classList.toggle('hidden', points <= 3);
+    }
+    
+    private incCardPointsCounter(playerId: number, color: number, inc: number) {
+        const counterDiv = document.getElementById(`player-${playerId}-counters-card-points-${color}`);
+        this.setCardPointsCounter(playerId, color, Number(counterDiv.innerHTML) + inc);
     }
     
     private setCardProduceCounter(playerId: number, color: number, produce: number) {
@@ -617,6 +624,10 @@ class SplendorDuel implements SplendorDuelGame {
 
         const goldTokens = this.getCurrentPlayerTable().tokens[-1].getCards();
         const reductedCost = structuredClone((this.gamedatas.gamestate.args as EnteringPlayActionArgs).reducedCosts[card.id]);
+        if (!reductedCost) {
+            return;
+        }
+
         let selectedTokens: Token[] = [];
         let remaining = 0;
         let remainingOfColors = 0;
@@ -929,7 +940,7 @@ class SplendorDuel implements SplendorDuelGame {
         if (column !== 9 || !card.power.includes(2)) {
             const playerTable = this.getPlayerTable(playerId);
             this.crownCounters[playerId].toValue(playerTable.getCrowns());
-            this.strongestColumnCounters[playerId].toValue(playerTable.getStrongestColumn());
+            this.incCardPointsCounter(playerId, column, card.points);
             this.incScore(playerId, card.points);
 
             if ([1, 2, 3, 4, 5].includes(column)) {
