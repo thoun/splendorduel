@@ -156,24 +156,29 @@ class SplendorDuel implements SplendorDuelGame {
 
     private setNotice(args: EnteringPlayActionArgs) {
         const noticeDiv = document.getElementById('notice');
-        const showNotice = args.canRefill;
+        const showNotice = args.canRefill || args.privileges > 0;
         if (showNotice) {
-            let refillButton = null;
             let notice = ``;
+            const refillButton = args.canRefill ? `<button type="button" id="replenish_button" class="bgabutton bgabutton_blue">${_("Replenish the board")}</button>` : null;
+            const usePrivilegeButton = args.privileges ? `<button type="button" id="usePrivilege_button" class="bgabutton bgabutton_blue">${_("Use up to ${number} privilege(s) to take gem(s)").replace('${number}', args.privileges)}</button>` : null;
             if (args.canRefill) {
-                refillButton = `<button type="button" id="replenish_button" class="bgabutton bgabutton_blue">${_("Replenish the board")}</button>`;
                 if (args.mustRefill) {
                     notice = _('Before you can take your mandatory action, you <strong>must</strong> ${replenish_button} !').replace('${replenish_button}', refillButton);
                 } else {
-                    notice = _('<strong>Before</strong> taking your mandatory action, you can ${replenish_button}').replace('${replenish_button}', refillButton);
+                    if (args.privileges) {
+                        notice = _('<strong>Before</strong> taking your mandatory action, you can ${use_privilege_button} <strong>then</strong> ${replenish_button}').replace('${use_privilege_button}', usePrivilegeButton).replace('${replenish_button}', refillButton);
+                    } else {
+                        notice = _('<strong>Before</strong> taking your mandatory action, you can ${replenish_button}').replace('${replenish_button}', refillButton);
+                    }
                 }
+            } else if (args.privileges) {
+                notice = _('<strong>Before</strong> taking your mandatory action, you can ${use_privilege_button}').replace('${use_privilege_button}', usePrivilegeButton);
             }
 
             noticeDiv.innerHTML = notice;
 
-            if (refillButton) {
-                document.getElementById('replenish_button').addEventListener('click', () => this.refillBoard());
-            }
+            document.getElementById('replenish_button')?.addEventListener('click', () => this.refillBoard());
+            document.getElementById('usePrivilege_button')?.addEventListener('click', () => this.usePrivilege());
         }
         noticeDiv.classList.toggle('visible', showNotice);
     }
@@ -296,10 +301,9 @@ class SplendorDuel implements SplendorDuelGame {
         if ((this as any).isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'usePrivilege':
-                    const usePrivilegeArgs = args as EnteringUsePrivilegeArgs;
                     (this as any).addActionButton(`takeSelectedTokens_button`, _("Take selected token(s)"), () => this.takeSelectedTokens());
                     document.getElementById(`takeSelectedTokens_button`).classList.add('disabled');
-                    (this as any).addActionButton(`skip_button`, _("Skip"), () => this.skip());
+                    (this as any).addActionButton(`cancelUsePrivilege_button`, _("Cancel"), () => this.cancelUsePrivilege(), null, null, 'gray');
                     break;
                 case 'playAction':
                 case 'takeBoardToken':
@@ -742,19 +746,28 @@ class SplendorDuel implements SplendorDuelGame {
         });
     }
   	
-    public skip() {
-        if(!(this as any).checkAction('skip')) {
+    public cancelUsePrivilege() {
+        if(!(this as any).checkAction('cancelUsePrivilege')) {
             return;
         }
 
-        this.takeAction('skip');
+        this.takeAction('cancelUsePrivilege');
     }
+
     public refillBoard() {
         if(!(this as any).checkAction('refillBoard')) {
             return;
         }
 
         this.takeAction('refillBoard');
+    }
+
+    public usePrivilege() {
+        if(!(this as any).checkAction('usePrivilege')) {
+            return;
+        }
+
+        this.takeAction('usePrivilege');
     }
   	
     public reserveCard(id: number) {

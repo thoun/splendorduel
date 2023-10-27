@@ -2755,24 +2755,32 @@ var SplendorDuel = /** @class */ (function () {
     };
     SplendorDuel.prototype.setNotice = function (args) {
         var _this = this;
+        var _a, _b;
         var noticeDiv = document.getElementById('notice');
-        var showNotice = args.canRefill;
+        var showNotice = args.canRefill || args.privileges > 0;
         if (showNotice) {
-            var refillButton = null;
             var notice = "";
+            var refillButton = args.canRefill ? "<button type=\"button\" id=\"replenish_button\" class=\"bgabutton bgabutton_blue\">".concat(_("Replenish the board"), "</button>") : null;
+            var usePrivilegeButton = args.privileges ? "<button type=\"button\" id=\"usePrivilege_button\" class=\"bgabutton bgabutton_blue\">".concat(_("Use up to ${number} privilege(s) to take gem(s)").replace('${number}', args.privileges), "</button>") : null;
             if (args.canRefill) {
-                refillButton = "<button type=\"button\" id=\"replenish_button\" class=\"bgabutton bgabutton_blue\">".concat(_("Replenish the board"), "</button>");
                 if (args.mustRefill) {
                     notice = _('Before you can take your mandatory action, you <strong>must</strong> ${replenish_button} !').replace('${replenish_button}', refillButton);
                 }
                 else {
-                    notice = _('<strong>Before</strong> taking your mandatory action, you can ${replenish_button}').replace('${replenish_button}', refillButton);
+                    if (args.privileges) {
+                        notice = _('<strong>Before</strong> taking your mandatory action, you can ${use_privilege_button} <strong>then</strong> ${replenish_button}').replace('${use_privilege_button}', usePrivilegeButton).replace('${replenish_button}', refillButton);
+                    }
+                    else {
+                        notice = _('<strong>Before</strong> taking your mandatory action, you can ${replenish_button}').replace('${replenish_button}', refillButton);
+                    }
                 }
             }
-            noticeDiv.innerHTML = notice;
-            if (refillButton) {
-                document.getElementById('replenish_button').addEventListener('click', function () { return _this.refillBoard(); });
+            else if (args.privileges) {
+                notice = _('<strong>Before</strong> taking your mandatory action, you can ${use_privilege_button}').replace('${use_privilege_button}', usePrivilegeButton);
             }
+            noticeDiv.innerHTML = notice;
+            (_a = document.getElementById('replenish_button')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function () { return _this.refillBoard(); });
+            (_b = document.getElementById('usePrivilege_button')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', function () { return _this.usePrivilege(); });
         }
         noticeDiv.classList.toggle('visible', showNotice);
     };
@@ -2881,10 +2889,9 @@ var SplendorDuel = /** @class */ (function () {
         if (this.isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'usePrivilege':
-                    var usePrivilegeArgs = args;
                     this.addActionButton("takeSelectedTokens_button", _("Take selected token(s)"), function () { return _this.takeSelectedTokens(); });
                     document.getElementById("takeSelectedTokens_button").classList.add('disabled');
-                    this.addActionButton("skip_button", _("Skip"), function () { return _this.skip(); });
+                    this.addActionButton("cancelUsePrivilege_button", _("Cancel"), function () { return _this.cancelUsePrivilege(); }, null, null, 'gray');
                     break;
                 case 'playAction':
                 case 'takeBoardToken':
@@ -3197,17 +3204,23 @@ var SplendorDuel = /** @class */ (function () {
             ids: tokensIds.join(','),
         });
     };
-    SplendorDuel.prototype.skip = function () {
-        if (!this.checkAction('skip')) {
+    SplendorDuel.prototype.cancelUsePrivilege = function () {
+        if (!this.checkAction('cancelUsePrivilege')) {
             return;
         }
-        this.takeAction('skip');
+        this.takeAction('cancelUsePrivilege');
     };
     SplendorDuel.prototype.refillBoard = function () {
         if (!this.checkAction('refillBoard')) {
             return;
         }
         this.takeAction('refillBoard');
+    };
+    SplendorDuel.prototype.usePrivilege = function () {
+        if (!this.checkAction('usePrivilege')) {
+            return;
+        }
+        this.takeAction('usePrivilege');
     };
     SplendorDuel.prototype.reserveCard = function (id) {
         if (!this.checkAction('reserveCard')) {

@@ -56,7 +56,7 @@ $basicGameStates = [
         "description" => clienttranslate("Game setup"),
         "type" => "manager",
         "action" => "stGameSetup",
-        "transitions" => [ "" => ST_PLAYER_USE_PRIVILEGE ]
+        "transitions" => [ "" => ST_PLAYER_PLAY_ACTION ]
     ],
    
     // Final state.
@@ -85,10 +85,9 @@ $playerActionsGameStates = [
         "descriptionmyturn" => clienttranslate('[OPTIONAL ACTION] ${you} can take up to ${number} Gem(s) or Pearl(s) with privileges'),
         "type" => "activeplayer",
         "args" => "argUsePrivilege",
-        "action" => "stUsePrivilege",
         "possibleactions" => [ 
             "takeTokens",
-            "skip",
+            "cancelUsePrivilege",
         ],
         "transitions" => [
             "next" => ST_PLAYER_PLAY_ACTION,
@@ -106,6 +105,7 @@ $playerActionsGameStates = [
         "type" => "activeplayer",
         "args" => "argPlayAction",
         "possibleactions" => [ 
+            "usePrivilege",
             "refillBoard",
             "takeTokens",
             "buyCard",
@@ -113,6 +113,7 @@ $playerActionsGameStates = [
         "transitions" => $playedCardTransitions + [
             "reserveCard" => ST_PLAYER_RESERVE_CARD,
             "stay" => ST_PLAYER_PLAY_ACTION,
+            "usePrivilege" => ST_PLAYER_USE_PRIVILEGE,
         ],
     ],
 
@@ -201,7 +202,7 @@ $gameGameStates = [
         "action" => "stNextPlayer",
         "updateGameProgression" => true,
         "transitions" => [
-            "nextPlayer" => ST_PLAYER_USE_PRIVILEGE,
+            "nextPlayer" => ST_PLAYER_PLAY_ACTION,
             "endScore" => ST_END_SCORE,
         ],
     ],

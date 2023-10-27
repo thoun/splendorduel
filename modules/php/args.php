@@ -26,8 +26,10 @@ trait ArgsTrait {
     function argPlayAction() {
         $playerId = intval($this->getActivePlayerId());
         $board = $this->getBoard();
-
-        
+        $privileges = $this->getPlayerPrivileges($playerId);
+        if ($privileges > 0 && count($board) == 0) {
+            $privileges = 0;
+        }
         $bagEmpty = intval($this->tokens->countCardInLocation('bag')) == 0;
         $boardFull = count($board) == 25;
         $canRefill = !$bagEmpty && !$boardFull && !$this->getGlobalVariable(PLAYER_REFILLED);
@@ -43,6 +45,7 @@ trait ArgsTrait {
         $mustRefill = $canRefill && !$canTakeTokens && !$canBuyCard;
 
         return [
+            'privileges' => $privileges,
             'canRefill' => $canRefill,
             'mustRefill' => $mustRefill,
             'canTakeTokens' => $canTakeTokens,

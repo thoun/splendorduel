@@ -11,20 +11,6 @@ trait StateTrait {
         The action method of state X is called everytime the current game state is set to X.
     */
 
-    function stUsePrivilege() {
-        $playerId = intval($this->getActivePlayerId());
-
-        $canUsePrivilege = $this->getPlayerPrivileges($playerId) > 0;
-
-        if ($canUsePrivilege && count($this->getBoard()) == 0) {
-            $canUsePrivilege = false;
-        }
-        
-        if (!$canUsePrivilege) {
-            $this->gamestate->nextState('next');
-        }
-    }
-
     function stTakeBoardToken() {
         $color = $this->argTakeBoardToken()['color'];
         $board = $this->getBoard();

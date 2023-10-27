@@ -59,10 +59,18 @@
         self::ajaxResponse();
     }
 
-    public function skip() {
+    public function cancelUsePrivilege() {
         self::setAjaxMode();
 
-        $this->game->skip();
+        $this->game->cancelUsePrivilege();
+
+        self::ajaxResponse();
+    } 
+
+    public function usePrivilege() {
+        self::setAjaxMode();
+
+        $this->game->usePrivilege();
 
         self::ajaxResponse();
     } 

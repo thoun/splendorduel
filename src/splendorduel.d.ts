@@ -58,6 +58,7 @@ interface EnteringUsePrivilegeArgs {
 }
 
 interface EnteringPlayActionArgs {
+    privileges: number;
     canRefill: boolean;
     mustRefill: boolean;
     canTakeTokens: boolean;

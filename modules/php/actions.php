@@ -67,11 +67,17 @@ trait ActionTrait {
         }
     }
     
-    public function skip() {
-        self::checkAction('skip');
+    public function cancelUsePrivilege() {
+        self::checkAction('cancelUsePrivilege');
 
         $this->gamestate->nextState('next');
     }
+
+    public function usePrivilege() {
+        self::checkAction('usePrivilege');
+
+        $this->gamestate->nextState('usePrivilege');
+    } 
 
     public function refillBoard() {
         self::checkAction('refillBoard');
