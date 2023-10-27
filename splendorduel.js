@@ -2785,7 +2785,6 @@ var SplendorDuel = /** @class */ (function () {
         noticeDiv.classList.toggle('visible', showNotice);
     };
     SplendorDuel.prototype.onEnteringPlayAction = function (args) {
-        this.setNotice(args);
         if (!args.canTakeTokens) {
             this.setGamestateDescription('OnlyBuy');
         }
@@ -2793,6 +2792,7 @@ var SplendorDuel = /** @class */ (function () {
             this.setGamestateDescription('OnlyTokens');
         }
         if (this.isCurrentPlayerActive()) {
+            this.setNotice(args);
             if (args.canTakeTokens) {
                 this.tableCenter.setBoardSelectable('play', args.canReserve, 3);
             }

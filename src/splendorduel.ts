@@ -184,7 +184,6 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     private onEnteringPlayAction(args: EnteringPlayActionArgs) {
-        this.setNotice(args);
 
         if (!args.canTakeTokens) {
             this.setGamestateDescription('OnlyBuy');
@@ -193,6 +192,8 @@ class SplendorDuel implements SplendorDuelGame {
         }
 
         if ((this as any).isCurrentPlayerActive()) {
+            this.setNotice(args);
+            
             if (args.canTakeTokens) {
                 this.tableCenter.setBoardSelectable('play', args.canReserve, 3);
             }
