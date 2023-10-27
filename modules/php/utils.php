@@ -286,12 +286,6 @@ trait UtilTrait {
         ]);
     }
 
-    function mustRefill(int $playerId) {
-        $args = $this->argPlayAction();
-
-        return !$args['canTakeTokens'] && !$args['canBuyCard'];
-    }
-
     function getColorName(int $color) {
         switch ($color) {
             case PEARL: return clienttranslate("Pearl");

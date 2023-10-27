@@ -89,30 +89,10 @@ $playerActionsGameStates = [
         "possibleactions" => [ 
             "takeTokens",
             "skip",
-            "skipBoth",
-        ],
-        "transitions" => [
-            "next" => ST_PLAYER_REFILL_BOARD,
-            "skipBoth" => ST_PLAYER_PLAY_ACTION,
-        ]
-    ],
-
-    ST_PLAYER_REFILL_BOARD => [
-        "name" => "refillBoard",
-        "description" => clienttranslate('[OPTIONAL ACTION] ${actplayer} can replenish the board'),
-        "descriptionmyturn" => clienttranslate('[OPTIONAL ACTION] ${you} can replenish the board'),
-        "descriptionMustRefill" => clienttranslate('[OPTIONAL ACTION] ${actplayer} can replenish the board'),
-        "descriptionmyturnMustRefill" => clienttranslate('${you} must replenish the board'),
-        "type" => "activeplayer",    
-        "args" => "argRefillBoard",
-        "action" => "stRefillBoard",
-        "possibleactions" => [ 
-            "refillBoard",
-            "skip",
         ],
         "transitions" => [
             "next" => ST_PLAYER_PLAY_ACTION,
-        ],
+        ]
     ],
 
     ST_PLAYER_PLAY_ACTION => [
@@ -126,11 +106,13 @@ $playerActionsGameStates = [
         "type" => "activeplayer",
         "args" => "argPlayAction",
         "possibleactions" => [ 
+            "refillBoard",
             "takeTokens",
             "buyCard",
         ],
         "transitions" => $playedCardTransitions + [
             "reserveCard" => ST_PLAYER_RESERVE_CARD,
+            "stay" => ST_PLAYER_PLAY_ACTION,
         ],
     ],
 

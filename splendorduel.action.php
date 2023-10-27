@@ -67,14 +67,6 @@
         self::ajaxResponse();
     } 
 
-    public function skipBoth() {
-        self::setAjaxMode();
-
-        $this->game->skipBoth();
-
-        self::ajaxResponse();
-    } 
-
     public function refillBoard() {
         self::setAjaxMode();
 

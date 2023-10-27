@@ -36,6 +36,21 @@ html, .mode_3d #game_play_area_background {
   background-position: top;
 }
 
+#notice {
+  background: #ffd247;
+  border-radius: 15px;
+  display: none;
+  text-align: center;
+
+  &.visible {
+    display: block;
+  }
+
+  button {
+    width: auto;
+  }
+}
+
 #bga-zoom-wrapper {
   padding-top: 32px;
 }

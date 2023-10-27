@@ -31,8 +31,6 @@ define('ST_BGA_GAME_SETUP', 1);
 
 define('ST_PLAYER_USE_PRIVILEGE', 10);
 
-define('ST_PLAYER_REFILL_BOARD', 20);
-
 define('ST_PLAYER_PLAY_ACTION', 30);
 
 define('ST_PLAYER_RESERVE_CARD', 35);
@@ -68,5 +66,6 @@ define('TAKE_ROYAL_CARD', 12);
 /*
  * Global variables
  */
+const PLAYER_REFILLED = 'PLAYER_REFILLED';
 
 ?>

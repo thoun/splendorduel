@@ -25,14 +25,6 @@ trait StateTrait {
         }
     }
 
-    function stRefillBoard() {
-        $args = $this->argRefillBoard();
-        
-        if (!$args['canRefill']) {
-            $this->gamestate->nextState('next');
-        }
-    }
-
     function stTakeBoardToken() {
         $color = $this->argTakeBoardToken()['color'];
         $board = $this->getBoard();
@@ -106,6 +98,8 @@ trait StateTrait {
         }
 
         $this->giveExtraTime($playerId);
+
+        $this->setGlobalVariable(PLAYER_REFILLED, false);
 
         $this->gamestate->nextState($endReason > 0 ? 'endScore' : 'nextPlayer');
     }

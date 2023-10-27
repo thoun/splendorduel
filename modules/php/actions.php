@@ -73,12 +73,6 @@ trait ActionTrait {
         $this->gamestate->nextState('next');
     }
 
-    public function skipBoth() {
-        self::checkAction('skipBoth');
-
-        $this->gamestate->nextState('skipBoth');
-    }
-
     public function refillBoard() {
         self::checkAction('refillBoard');
 
@@ -87,8 +81,9 @@ trait ActionTrait {
         $message = clienttranslate('${player_name2} chooses to replenish the board and allow ${player_name} to get a privilege.');
         $this->takePrivilege($playerId, $message);
         $this->refillBag();
+        $this->setGlobalVariable(PLAYER_REFILLED, true);
 
-        $this->gamestate->nextState('next');
+        $this->gamestate->nextState('stay');
     } 
 
     public function reserveCard(int $id) {

@@ -11,16 +11,6 @@ const ACTION_TIMER_DURATION = 5;
 const LOCAL_STORAGE_ZOOM_KEY = 'SplendorDuel-zoom';
 const LOCAL_STORAGE_JUMP_TO_FOLDED_KEY = 'SplendorDuel-jump-to-folded';
 
-const EQUAL = -1;
-const DIFFERENT = 0;
-
-const VP = 1;
-const BRACELET = 2;
-const RECRUIT = 3;
-const REPUTATION = 4;
-const CARD = 5;
-
-
 class SplendorDuel implements SplendorDuelGame {
     public animationManager: AnimationManager;
     public cardsManager: CardsManager;
@@ -127,9 +117,6 @@ class SplendorDuel implements SplendorDuelGame {
             case 'usePrivilege':
                 this.onEnteringUsePrivilege(args.args);
                 break;
-            case 'refillBoard':
-                this.onEnteringRefillBoard(args.args);
-                break;
             case 'playAction':
                 this.onEnteringPlayAction(args.args);
                 break;
@@ -167,13 +154,33 @@ class SplendorDuel implements SplendorDuelGame {
         }
     }
 
-    private onEnteringRefillBoard(args: EnteringRefillBoardArgs) {
-        if (args.mustRefill) {
-            this.setGamestateDescription('MustRefill');
+    private setNotice(args: EnteringPlayActionArgs) {
+        const noticeDiv = document.getElementById('notice');
+        const showNotice = args.canRefill;
+        if (showNotice) {
+            let refillButton = null;
+            let notice = ``;
+            if (args.canRefill) {
+                refillButton = `<button type="button" id="replenish_button" class="bgabutton bgabutton_blue">${_("Replenish the board")}</button>`;
+                if (args.mustRefill) {
+                    notice = _('Before you can take your mandatory action, you <strong>must</strong> ${replenish_button} !').replace('${replenish_button}', refillButton);
+                } else {
+                    notice = _('<strong>Before</strong> taking your mandatory action, you can ${replenish_button}').replace('${replenish_button}', refillButton);
+                }
+            }
+
+            noticeDiv.innerHTML = notice;
+
+            if (refillButton) {
+                document.getElementById('replenish_button').addEventListener('click', () => this.refillBoard());
+            }
         }
+        noticeDiv.classList.toggle('visible', showNotice);
     }
 
     private onEnteringPlayAction(args: EnteringPlayActionArgs) {
+        this.setNotice(args);
+
         if (!args.canTakeTokens) {
             this.setGamestateDescription('OnlyBuy');
         } else if (!args.canBuyCard) {
@@ -184,8 +191,8 @@ class SplendorDuel implements SplendorDuelGame {
             if (args.canTakeTokens) {
                 this.tableCenter.setBoardSelectable('play', args.canReserve, 3);
             }
+            this.tableCenter.setCardsSelectable(true, args.canBuyCard ? args.buyableCards : []);
             if (args.canBuyCard) {
-                this.tableCenter.setCardsSelectable(true, args.buyableCards);
                 this.getCurrentPlayerTable().setHandSelectable(true, args.buyableCards);
             }
         }
@@ -254,6 +261,10 @@ class SplendorDuel implements SplendorDuelGame {
         this.tableCenter.setBoardSelectable(null);
         this.tableCenter.setCardsSelectable(false);
         this.getCurrentPlayerTable()?.setHandSelectable(false);
+
+        const noticeDiv = document.getElementById('notice');
+        noticeDiv.innerHTML = ``;
+        noticeDiv.classList.remove('visible');
     }
 
     private onLeavingReserveCard() {
@@ -289,17 +300,6 @@ class SplendorDuel implements SplendorDuelGame {
                     (this as any).addActionButton(`takeSelectedTokens_button`, _("Take selected token(s)"), () => this.takeSelectedTokens());
                     document.getElementById(`takeSelectedTokens_button`).classList.add('disabled');
                     (this as any).addActionButton(`skip_button`, _("Skip"), () => this.skip());
-                    if (usePrivilegeArgs.canSkipBoth) {
-                        (this as any).addActionButton(`skipBoth_button`, _("Skip & skip replenish"), () => this.skipBoth());
-                    }
-                    break;
-                case 'refillBoard':
-                    const refillBoardArgs = args as EnteringRefillBoardArgs;
-                    (this as any).addActionButton(`refillBoard_button`, _("Replenish the board"), () => this.refillBoard());                    
-                    (this as any).addActionButton(`skip_button`, _("Skip"), () => this.skip());
-                    if (refillBoardArgs.mustRefill) {
-                        document.getElementById(`skip_button`).classList.add('disabled');
-                    }
                     break;
                 case 'playAction':
                 case 'takeBoardToken':
@@ -749,15 +749,6 @@ class SplendorDuel implements SplendorDuelGame {
 
         this.takeAction('skip');
     }
-  	
-    public skipBoth() {
-        if(!(this as any).checkAction('skipBoth')) {
-            return;
-        }
-
-        this.takeAction('skipBoth');
-    }
-  	
     public refillBoard() {
         if(!(this as any).checkAction('refillBoard')) {
             return;

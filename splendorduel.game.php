@@ -60,6 +60,8 @@ class SplendorDuel extends Table {
 		
         $this->tokens = $this->getNew("module.common.deck");
         $this->tokens->init("token");
+
+        $this->setGlobalVariable(PLAYER_REFILLED, false);
 	}
 	
     protected function getGameName() {

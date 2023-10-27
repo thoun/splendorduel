@@ -1,4 +1,5 @@
 {OVERALL_GAME_HEADER}
+<div id="notice"></div>
 <div id="table">
     <div id="tables-and-center">
         <div id="table-center-wrapper">

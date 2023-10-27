@@ -16,33 +16,22 @@ trait ArgsTrait {
         $playerId = intval($this->getActivePlayerId());
 
         $privileges = $this->getPlayerPrivileges($playerId);
-        $mustRefill = $this->mustRefill($playerId);
 
         return [
             'number' => $privileges, // for title
             'privileges' => $privileges,
-            'canSkipBoth' => !$mustRefill,
-        ];
-    }
-   
-    function argRefillBoard() {
-        $playerId = intval($this->getActivePlayerId());
-        
-        $bagEmpty = intval($this->tokens->countCardInLocation('bag')) == 0;
-        $boardFull = count($this->getBoard()) == 25;
-        $canRefill = !$bagEmpty && !$boardFull;
-        $mustRefill = $canRefill && $this->mustRefill($playerId);
-
-        return [        
-            'canRefill' => $canRefill,
-            'mustRefill' => $mustRefill,
         ];
     }
 
     function argPlayAction() {
         $playerId = intval($this->getActivePlayerId());
-
         $board = $this->getBoard();
+
+        
+        $bagEmpty = intval($this->tokens->countCardInLocation('bag')) == 0;
+        $boardFull = count($board) == 25;
+        $canRefill = !$bagEmpty && !$boardFull && !$this->getGlobalVariable(PLAYER_REFILLED);
+
         $canTakeTokens = count($board) > 0;
         $buyableCardsAndCosts = $this->getBuyableCardsAndCosts($playerId);
         $canReserve = intval($this->cards->countCardInLocation('reserved', $playerId)) < 3;
@@ -51,7 +40,11 @@ trait ArgsTrait {
         }
         $canBuyCard = count($buyableCardsAndCosts['buyableCards']) > 0;
 
+        $mustRefill = $canRefill && !$canTakeTokens && !$canBuyCard;
+
         return [
+            'canRefill' => $canRefill,
+            'mustRefill' => $mustRefill,
             'canTakeTokens' => $canTakeTokens,
             'canReserve' => $canReserve,
             'canBuyCard' => $canBuyCard,

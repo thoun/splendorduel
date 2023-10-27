@@ -55,14 +55,11 @@ interface SplendorDuelGame extends Game {
 
 interface EnteringUsePrivilegeArgs {
     privileges: number;
-    canSkipBoth: boolean;
-}
-
-interface EnteringRefillBoardArgs {
-    mustRefill: boolean;
 }
 
 interface EnteringPlayActionArgs {
+    canRefill: boolean;
+    mustRefill: boolean;
     canTakeTokens: boolean;
     canReserve: boolean;
     canBuyCard: boolean;
