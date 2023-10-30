@@ -58,6 +58,7 @@ define('END_SCORE', 100);
 define('PLAY_AGAIN', 10);
 define('PLAYED_CARD', 11);
 define('TAKE_ROYAL_CARD', 12);
+const PLAYER_REFILLED = 13;
 
 /*
  * Options
@@ -66,6 +67,5 @@ define('TAKE_ROYAL_CARD', 12);
 /*
  * Global variables
  */
-const PLAYER_REFILLED = 'PLAYER_REFILLED';
 
 ?>

@@ -85,7 +85,7 @@ trait StateTrait {
 
         $this->giveExtraTime($playerId);
 
-        $this->setGlobalVariable(PLAYER_REFILLED, false);
+        $this->setGameStateValue(PLAYER_REFILLED, 0);
 
         $this->gamestate->nextState($endReason > 0 ? 'endScore' : 'nextPlayer');
     }

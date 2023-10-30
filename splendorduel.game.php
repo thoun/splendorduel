@@ -50,6 +50,7 @@ class SplendorDuel extends Table {
             PLAY_AGAIN => PLAY_AGAIN,
             PLAYED_CARD => PLAYED_CARD,
             TAKE_ROYAL_CARD => TAKE_ROYAL_CARD,
+            PLAYER_REFILLED => PLAYER_REFILLED,
         ]);   
 		
         $this->cards = $this->getNew("module.common.deck");
@@ -60,8 +61,6 @@ class SplendorDuel extends Table {
 		
         $this->tokens = $this->getNew("module.common.deck");
         $this->tokens->init("token");
-
-        $this->setGlobalVariable(PLAYER_REFILLED, false);
 	}
 	
     protected function getGameName() {
@@ -111,6 +110,7 @@ class SplendorDuel extends Table {
         $this->setGameStateInitialValue(PLAY_AGAIN, 0);
         $this->setGameStateInitialValue(PLAYED_CARD, 0);
         $this->setGameStateInitialValue(TAKE_ROYAL_CARD, 0);
+        $this->setGameStateInitialValue(PLAYER_REFILLED, 0);
 
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)

@@ -26,13 +26,14 @@ trait ArgsTrait {
     function argPlayAction() {
         $playerId = intval($this->getActivePlayerId());
         $board = $this->getBoard();
-        $privileges = $this->getPlayerPrivileges($playerId);
+        $playerRefilled = boolval($this->getGameStateValue(PLAYER_REFILLED));
+        $privileges = $playerRefilled ? 0 : $this->getPlayerPrivileges($playerId);
         if ($privileges > 0 && count($board) == 0) {
             $privileges = 0;
         }
         $bagEmpty = intval($this->tokens->countCardInLocation('bag')) == 0;
         $boardFull = count($board) == 25;
-        $canRefill = !$bagEmpty && !$boardFull && !$this->getGlobalVariable(PLAYER_REFILLED);
+        $canRefill = !$bagEmpty && !$boardFull && !$playerRefilled;
 
         $canTakeTokens = count($board) > 0;
         $buyableCardsAndCosts = $this->getBuyableCardsAndCosts($playerId);
