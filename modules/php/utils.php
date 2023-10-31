@@ -439,6 +439,14 @@ trait UtilTrait {
     }
 
     function takePrivilege(int $playerId, string $message) {
+        if ($this->getPlayerPrivileges($playerId) >= 3) {
+            self::notifyAllPlayers('log', clienttranslate('${player_name} cannot take a privilege because he already have all 3 privileges.'), [
+                'playerId' => $playerId,
+                'player_name' => $this->getPlayerName($playerId),
+            ]);
+            return;
+        }
+
         $opponentId = $this->getOpponentId($playerId);
         $fromOpponent = $this->getPlayerPrivileges($opponentId) >= 3;
         if ($fromOpponent) {
