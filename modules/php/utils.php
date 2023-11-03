@@ -439,7 +439,8 @@ trait UtilTrait {
     }
 
     function takePrivilege(int $playerId, string $message) {
-        if ($this->getPlayerPrivileges($playerId) >= 3) {
+        $playerPrivileges = $this->getPlayerPrivileges($playerId);
+        if ($playerPrivileges >= 3) {
             self::notifyAllPlayers('log', clienttranslate('${player_name} cannot take a privilege because he already have all 3 privileges.'), [
                 'playerId' => $playerId,
                 'player_name' => $this->getPlayerName($playerId),
@@ -448,7 +449,8 @@ trait UtilTrait {
         }
 
         $opponentId = $this->getOpponentId($playerId);
-        $fromOpponent = $this->getPlayerPrivileges($opponentId) >= 3;
+        $opponentPrivileges = $this->getPlayerPrivileges($opponentId);
+        $fromOpponent = ($playerPrivileges + $opponentPrivileges) >= 3;
         if ($fromOpponent) {
             $this->DbQuery("UPDATE player SET `player_privileges` = `player_privileges` - 1 WHERE player_id = $opponentId");
         }
