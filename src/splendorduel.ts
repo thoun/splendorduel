@@ -899,8 +899,8 @@ class SplendorDuel implements SplendorDuelGame {
         Object.entries(args.privileges).forEach(entry => this.privilegeCounters[entry[0]].setValue(entry[1]));
     }
 
-    notif_refill(args: NotifRefillArgs) {
-        return this.tableCenter.refillBoard(args.refilledTokens);
+    async notif_refill(args: NotifRefillArgs) {
+        await this.tableCenter.refillBoard(args.refilledTokens);
     }
 
     async notif_takeTokens(args: NotifTakeTokensArgs) {

@@ -2442,6 +2442,9 @@ var TableCenter = /** @class */ (function () {
         this.cardsDecks = [];
         this.cards = [];
         this.bag = new VoidStock(game.tokensManager, document.getElementById('bag'));
+        this.bagCounter = new ebg.counter();
+        this.bagCounter.create("bag-counter");
+        this.bagCounter.setValue(25 - (gamedatas.board.length + Object.values(gamedatas.players).map(function (player) { return player.tokens.length; }).reduce(function (a, b) { return a + b; }, 0)));
         this.board = new TokenBoard(game, gamedatas.board);
         for (var level = 3; level >= 1; level--) {
             document.getElementById('table-cards').insertAdjacentHTML('beforeend', "\n                <div id=\"card-deck-".concat(level, "\"></div>\n                <div id=\"table-cards-").concat(level, "\"></div>\n            "));
@@ -2482,7 +2485,17 @@ var TableCenter = /** @class */ (function () {
         }
     };
     TableCenter.prototype.refillBoard = function (refilledTokens) {
-        return this.board.refill(refilledTokens, this.bag);
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.board.refill(refilledTokens, this.bag)];
+                    case 1:
+                        _a.sent();
+                        this.bagCounter.toValue(0);
+                        return [2 /*return*/];
+                }
+            });
+        });
     };
     TableCenter.prototype.setBoardSelectable = function (selectionType, canTakeGold, max, color) {
         if (canTakeGold === void 0) { canTakeGold = false; }
@@ -2499,7 +2512,17 @@ var TableCenter = /** @class */ (function () {
         return promise;
     };
     TableCenter.prototype.removeTokens = function (tokens) {
-        return this.bag.addCards(tokens);
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.bag.addCards(tokens)];
+                    case 1:
+                        _a.sent();
+                        this.bagCounter.incValue(tokens.length);
+                        return [2 /*return*/];
+                }
+            });
+        });
     };
     TableCenter.prototype.setRoyalCardsSelectable = function (selectable) {
         this.royalCards.setSelectionMode(selectable ? 'single' : 'none');
@@ -3318,7 +3341,16 @@ var SplendorDuel = /** @class */ (function () {
         Object.entries(args.privileges).forEach(function (entry) { return _this.privilegeCounters[entry[0]].setValue(entry[1]); });
     };
     SplendorDuel.prototype.notif_refill = function (args) {
-        return this.tableCenter.refillBoard(args.refilledTokens);
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.tableCenter.refillBoard(args.refilledTokens)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
     };
     SplendorDuel.prototype.notif_takeTokens = function (args) {
         return __awaiter(this, void 0, void 0, function () {

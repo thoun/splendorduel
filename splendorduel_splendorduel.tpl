@@ -6,7 +6,9 @@
             <div id="table-center">
                 <div id="board-wrapper">
                     <div id="bag-and-score-tile">
-                        <div id="bag"></div>
+                        <div id="bag">
+                            <div id="bag-counter"></div>
+                        </div>
                         <div id="score-tile"></div>
                     </div>
                     <div id="board"></div>

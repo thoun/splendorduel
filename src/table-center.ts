@@ -1,14 +1,19 @@
 
 class TableCenter {
     public bag: VoidStock<Token>;
+    private bagCounter: Counter;
     private board: TokenBoard;
 
     public cardsDecks: Deck<Card>[] = [];
     public cards: SlotStock<Card>[] = [];
-    public royalCards: LineStock<RoyalCard>;
+    public royalCards: LineStock<RoyalCard>;    
         
     constructor(private game: SplendorDuelGame, gamedatas: SplendorDuelGamedatas) {
         this.bag = new VoidStock<Token>(game.tokensManager, document.getElementById('bag'));
+
+        this.bagCounter = new ebg.counter();
+        this.bagCounter.create(`bag-counter`);
+        this.bagCounter.setValue(25 - (gamedatas.board.length + Object.values(gamedatas.players).map(player => player.tokens.length).reduce((a, b) => a + b, 0)));
 
         this.board = new TokenBoard(game, gamedatas.board);
 
@@ -63,8 +68,9 @@ class TableCenter {
         }
     }
     
-    public refillBoard(refilledTokens: Token[]): Promise<any> {
-        return this.board.refill(refilledTokens, this.bag);
+    public async refillBoard(refilledTokens: Token[]): Promise<any> {
+        await this.board.refill(refilledTokens, this.bag);        
+        this.bagCounter.toValue(0);
     }
     
     public setBoardSelectable(selectionType: 'privileges' | 'play' | 'effect' | null, canTakeGold: boolean = false, max: number = 3, color: number = null) {
@@ -82,8 +88,9 @@ class TableCenter {
         return promise;
     }
     
-    public removeTokens(tokens: Token[]): Promise<any> {
-        return this.bag.addCards(tokens);
+    public async removeTokens(tokens: Token[]): Promise<any> {
+        await this.bag.addCards(tokens);        
+        this.bagCounter.incValue(tokens.length);
     }
     
     public setRoyalCardsSelectable(selectable: boolean) {
