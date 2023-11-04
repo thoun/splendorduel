@@ -59,6 +59,13 @@
         outline: 4px dashed orange;
         cursor: pointer;
       }
+
+      &[data-color="1"] { background: #22a9ce33; }
+      &[data-color="2"] { background: #e4d3be33; }
+      &[data-color="3"] { background: #64a93533; }
+      &[data-color="4"] { background: #57595b33; }
+      &[data-color="5"] { background: #eb676533; }
+      &[data-color="9"] { background: #babcbe33; }
     }
 
     .tokens {

@@ -2546,7 +2546,7 @@ var PlayerTable = /** @class */ (function () {
             html += "\n                <div id=\"player-table-".concat(_this.playerId, "-tokens-").concat(i, "\" class=\"tokens\"></div>\n                ");
         });
         [1, 2, 3, 4, 5, 9].forEach(function (i) {
-            html += "\n                <div id=\"player-table-".concat(_this.playerId, "-played-").concat(i, "\" class=\"cards\"></div>\n                ");
+            html += "\n                <div id=\"player-table-".concat(_this.playerId, "-played-").concat(i, "\" class=\"cards\" data-color=\"").concat(i, "\"></div>\n                ");
         });
         html += "\n                <div class=\"hand-wrapper\">\n                    <div class=\"block-label\">".concat(_('Reserved cards'), "</div>\n                    <div id=\"player-table-").concat(this.playerId, "-reserved\" class=\"cards\"></div>\n                </div>\n            </div>\n\n            <div id=\"player-table-").concat(this.playerId, "-royal-cards\"></div>\n            \n        </div>\n        ");
         dojo.place(html, document.getElementById('tables'));

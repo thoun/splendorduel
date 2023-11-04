@@ -1178,6 +1178,24 @@ body > .card {
   outline: 4px dashed orange;
   cursor: pointer;
 }
+.player-table .columns .cards[data-color="1"] {
+  background: rgba(34, 169, 206, 0.2);
+}
+.player-table .columns .cards[data-color="2"] {
+  background: rgba(228, 211, 190, 0.2);
+}
+.player-table .columns .cards[data-color="3"] {
+  background: rgba(100, 169, 53, 0.2);
+}
+.player-table .columns .cards[data-color="4"] {
+  background: rgba(87, 89, 91, 0.2);
+}
+.player-table .columns .cards[data-color="5"] {
+  background: rgba(235, 103, 101, 0.2);
+}
+.player-table .columns .cards[data-color="9"] {
+  background: rgba(186, 188, 190, 0.2);
+}
 .player-table .columns .tokens {
   align-items: center;
 }

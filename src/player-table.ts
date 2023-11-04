@@ -28,7 +28,7 @@ class PlayerTable {
             });         
             [1,2,3,4,5,9].forEach(i => {
                 html += `
-                <div id="player-table-${this.playerId}-played-${i}" class="cards"></div>
+                <div id="player-table-${this.playerId}-played-${i}" class="cards" data-color="${i}"></div>
                 `;
             });
             html += `
