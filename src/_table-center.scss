@@ -75,6 +75,11 @@
     display: grid;
     grid-template-columns: auto auto;
     gap: 10px;
+
+    .slot {
+      width: 120px;
+      height: 183px;
+    }
   }
 }
 

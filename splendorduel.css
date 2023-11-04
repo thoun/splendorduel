@@ -931,6 +931,10 @@ body > .card {
   grid-template-columns: auto auto;
   gap: 10px;
 }
+#table-center #table-cards .slot {
+  width: 120px;
+  height: 183px;
+}
 
 #mouse-selection {
   --selection-color: red;
