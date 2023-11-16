@@ -20,6 +20,10 @@
     >div {
       flex: 1;
     }
+
+    .goal {
+      font-size: 75%;
+    }
   }
 
   .player-hand-card {
@@ -40,6 +44,7 @@
     .spl_ressources_container {
       align-items: center;
       display: grid;
+      justify-items: center;
       grid-template-columns: repeat(6, 1fr);
       margin-top: 4px;
       
@@ -164,8 +169,12 @@
 
       @for $color from 0 through 5 {
         &[data-type="2"][data-color="#{$color}"] {
-          background-position-x: #{($color + 1) * 100% / 6};
+          background-position-x: #{($color + 1) * 100% / 7};
         }
+      }
+
+      &[data-type="2"][data-color="9"] {
+        background-position-x: #{7 * 100% / 7};
       }
     }
   }

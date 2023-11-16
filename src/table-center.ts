@@ -36,6 +36,7 @@ class TableCenter {
                 slotsIds,
                 mapCardToSlot: card => card.locationArg,
                 gap: '12px',
+                unselectableCardClass: 'no-disable-class',
             });
             this.cards[level].onCardClick = card => this.game.onTableCardClick(card);
             this.cards[level].addCards(gamedatas.tableCards[level]);

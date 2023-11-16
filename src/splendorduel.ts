@@ -25,6 +25,7 @@ class SplendorDuel implements SplendorDuelGame {
     private reservedCounters: Counter[] = [];
     private pointsCounters: Counter[] = [];
     private crownCounters: Counter[] = [];
+    private strongestColumnCounters: Counter[] = [];
     private tokenCounters: Counter[] = [];
 
     private tokensSelection: Token[];
@@ -392,24 +393,36 @@ class SplendorDuel implements SplendorDuelGame {
             const playerId = Number(player.id);
 
             let html = `<div class="counters">
-                <div id="privilege-counter-wrapper-${player.id}" class="privilege-counter">
-                    <div class="privilege icon"></div>
-                    <span id="privilege-counter-${player.id}"></span>
-                </div>
-
                 <div id="points-counter-wrapper-${player.id}" class="points-counter">
                     <div class="points icon"></div>
-                    <span id="points-counter-${player.id}"></span>
+                    <span id="points-counter-${player.id}"></span><span class="goal">&nbsp;/&nbsp;20</span>
                 </div>
 
                 <div id="crown-counter-wrapper-${player.id}" class="crown-counter">
                     <div class="crown icon"></div>
-                    <span id="crown-counter-${player.id}"></span>
+                    <span id="crown-counter-${player.id}"></span><span class="goal">&nbsp;/&nbsp;10</span>
+                </div>
+
+                <div id="strongest-column-counter-wrapper-${player.id}" class="strongest-column-counter">
+                    <div class="card-column icon"></div> 
+                    <span id="strongest-column-counter-${player.id}"></span><span class="goal">&nbsp;/&nbsp;10</span>
+                </div>
+            </div>
+            
+            <div class="counters">
+                <div id="privilege-counter-wrapper-${player.id}" class="privilege-counter">
+                    <div class="privilege icon"></div>
+                    <span id="privilege-counter-${player.id}"></span><span class="goal">&nbsp;/&nbsp;3</span>
                 </div>
 
                 <div id="reserved-counter-wrapper-${player.id}" class="reserved-counter">
                     <div class="player-hand-card"></div> 
-                    <span id="reserved-counter-${player.id}"></span>
+                    <span id="reserved-counter-${player.id}"></span><span class="goal">&nbsp;/&nbsp;3</span>
+                </div>
+
+                <div id="token-counter-wrapper-${player.id}" class="token-counter">
+                    <div class="multicolor icon"></div> 
+                    <span id="token-counter-${player.id}"></span><span class="goal">&nbsp;/&nbsp;10</span>
                 </div>
             </div>`;
 
@@ -419,7 +432,7 @@ class SplendorDuel implements SplendorDuelGame {
 
                 [1, 2, 3, 4, 5, 9].forEach(color => {
                 html += `            
-                    <div id="player-${playerId}-counters-card-points-${color}" class="card-points card-column icon"></div>`;
+                    <div id="player-${playerId}-counters-card-points-${color}" class="card-points points icon"></div>`;
                 });
 
             html += `
@@ -445,12 +458,6 @@ class SplendorDuel implements SplendorDuelGame {
                 </div>
             </div>
             `;
-            
-
-            html += `
-            <div id="token-counter-wrapper-${player.id}" class="token-counter">
-                (${_('Tokens:')} <span id="token-counter-${player.id}"></span> / 10)
-            </div>`;
 
             dojo.place(html, `player_board_${player.id}`);
 
@@ -466,6 +473,18 @@ class SplendorDuel implements SplendorDuelGame {
             this.crownCounters[playerId] = new ebg.counter();
             this.crownCounters[playerId].create(`crown-counter-${playerId}`);
             this.crownCounters[playerId].setValue(player.cards.map(card => card.crowns).reduce((a, b) => a + b, 0));
+
+            let strongestColumnValue = 0;
+            [1,2,3,4,5,9].forEach(color => {
+                // we ignore multicolor in gray column as they will move to another column
+                const colorPoints = player.cards.filter(card => card.location === `player${playerId}-${color}` && (color !== 9 || !card.power.includes(2))).map(card => card.points).reduce((a, b) => a + b, 0);
+                if (colorPoints > strongestColumnValue) {
+                    strongestColumnValue = colorPoints;
+                }
+            });
+            this.strongestColumnCounters[playerId] = new ebg.counter();
+            this.strongestColumnCounters[playerId].create(`strongest-column-counter-${playerId}`);
+            this.strongestColumnCounters[playerId].setValue(strongestColumnValue);
 
             this.reservedCounters[playerId] = new ebg.counter();
             this.reservedCounters[playerId].create(`reserved-counter-${playerId}`);
@@ -495,16 +514,18 @@ class SplendorDuel implements SplendorDuelGame {
             });
         });
 
+        this.setTooltipToClass('points-counter', _('Points'));
         this.setTooltipToClass('crown-counter', _('Crowns'));
         this.setTooltipToClass('strongest-column-counter', _('Points of the strongest column'));
         this.setTooltipToClass('privilege-counter', _('Privilege scrolls'));
         this.setTooltipToClass('reserved-counter', _('Reserved cards'));
+        this.setTooltipToClass('token-counter', _('Number of tokens'));
     }
     
     private setCardPointsCounter(playerId: number, color: number, points: number) {
         const counterDiv = document.getElementById(`player-${playerId}-counters-card-points-${color}`);
         counterDiv.innerHTML = `${points ? points : ''}`;
-        counterDiv.classList.toggle('hidden', points <= 3);
+        counterDiv.classList.toggle('hidden', points < 1);
     }
     
     private incCardPointsCounter(playerId: number, color: number, inc: number) {
@@ -965,6 +986,8 @@ class SplendorDuel implements SplendorDuelGame {
             if ([1, 2, 3, 4, 5].includes(column)) {
                 this.incCardProduceCounter(playerId, column, Object.values(card.provides).reduce((a, b) => a + b, 0));
             }
+
+            this.strongestColumnCounters[playerId].toValue(Math.max(...[1, 2, 3, 4, 5].map(color => Number(document.getElementById(`player-${playerId}-counters-card-${color}`).innerHTML))));
         }
 
         return Promise.resolve(true);

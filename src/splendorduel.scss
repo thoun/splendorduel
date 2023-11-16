@@ -77,6 +77,10 @@ html, .mode_3d #game_play_area_background {
   &.privilege {
     background-position-x: #{3 * 100% / 3};
   }
+  &.multicolor {
+    background-image: url('img/tokens.png');
+    background-position-x: #{100%};
+  }
 }
 
 .action-button, .log {
@@ -104,8 +108,12 @@ html, .mode_3d #game_play_area_background {
 
   @for $type from -1 through 5 {
     &[data-type="#{$type}"] {
-        background-position-x: #{($type + 1) * 100% / 6};
+        background-position-x: #{($type + 1) * 100% / 7};
     }
+  }
+
+  &[data-type="9"] {
+    background-position-x: #{7 * 100% / 7};
   }
 }
 
