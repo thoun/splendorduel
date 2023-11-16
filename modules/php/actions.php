@@ -34,7 +34,7 @@ trait ActionTrait {
             $this->checkUsePrivilege($playerId, $tokens);
             $this->spendPrivileges($playerId, count($tokens));
         } else if ($statedId == ST_PLAYER_PLAY_ACTION) {
-            $this->checkPlayTakeGems($tokens);
+            $this->checkPlayTakeGems($playerId, $tokens);
         }
 
         $this->applyTakeTokens($playerId, $tokens);

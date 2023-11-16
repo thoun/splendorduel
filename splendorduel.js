@@ -2175,9 +2175,7 @@ var TokenBoard = /** @class */ (function () {
         this.selectionType = selectionType;
         this.selectionColor = color;
         this.canTakeGold = canTakeGold;
-        if (selectionType !== 'play') {
-            this.stock.setSelectableCards(this.getDefaultPossibleSelection());
-        }
+        this.stock.setSelectableCards(this.getDefaultPossibleSelection());
     };
     TokenBoard.prototype.onTokenSelectionChange = function (selection, lastChange) {
         var valid = selection.length > 0;

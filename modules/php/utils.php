@@ -307,7 +307,7 @@ trait UtilTrait {
         }
     }
 
-    function checkPlayTakeGems(array $tokens)  {
+    function checkPlayTakeGems(int $playerId, array $tokens)  {
         $gold = array_values(array_filter($tokens, fn($token) => $token->type == 1));
         $gems = array_values(array_filter($tokens, fn($token) => $token->type == 2));
 
@@ -316,6 +316,8 @@ trait UtilTrait {
                 throw new BgaUserException("You can only take 1 gold token");
             } else if (count($gems) > 0) {
                 throw new BgaUserException("You can't take gold and gems at the same time");
+            } else if (intval($this->cards->countCardInLocation('reserved', $playerId)) >= 3) {
+                throw new BgaUserException("You can't reserve more than 3 cards");
             }
         } else {
             if (count($gems) > 3) {

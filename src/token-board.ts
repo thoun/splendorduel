@@ -66,9 +66,7 @@ class TokenBoard {
         this.selectionColor = color;
         this.canTakeGold = canTakeGold;
 
-        if (selectionType !== 'play') {
-            this.stock.setSelectableCards(this.getDefaultPossibleSelection());
-        }
+        this.stock.setSelectableCards(this.getDefaultPossibleSelection());
     }
 
     private onTokenSelectionChange(selection: Token[], lastChange: Token) {
