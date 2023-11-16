@@ -2656,6 +2656,7 @@ var SplendorDuel = /** @class */ (function () {
         this.playersTables = [];
         this.privilegeCounters = [];
         this.reservedCounters = [];
+        this.pointsCounters = [];
         this.crownCounters = [];
         this.tokenCounters = [];
         this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
@@ -2974,7 +2975,7 @@ var SplendorDuel = /** @class */ (function () {
         var _this = this;
         Object.values(gamedatas.players).forEach(function (player) {
             var playerId = Number(player.id);
-            var html = "<div class=\"counters\">\n                <div id=\"privilege-counter-wrapper-".concat(player.id, "\" class=\"privilege-counter\">\n                    <div class=\"privilege icon\"></div>\n                    <span id=\"privilege-counter-").concat(player.id, "\"></span>\n                </div>\n\n                <div id=\"crown-counter-wrapper-").concat(player.id, "\" class=\"crown-counter\">\n                    <div class=\"crown icon\"></div>\n                    <span id=\"crown-counter-").concat(player.id, "\"></span>\n                </div>\n\n                <div id=\"reserved-counter-wrapper-").concat(player.id, "\" class=\"reserved-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"reserved-counter-").concat(player.id, "\"></span>\n                </div>\n            </div>");
+            var html = "<div class=\"counters\">\n                <div id=\"privilege-counter-wrapper-".concat(player.id, "\" class=\"privilege-counter\">\n                    <div class=\"privilege icon\"></div>\n                    <span id=\"privilege-counter-").concat(player.id, "\"></span>\n                </div>\n\n                <div id=\"points-counter-wrapper-").concat(player.id, "\" class=\"points-counter\">\n                    <div class=\"points icon\"></div>\n                    <span id=\"points-counter-").concat(player.id, "\"></span>\n                </div>\n\n                <div id=\"crown-counter-wrapper-").concat(player.id, "\" class=\"crown-counter\">\n                    <div class=\"crown icon\"></div>\n                    <span id=\"crown-counter-").concat(player.id, "\"></span>\n                </div>\n\n                <div id=\"reserved-counter-wrapper-").concat(player.id, "\" class=\"reserved-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"reserved-counter-").concat(player.id, "\"></span>\n                </div>\n            </div>");
             html += "\n            <div class=\"spl_miniplayerboard\">\n                <div class=\"spl_ressources_container\">";
             [1, 2, 3, 4, 5, 9].forEach(function (color) {
                 html += "            \n                    <div id=\"player-".concat(playerId, "-counters-card-points-").concat(color, "\" class=\"card-points card-column icon\"></div>");
@@ -2986,6 +2987,14 @@ var SplendorDuel = /** @class */ (function () {
             html += "\n                    <div class=\"spl_ressources\">\n                        <div id=\"player-".concat(playerId, "-counters-token--1\" class=\"spl_coinpile\" data-type=\"1\"></div>\n                        <div id=\"player-").concat(playerId, "-counters-token-0\" class=\"spl_coinpile\" data-type=\"2\" data-color=\"0\"></div>\n                    </div>\n                </div>\n            </div>\n            ");
             html += "\n            <div id=\"token-counter-wrapper-".concat(player.id, "\" class=\"token-counter\">\n                (").concat(_('Tokens:'), " <span id=\"token-counter-").concat(player.id, "\"></span> / 10)\n            </div>");
             dojo.place(html, "player_board_".concat(player.id));
+            var points = [1, 2, 3, 4, 5, 9].map(function (color) {
+                // we ignore multicolor in gray column as they will move to another column
+                return player.cards.filter(function (card) { return card.location === "player".concat(playerId, "-").concat(color) && (color !== 9 || !card.power.includes(2)); }).map(function (card) { return card.points; }).reduce(function (a, b) { return a + b; }, 0);
+            }).reduce(function (a, b) { return a + b; }, 0)
+                + player.royalCards.map(function (card) { return card.points; }).reduce(function (a, b) { return a + b; }, 0);
+            _this.pointsCounters[playerId] = new ebg.counter();
+            _this.pointsCounters[playerId].create("points-counter-".concat(playerId));
+            _this.pointsCounters[playerId].setValue(points);
             _this.crownCounters[playerId] = new ebg.counter();
             _this.crownCounters[playerId].create("crown-counter-".concat(playerId));
             _this.crownCounters[playerId].setValue(player.cards.map(function (card) { return card.crowns; }).reduce(function (a, b) { return a + b; }, 0));
@@ -3060,9 +3069,12 @@ var SplendorDuel = /** @class */ (function () {
         var table = new PlayerTable(this, gamedatas.players[playerId]);
         this.playersTables.push(table);
     };
-    SplendorDuel.prototype.incScore = function (playerId, inc) {
+    SplendorDuel.prototype.setScore = function (playerId, inc) {
         var _a;
         (_a = this.scoreCtrl[playerId]) === null || _a === void 0 ? void 0 : _a.incValue(inc);
+    };
+    SplendorDuel.prototype.incScore = function (playerId, inc) {
+        this.pointsCounters[playerId].incValue(inc);
     };
     SplendorDuel.prototype.getHelpHtml = function () {
         var html = "\n        <div id=\"help-popin\">\n            <h1>".concat(_("Assets"), "</h2>\n            <div class=\"help-section\">\n                <div class=\"icon vp\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Victory Point</strong>. The player moves their token forward 1 space on the Score Track."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon recruit\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Recruit</strong>: The player adds 1 Recruit token to their ship."), " ").concat(_("It is not possible to have more than 3."), " ").concat(_("A recruit allows a player to draw the Viking card of their choice when Recruiting or replaces a Viking card during Exploration."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon bracelet\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Silver Bracelet</strong>: The player adds 1 Silver Bracelet token to their ship."), " ").concat(_("It is not possible to have more than 3."), " ").concat(_("They are used for Trading."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon reputation\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Reputation Point</strong>: The player moves their token forward 1 space on the Reputation Track."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon take-card\"></div>\n                <div class=\"help-label\">").concat(_("Draw <strong>the first Viking card</strong> from the deck: It is placed in the player’s Crew Zone (without taking any assets)."), "</div>\n            </div>\n\n            <h1>").concat(_("Powers of the artifacts (variant option)"), "</h1>\n        ");
@@ -3439,7 +3451,7 @@ var SplendorDuel = /** @class */ (function () {
         return this.tableCenter.replaceCard(args);
     };
     SplendorDuel.prototype.notif_win = function (args) {
-        //this.setScore(args.playerId, 1);
+        this.setScore(args.playerId, 1);
     };
     SplendorDuel.prototype.getColor = function (color) {
         switch (color) {

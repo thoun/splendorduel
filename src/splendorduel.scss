@@ -65,14 +65,17 @@ html, .mode_3d #game_play_area_background {
   background-position: center;
   vertical-align: middle;
   
+  &.points {
+    background-position-x: #{0 * 100% / 3};
+  }  
   &.crown {
-    background-position-x: #{0 * 100% / 2};
+    background-position-x: #{1 * 100% / 3};
   }  
   &.card-column {
-    background-position-x: #{1 * 100% / 2};
+    background-position-x: #{2 * 100% / 3};
   }  
   &.privilege {
-    background-position-x: #{2 * 100% / 2};
+    background-position-x: #{3 * 100% / 3};
   }
 }
 

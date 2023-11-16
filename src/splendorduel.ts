@@ -23,6 +23,7 @@ class SplendorDuel implements SplendorDuelGame {
     private playersTables: PlayerTable[] = [];
     private privilegeCounters: Counter[] = [];
     private reservedCounters: Counter[] = [];
+    private pointsCounters: Counter[] = [];
     private crownCounters: Counter[] = [];
     private tokenCounters: Counter[] = [];
 
@@ -396,6 +397,11 @@ class SplendorDuel implements SplendorDuelGame {
                     <span id="privilege-counter-${player.id}"></span>
                 </div>
 
+                <div id="points-counter-wrapper-${player.id}" class="points-counter">
+                    <div class="points icon"></div>
+                    <span id="points-counter-${player.id}"></span>
+                </div>
+
                 <div id="crown-counter-wrapper-${player.id}" class="crown-counter">
                     <div class="crown icon"></div>
                     <span id="crown-counter-${player.id}"></span>
@@ -447,6 +453,15 @@ class SplendorDuel implements SplendorDuelGame {
             </div>`;
 
             dojo.place(html, `player_board_${player.id}`);
+
+            const points = [1,2,3,4,5,9].map(color => {
+                // we ignore multicolor in gray column as they will move to another column
+                return player.cards.filter(card => card.location === `player${playerId}-${color}` && (color !== 9 || !card.power.includes(2))).map(card => card.points).reduce((a, b) => a + b, 0);
+            }).reduce((a, b) => a + b, 0) 
+                + player.royalCards.map(card => card.points).reduce((a, b) => a + b, 0);
+            this.pointsCounters[playerId] = new ebg.counter();
+            this.pointsCounters[playerId].create(`points-counter-${playerId}`);
+            this.pointsCounters[playerId].setValue(points);
 
             this.crownCounters[playerId] = new ebg.counter();
             this.crownCounters[playerId].create(`crown-counter-${playerId}`);
@@ -536,8 +551,12 @@ class SplendorDuel implements SplendorDuelGame {
         this.playersTables.push(table);
     }
 
-    private incScore(playerId: number, inc: number) {
+    private setScore(playerId: number, inc: number) {
         (this as any).scoreCtrl[playerId]?.incValue(inc);
+    }
+
+    private incScore(playerId: number, inc: number) {
+        this.pointsCounters[playerId].incValue(inc);
     }
 
     private getHelpHtml() {
@@ -970,7 +989,7 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     notif_win(args: NotifWinArgs) {
-        //this.setScore(args.playerId, 1);
+        this.setScore(args.playerId, 1);
     }
 
     public getColor(color: number): string {
