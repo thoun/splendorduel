@@ -74,6 +74,7 @@ class TableCenter {
     }
     
     public setBoardSelectable(selectionType: 'privileges' | 'play' | 'effect' | null, canTakeGold: boolean = false, max: number = 3, color: number = null) {
+        //document.getElementById(`board`).classList.toggle('selectable', Boolean(selectionType));
         this.board.setSelectable(selectionType, canTakeGold, max, color);
     }
     

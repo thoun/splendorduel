@@ -44,10 +44,10 @@
       grid-template-rows: repeat(5, 1fr);
       grid-template-columns: repeat(5, 1fr);
       background: url('img/board.jpg');
-      width: 525px;
-      height: 436px;
+      width: 436px;
+      height: 525px;
       padding: 10px;
-      padding-right: 93px;
+      padding-bottom: 93px;
       box-sizing: border-box;
       box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.5);
       border-radius: 4px;
@@ -56,18 +56,22 @@
         width: 80px;
         height: 80px;
       }
+
+      &.selectable {
+        animation: selectable-card-animation 1s alternate infinite ease-in-out;
+      }
     }
 
     .board-tooltip-zone {
       position: absolute;
-      right: 11px;
+      bottom: 11px;
       width: 70px;
       height: 70px;
       border-radius: 8px;
 
-      &[data-index="0"] { top: 106px; }
-      &[data-index="1"] { top: 186px; }
-      &[data-index="2"] { top: 260px; }
+      &[data-index="0"] { right: 106px; }
+      &[data-index="1"] { right: 186px; }
+      &[data-index="2"] { right: 260px; }
     }
   }
 

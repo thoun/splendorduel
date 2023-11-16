@@ -24,6 +24,7 @@ class TokenBoard {
             slotsIds,
             mapCardToSlot: card => JSON.stringify([card.row, card.column]),
             gap: '0',
+            selectableCardClass: 'no-visible-selection',
         });
         this.stock.addCards(board);
         this.stock.onSelectionChange = (selection: Token[], lastChange: Token) => this.onTokenSelectionChange(selection, lastChange);

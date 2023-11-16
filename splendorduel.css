@@ -898,10 +898,10 @@ body > .card {
   grid-template-rows: repeat(5, 1fr);
   grid-template-columns: repeat(5, 1fr);
   background: url("img/board.jpg");
-  width: 525px;
-  height: 436px;
+  width: 436px;
+  height: 525px;
   padding: 10px;
-  padding-right: 93px;
+  padding-bottom: 93px;
   box-sizing: border-box;
   box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.5);
   border-radius: 4px;
@@ -910,21 +910,24 @@ body > .card {
   width: 80px;
   height: 80px;
 }
+#table-center #board-wrapper #board.selectable {
+  animation: selectable-card-animation 1s alternate infinite ease-in-out;
+}
 #table-center #board-wrapper .board-tooltip-zone {
   position: absolute;
-  right: 11px;
+  bottom: 11px;
   width: 70px;
   height: 70px;
   border-radius: 8px;
 }
 #table-center #board-wrapper .board-tooltip-zone[data-index="0"] {
-  top: 106px;
+  right: 106px;
 }
 #table-center #board-wrapper .board-tooltip-zone[data-index="1"] {
-  top: 186px;
+  right: 186px;
 }
 #table-center #board-wrapper .board-tooltip-zone[data-index="2"] {
-  top: 260px;
+  right: 260px;
 }
 #table-center #table-cards {
   display: grid;

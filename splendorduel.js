@@ -2134,6 +2134,7 @@ var TokenBoard = /** @class */ (function () {
             slotsIds: slotsIds,
             mapCardToSlot: function (card) { return JSON.stringify([card.row, card.column]); },
             gap: '0',
+            selectableCardClass: 'no-visible-selection',
         });
         this.stock.addCards(board);
         this.stock.onSelectionChange = function (selection, lastChange) { return _this.onTokenSelectionChange(selection, lastChange); };
@@ -2501,6 +2502,7 @@ var TableCenter = /** @class */ (function () {
         if (canTakeGold === void 0) { canTakeGold = false; }
         if (max === void 0) { max = 3; }
         if (color === void 0) { color = null; }
+        //document.getElementById(`board`).classList.toggle('selectable', Boolean(selectionType));
         this.board.setSelectable(selectionType, canTakeGold, max, color);
     };
     TableCenter.prototype.reserveCard = function (args) {
