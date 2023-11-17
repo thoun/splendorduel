@@ -983,6 +983,50 @@ body > .card {
 .player-board .icon {
   margin-right: 5px;
 }
+.player-board .score-tile-playerboard-wrapper {
+  display: flex;
+  justify-content: center;
+}
+.player-board .score-tile-playerboard {
+  width: 200px;
+  height: 70px;
+  background: url("img/score-tile-playerboard.jpg");
+  text-align: center;
+  user-select: none;
+  font-family: "abril-titling";
+  color: white;
+  text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black;
+  font-size: 20px;
+  margin-top: 5px;
+  margin-bottom: 2px;
+  box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.3137254902);
+  border-radius: 5px;
+  position: relative;
+  text-align: center;
+}
+.player-board .score-tile-playerboard > div {
+  position: absolute;
+  top: -5px;
+}
+.player-board .score-tile-playerboard .points-counter {
+  left: 23px;
+  width: 31px;
+}
+.player-board .score-tile-playerboard .crown-counter {
+  left: 71px;
+  width: 31px;
+}
+.player-board .score-tile-playerboard .strongest-column-counter {
+  left: 146px;
+  width: 31px;
+}
+.player-board .score-tile-playerboard .goal {
+  position: relative;
+  top: -7px;
+}
+.player-board .goal {
+  font-size: 75%;
+}
 .player-board .counters {
   display: flex;
   align-items: center;
@@ -990,9 +1034,6 @@ body > .card {
 }
 .player-board .counters > div {
   flex: 1;
-}
-.player-board .counters .goal {
-  font-size: 75%;
 }
 .player-board .player-hand-card {
   display: inline-block;

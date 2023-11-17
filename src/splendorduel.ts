@@ -392,21 +392,24 @@ class SplendorDuel implements SplendorDuelGame {
         Object.values(gamedatas.players).forEach(player => {
             const playerId = Number(player.id);
 
-            let html = `<div class="counters">
-                <div id="points-counter-wrapper-${player.id}" class="points-counter">
-                    <div class="points icon"></div>
-                    <span id="points-counter-${player.id}"></span><span class="goal">&nbsp;/&nbsp;20</span>
-                </div>
-
-                <div id="crown-counter-wrapper-${player.id}" class="crown-counter">
-                    <div class="crown icon"></div>
-                    <span id="crown-counter-${player.id}"></span><span class="goal">&nbsp;/&nbsp;10</span>
-                </div>
-
-                <div id="strongest-column-counter-wrapper-${player.id}" class="strongest-column-counter">
-                    <div class="card-column icon"></div> 
-                    <span id="strongest-column-counter-${player.id}"></span><span class="goal">&nbsp;/&nbsp;10</span>
-                </div>
+            let html = `
+            <div class="score-tile-playerboard-wrapper">
+                <div class="score-tile-playerboard">
+                    <div id="points-counter-wrapper-${player.id}" class="points-counter">
+                        <div id="points-counter-${player.id}"></div>
+                        <div class="goal">/&nbsp;20</div>
+                    </div>
+    
+                    <div id="crown-counter-wrapper-${player.id}" class="crown-counter">
+                        <div id="crown-counter-${player.id}"></div>
+                        <div class="goal">/&nbsp;10</div>
+                    </div>
+    
+                    <div id="strongest-column-counter-wrapper-${player.id}" class="strongest-column-counter">
+                        <div id="strongest-column-counter-${player.id}"></div>
+                        <div class="goal">/&nbsp;10</div>
+                    </div>
+             </div>
             </div>
             
             <div class="counters">

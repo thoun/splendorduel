@@ -12,6 +12,58 @@
     margin-right: 5px;
   }
 
+  .score-tile-playerboard-wrapper {
+    display: flex;
+    justify-content: center;
+  }
+
+  .score-tile-playerboard {
+    width: 200px;
+    height: 70px;
+    background: url('img/score-tile-playerboard.jpg');
+    text-align: center;
+    user-select: none;
+    font-family: "abril-titling";
+    color: white;
+    text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black;
+    font-size: 20px;
+    margin-top: 5px;
+    margin-bottom: 2px;
+    box-shadow: 1px 1px 2px 1px #00000050;
+    border-radius: 5px;
+    position: relative;
+    text-align: center;
+
+    &>div {
+      position: absolute;
+      top: -5px;
+    }
+
+    .points-counter {
+      left: 23px;
+      width: 31px;
+    }
+
+    .crown-counter {
+      left: 71px;
+      width: 31px;
+    }
+
+    .strongest-column-counter {
+      left: 146px;
+      width: 31px;
+    }
+
+    .goal {
+      position: relative;
+      top: -7px;
+    }
+  }
+
+  .goal {
+    font-size: 75%;
+  }
+
   .counters {
     display: flex;
     align-items: center;
@@ -19,10 +71,6 @@
 
     >div {
       flex: 1;
-    }
-
-    .goal {
-      font-size: 75%;
     }
   }
 
