@@ -2977,18 +2977,17 @@ var SplendorDuel = /** @class */ (function () {
             var playerId = Number(player.id);
             var html = "\n            <div class=\"score-tile-playerboard-wrapper\">\n                <div class=\"score-tile-playerboard\">\n                    <div id=\"points-counter-wrapper-".concat(player.id, "\" class=\"points-counter\">\n                        <div id=\"points-counter-").concat(player.id, "\"></div>\n                        <div class=\"goal\">/&nbsp;20</div>\n                    </div>\n    \n                    <div id=\"crown-counter-wrapper-").concat(player.id, "\" class=\"crown-counter\">\n                        <div id=\"crown-counter-").concat(player.id, "\"></div>\n                        <div class=\"goal\">/&nbsp;10</div>\n                    </div>\n    \n                    <div id=\"strongest-column-counter-wrapper-").concat(player.id, "\" class=\"strongest-column-counter\">\n                        <div id=\"strongest-column-counter-").concat(player.id, "\"></div>\n                        <div class=\"goal\">/&nbsp;10</div>\n                    </div>\n             </div>\n            </div>\n            \n            <div class=\"counters\">\n                <div id=\"privilege-counter-wrapper-").concat(player.id, "\" class=\"privilege-counter\">\n                    <div class=\"privilege icon\"></div>\n                    <span id=\"privilege-counter-").concat(player.id, "\"></span><span class=\"goal\">&nbsp;/&nbsp;3</span>\n                </div>\n\n                <div id=\"reserved-counter-wrapper-").concat(player.id, "\" class=\"reserved-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"reserved-counter-").concat(player.id, "\"></span><span class=\"goal\">&nbsp;/&nbsp;3</span>\n                </div>\n\n                <div id=\"token-counter-wrapper-").concat(player.id, "\" class=\"token-counter\">\n                    <div class=\"multicolor icon\"></div> \n                    <span id=\"token-counter-").concat(player.id, "\"></span><span class=\"goal\">&nbsp;/&nbsp;10</span>\n                </div>\n            </div>");
             html += "\n            <div class=\"spl_miniplayerboard\">\n                <div class=\"spl_ressources_container\">";
-            [1, 2, 3, 4, 5, 9].forEach(function (color) {
+            [1, 2, 3, 4, 5].forEach(function (color) {
                 html += "            \n                    <div id=\"player-".concat(playerId, "-counters-card-points-").concat(color, "\" class=\"card-points points icon\"></div>");
             });
-            html += "\n            </div>\n            <div class=\"spl_ressources_container\">";
+            html += "<div></div>\n            </div>\n            <div class=\"spl_ressources_container\">";
             for (var color = 1; color <= 5; color++) {
                 html += "            \n                <div class=\"spl_ressources\">\n                    <div class=\"spl_minigem\" data-color=\"".concat(color, "\"></div>\n                    <div id=\"player-").concat(playerId, "-counters-card-").concat(color, "\" class=\"spl_cardcount\" data-color=\"").concat(color, "\">\n                    </div>\n                    <div id=\"player-").concat(playerId, "-counters-token-").concat(color, "\" class=\"spl_coinpile\" data-type=\"2\" data-color=\"").concat(color, "\">\n                    </div>\n                </div>");
             }
             html += "\n                    <div class=\"spl_ressources\">\n                        <div id=\"player-".concat(playerId, "-counters-token--1\" class=\"spl_coinpile\" data-type=\"1\"></div>\n                        <div id=\"player-").concat(playerId, "-counters-token-0\" class=\"spl_coinpile\" data-type=\"2\" data-color=\"0\"></div>\n                    </div>\n                </div>\n            </div>\n            ");
             dojo.place(html, "player_board_".concat(player.id));
-            var points = [1, 2, 3, 4, 5, 9].map(function (color) {
-                // we ignore multicolor in gray column as they will move to another column
-                return player.cards.filter(function (card) { return card.location === "player".concat(playerId, "-").concat(color) && (color !== 9 || !card.power.includes(2)); }).map(function (card) { return card.points; }).reduce(function (a, b) { return a + b; }, 0);
+            var points = [1, 2, 3, 4, 5].map(function (color) {
+                return player.cards.filter(function (card) { return card.location === "player".concat(playerId, "-").concat(color); }).map(function (card) { return card.points; }).reduce(function (a, b) { return a + b; }, 0);
             }).reduce(function (a, b) { return a + b; }, 0)
                 + player.royalCards.map(function (card) { return card.points; }).reduce(function (a, b) { return a + b; }, 0);
             _this.pointsCounters[playerId] = new ebg.counter();
@@ -2998,9 +2997,9 @@ var SplendorDuel = /** @class */ (function () {
             _this.crownCounters[playerId].create("crown-counter-".concat(playerId));
             _this.crownCounters[playerId].setValue(player.cards.map(function (card) { return card.crowns; }).reduce(function (a, b) { return a + b; }, 0));
             var strongestColumnValue = 0;
-            [1, 2, 3, 4, 5, 9].forEach(function (color) {
+            [1, 2, 3, 4, 5].forEach(function (color) {
                 // we ignore multicolor in gray column as they will move to another column
-                var colorPoints = player.cards.filter(function (card) { return card.location === "player".concat(playerId, "-").concat(color) && (color !== 9 || !card.power.includes(2)); }).map(function (card) { return card.points; }).reduce(function (a, b) { return a + b; }, 0);
+                var colorPoints = player.cards.filter(function (card) { return card.location === "player".concat(playerId, "-").concat(color); }).map(function (card) { return card.points; }).reduce(function (a, b) { return a + b; }, 0);
                 if (colorPoints > strongestColumnValue) {
                     strongestColumnValue = colorPoints;
                 }
@@ -3017,7 +3016,7 @@ var SplendorDuel = /** @class */ (function () {
             _this.tokenCounters[playerId] = new ebg.counter();
             _this.tokenCounters[playerId].create("token-counter-".concat(playerId));
             _this.tokenCounters[playerId].setValue(player.tokens.length);
-            [1, 2, 3, 4, 5, 9].forEach(function (color) {
+            [1, 2, 3, 4, 5].forEach(function (color) {
                 // we ignore multicolor in gray column as they will move to another column
                 var colorPoints = player.cards.filter(function (card) { return card.location === "player".concat(playerId, "-").concat(color) && (color !== 9 || !card.power.includes(2)); }).map(function (card) { return card.points; }).reduce(function (a, b) { return a + b; }, 0);
                 _this.setCardPointsCounter(playerId, color, colorPoints);
@@ -3040,7 +3039,7 @@ var SplendorDuel = /** @class */ (function () {
     };
     SplendorDuel.prototype.setCardPointsCounter = function (playerId, color, points) {
         var counterDiv = document.getElementById("player-".concat(playerId, "-counters-card-points-").concat(color));
-        counterDiv.innerHTML = "".concat(points ? points : '');
+        counterDiv.innerHTML = "".concat(points);
         counterDiv.classList.toggle('hidden', points < 1);
     };
     SplendorDuel.prototype.incCardPointsCounter = function (playerId, color, inc) {
@@ -3424,14 +3423,12 @@ var SplendorDuel = /** @class */ (function () {
                         _b.label = 3;
                     case 3:
                         column = Number(card.location.slice(-1));
-                        if (column !== 9 || !card.power.includes(2)) {
+                        if ([1, 2, 3, 4, 5].includes(column)) {
                             playerTable = this.getPlayerTable(playerId);
                             this.crownCounters[playerId].toValue(playerTable.getCrowns());
                             this.incCardPointsCounter(playerId, column, card.points);
                             this.incScore(playerId, card.points);
-                            if ([1, 2, 3, 4, 5].includes(column)) {
-                                this.incCardProduceCounter(playerId, column, Object.values(card.provides).reduce(function (a, b) { return a + b; }, 0));
-                            }
+                            this.incCardProduceCounter(playerId, column, Object.values(card.provides).reduce(function (a, b) { return a + b; }, 0));
                             this.strongestColumnCounters[playerId].toValue(Math.max.apply(Math, [1, 2, 3, 4, 5].map(function (color) { return Number(document.getElementById("player-".concat(playerId, "-counters-card-").concat(color)).innerHTML); })));
                         }
                         return [2 /*return*/, Promise.resolve(true)];

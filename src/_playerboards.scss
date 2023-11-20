@@ -134,6 +134,8 @@
     }
 
     .card-points {
+      position: relative;
+      left: 2px;
       text-align: center;
       user-select: none;
       color: white;

@@ -45,6 +45,7 @@
     grid-template-columns: repeat(7, 120px);
     gap: 5px;
     margin: 10px;
+    min-height: 50px;
 
     .cards {
       border-radius: 8px;
@@ -60,12 +61,17 @@
         cursor: pointer;
       }
 
-      &[data-color="1"] { background: #22a9ce33; }
-      &[data-color="2"] { background: #e4d3be33; }
-      &[data-color="3"] { background: #64a93533; }
-      &[data-color="4"] { background: #57595b33; }
-      &[data-color="5"] { background: #eb676533; }
-      &[data-color="9"] { background: #babcbe33; }
+      background: linear-gradient(0deg, transparent 0, var(--background-color));
+      background-position: top;
+      background-repeat: no-repeat;
+      background-size: 100% 60px;
+
+      &[data-color="1"] { --background-color: #22a9ce33; }
+      &[data-color="2"] { --background-color: #e4d3be33; }
+      &[data-color="3"] { --background-color: #64a93533; }
+      &[data-color="4"] { --background-color: #57595b33; }
+      &[data-color="5"] { --background-color: #eb676533; }
+      &[data-color="9"] { --background-color: #babcbe33; }
     }
 
     .tokens {

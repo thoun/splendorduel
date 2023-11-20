@@ -1086,6 +1086,8 @@ body > .card {
   background-position-x: 75%;
 }
 .player-board .spl_miniplayerboard .card-points {
+  position: relative;
+  left: 2px;
   text-align: center;
   user-select: none;
   color: white;
@@ -1225,9 +1227,14 @@ body > .card {
   grid-template-columns: repeat(7, 120px);
   gap: 5px;
   margin: 10px;
+  min-height: 50px;
 }
 .player-table .columns .cards {
   border-radius: 8px;
+  background: linear-gradient(0deg, transparent 0, var(--background-color));
+  background-position: top;
+  background-repeat: no-repeat;
+  background-size: 100% 60px;
 }
 .player-table .columns .cards .card:not(:first-child) {
   margin-top: calc(-1 * var(--card-overlap));
@@ -1237,22 +1244,22 @@ body > .card {
   cursor: pointer;
 }
 .player-table .columns .cards[data-color="1"] {
-  background: rgba(34, 169, 206, 0.2);
+  --background-color: #22a9ce33;
 }
 .player-table .columns .cards[data-color="2"] {
-  background: rgba(228, 211, 190, 0.2);
+  --background-color: #e4d3be33;
 }
 .player-table .columns .cards[data-color="3"] {
-  background: rgba(100, 169, 53, 0.2);
+  --background-color: #64a93533;
 }
 .player-table .columns .cards[data-color="4"] {
-  background: rgba(87, 89, 91, 0.2);
+  --background-color: #57595b33;
 }
 .player-table .columns .cards[data-color="5"] {
-  background: rgba(235, 103, 101, 0.2);
+  --background-color: #eb676533;
 }
 .player-table .columns .cards[data-color="9"] {
-  background: rgba(186, 188, 190, 0.2);
+  --background-color: #babcbe33;
 }
 .player-table .columns .tokens {
   align-items: center;
