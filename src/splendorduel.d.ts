@@ -83,6 +83,9 @@ interface EnteringTakeOpponentTokenArgs {
 // privileges
 interface NotifPrivilegesArgs {
     privileges: { [playerId: number]: number };
+    from: number;
+    to: number;
+    count: number;
 }
 
 // refill

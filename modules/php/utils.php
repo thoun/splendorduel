@@ -436,6 +436,9 @@ trait UtilTrait {
             'privileges' => [
                 $playerId => $this->getPlayerPrivileges($playerId),
             ],
+            'from' => $playerId,
+            'to' => 0,
+            'count' => $number,
             'number' => $number, // for logs
         ]);
     }
@@ -468,6 +471,9 @@ trait UtilTrait {
                 $playerId => $this->getPlayerPrivileges($playerId),
                 $opponentId => $this->getPlayerPrivileges($opponentId),
             ],
+            'from' => $fromOpponent ? $opponentId : 0,
+            'to' => $playerId,
+            'count' => 1,
         ]);
     }
 

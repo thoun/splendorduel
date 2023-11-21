@@ -428,7 +428,7 @@ class SplendorDuel implements SplendorDuelGame {
                 </div>
 
                 <div id="token-counter-wrapper-${player.id}" class="token-counter">
-                    <div class="multicolor icon"></div> 
+                    <div class="token icon"></div> 
                     <span id="token-counter-${player.id}"></span><span class="goal">&nbsp;/&nbsp;10</span>
                 </div>
             </div>`;
@@ -945,6 +945,11 @@ class SplendorDuel implements SplendorDuelGame {
 
     notif_privileges(args: NotifPrivilegesArgs) {
         Object.entries(args.privileges).forEach(entry => this.privilegeCounters[entry[0]].setValue(entry[1]));
+
+        const fromDiv = document.getElementById(args.from ? `player-privileges-${args.from}` : `table-privileges`);
+        const toDiv = document.getElementById(args.to ? `player-privileges-${args.to}` : `table-privileges`);
+        const divs = Array.from(fromDiv.querySelectorAll('.privilege-token')).slice(0, args.count);
+        divs.forEach(div => this.animationManager.attachWithAnimation(new BgaSlideAnimation({ element: div }), toDiv));
     }
 
     async notif_refill(args: NotifRefillArgs) {

@@ -971,6 +971,14 @@ body > .card {
   font-size: 24px;
 }
 
+#table-privileges {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  min-width: 19px;
+}
+
 .player-board {
   background-color: white;
 }
@@ -982,6 +990,9 @@ body > .card {
 }
 .player-board .icon {
   margin-right: 5px;
+}
+.player-board .icon.privilege {
+  margin: 0 -8px 0 0;
 }
 .player-board .score-tile-playerboard-wrapper {
   display: flex;
@@ -1185,6 +1196,13 @@ body > .card {
   text-align: right;
 }
 
+.player-privileges {
+  margin-left: 15px;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
 .player-table {
   min-width: 890px;
   width: 100%;
@@ -1361,17 +1379,27 @@ html, .mode_3d #game_play_area_background {
   background-position-x: 0%;
 }
 .icon.crown {
-  background-position-x: 33.3333333333%;
+  background-position-x: 25%;
 }
 .icon.card-column {
-  background-position-x: 66.6666666667%;
+  background-position-x: 50%;
 }
 .icon.privilege {
+  background-position-x: 75%;
+}
+.icon.token {
   background-position-x: 100%;
 }
-.icon.multicolor {
-  background-image: url("img/tokens.png");
-  background-position-x: 100%;
+
+.privilege-token {
+  display: inline-block;
+  width: 19px;
+  height: 57px;
+  background-image: url("img/privilege.png");
+  background-size: auto 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
 }
 
 .action-button .icon, .action-button .color, .log .icon, .log .color {

@@ -66,21 +66,31 @@ html, .mode_3d #game_play_area_background {
   vertical-align: middle;
   
   &.points {
-    background-position-x: #{0 * 100% / 3};
+    background-position-x: #{0 * 100% / 4};
   }  
   &.crown {
-    background-position-x: #{1 * 100% / 3};
+    background-position-x: #{1 * 100% / 4};
   }  
   &.card-column {
-    background-position-x: #{2 * 100% / 3};
+    background-position-x: #{2 * 100% / 4};
   }  
   &.privilege {
-    background-position-x: #{3 * 100% / 3};
+    background-position-x: #{3 * 100% / 4};
   }
-  &.multicolor {
-    background-image: url('img/tokens.png');
-    background-position-x: #{100%};
+  &.token {
+    background-position-x: #{4 * 100% / 4};
   }
+}
+
+.privilege-token {
+  display: inline-block;
+  width: 19px;
+  height: 57px;
+  background-image: url('img/privilege.png');
+  background-size: auto 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
 }
 
 .action-button, .log {

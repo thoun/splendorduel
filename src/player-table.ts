@@ -18,7 +18,10 @@ class PlayerTable {
 
         let html = `
         <div id="player-table-${this.playerId}" class="player-table" style="--player-color: #${player.color};">
-            <div id="player-table-${this.playerId}-name" class="name-wrapper">${player.name}</div>
+            <div id="player-table-${this.playerId}-name" class="name-wrapper">
+                ${player.name}
+                <div id="player-privileges-${this.playerId}" class="player-privileges"></div>
+            </div>
             <div class="columns">
         `;
             [1,2,3,4,5,0,-1].forEach(i => {
@@ -43,7 +46,7 @@ class PlayerTable {
         </div>
         `;
 
-        dojo.place(html, document.getElementById('tables'));
+        document.getElementById('tables').insertAdjacentHTML('beforeend', html);
 
         const reservedDiv = document.getElementById(`player-table-${this.playerId}-reserved`);
         this.reserved = new LineStock<Card>(this.game.cardsManager, reservedDiv);
@@ -83,10 +86,10 @@ class PlayerTable {
         });
         
         this.addTokens(player.tokens);
-    }
 
-    public updateCounter(type: 'recruits' | 'bracelets', count: number) {
-        document.getElementById(`player-table-${this.playerId}-boat`).dataset[type] = ''+count;
+        for (let i = 0; i < player.privileges; i++) {
+            document.getElementById(`player-privileges-${this.playerId}`).insertAdjacentHTML('beforeend', `<div class="privilege-token"></div>`);
+        }
     }
 
     public playCard(card: Card, fromElement?: HTMLElement): Promise<boolean> {

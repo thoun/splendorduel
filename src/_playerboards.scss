@@ -10,6 +10,10 @@
 
   .icon {
     margin-right: 5px;
+
+    &.privilege {
+      margin: 0 -8px 0 0;
+    }
   }
 
   .score-tile-playerboard-wrapper {
@@ -223,4 +227,11 @@
     text-align: right;
   }
 
+}
+
+.player-privileges {
+  margin-left: 15px;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
 }

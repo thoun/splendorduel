@@ -59,6 +59,11 @@ class TableCenter {
             <br><br>
             ${_("If you have 10 or more Prestige points on cards of the same color, you win! A <ICON_MULTI> card is considered to be of the same color as the cards it is grouped with").replace('<ICON_MULTI>', `<div class="token-icon" data-type="9"></div>`)}
         `);
+
+        const tablePrivileges = 3 - Object.values(gamedatas.players).map(player => player.privileges).reduce((a, b) => a + b, 0);
+        for (let i = 0; i < tablePrivileges; i++) {
+            document.getElementById('table-privileges').insertAdjacentHTML('beforeend', `<div class="privilege-token"></div>`);
+        }
     }
     
     public setCardsSelectable(selectable: boolean, selectableCards: Card[] = [], all: boolean = false) {

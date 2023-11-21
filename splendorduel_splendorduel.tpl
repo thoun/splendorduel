@@ -12,6 +12,7 @@
                         <div id="score-tile"></div>
                     </div>
                     <div id="board"></div>
+                    <div id="table-privileges"></div>
                 </div>
                 <div id="table-cards"></div>
                 <div id="royal-cards"></div>
