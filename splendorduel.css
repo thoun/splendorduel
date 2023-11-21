@@ -904,7 +904,7 @@ body > .card {
   width: 436px;
   height: 525px;
   padding: 10px;
-  padding-bottom: 93px;
+  padding-top: 93px;
   box-sizing: border-box;
   box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.5);
   border-radius: 4px;
@@ -918,19 +918,19 @@ body > .card {
 }
 #table-center #board-wrapper .board-tooltip-zone {
   position: absolute;
-  bottom: 11px;
+  top: 11px;
   width: 70px;
   height: 70px;
   border-radius: 8px;
 }
 #table-center #board-wrapper .board-tooltip-zone[data-index="0"] {
-  right: 106px;
+  left: 106px;
 }
 #table-center #board-wrapper .board-tooltip-zone[data-index="1"] {
-  right: 186px;
+  left: 186px;
 }
 #table-center #board-wrapper .board-tooltip-zone[data-index="2"] {
-  right: 260px;
+  left: 260px;
 }
 #table-center #table-cards {
   display: grid;
