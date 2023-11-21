@@ -2379,7 +2379,7 @@ var TokenBoard = /** @class */ (function () {
         this.mouseSelectionInitialCoordinates = [event.screenX, event.screenY];
     };
     TokenBoard.prototype.getTokenCenterCoordinates = function (token) {
-        return [50 + (token.column - 1) * 83.2, 50 + (token.row - 1) * 83.2];
+        return [50 + (token.column - 1) * 83.2, 143 + (token.row - 1) * 83.2];
     };
     TokenBoard.prototype.onMouseMove = function (event) {
         if (!this.mouseSelectionStart || !this.mouseSelectionInitialCoordinates) {
@@ -2871,10 +2871,13 @@ var SplendorDuel = /** @class */ (function () {
         }
     };
     SplendorDuel.prototype.onLeavingPlayAction = function () {
-        var _a;
         this.tableCenter.setBoardSelectable(null);
         this.tableCenter.setCardsSelectable(false);
-        (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setHandSelectable(false);
+        var currentPlayerTable = this.getCurrentPlayerTable();
+        if (currentPlayerTable) {
+            currentPlayerTable.setHandSelectable(false);
+            currentPlayerTable.setTokensSelectableByType([], []);
+        }
         var noticeDiv = document.getElementById('notice');
         noticeDiv.innerHTML = "";
         noticeDiv.classList.remove('visible');
@@ -3212,6 +3215,7 @@ var SplendorDuel = /** @class */ (function () {
         this.tokensSelection = null;
         (_a = document.getElementById("chooseTokenCost-button")) === null || _a === void 0 ? void 0 : _a.remove();
         (_b = document.getElementById("cancelChooseTokenCost-button")) === null || _b === void 0 ? void 0 : _b.remove();
+        this.getCurrentPlayerTable().setTokensSelectableByType([], []);
     };
     SplendorDuel.prototype.setActionBarChooseAction = function (fromCancel) {
         document.getElementById("generalactions").innerHTML = '';
@@ -3433,7 +3437,7 @@ var SplendorDuel = /** @class */ (function () {
                             this.incCardPointsCounter(playerId, column, card.points);
                             this.incScore(playerId, card.points);
                             this.incCardProduceCounter(playerId, column, Object.values(card.provides).reduce(function (a, b) { return a + b; }, 0));
-                            this.strongestColumnCounters[playerId].toValue(Math.max.apply(Math, [1, 2, 3, 4, 5].map(function (color) { return Number(document.getElementById("player-".concat(playerId, "-counters-card-").concat(color)).innerHTML); })));
+                            this.strongestColumnCounters[playerId].toValue(Math.max.apply(Math, [1, 2, 3, 4, 5].map(function (color) { return Number(document.getElementById("player-".concat(playerId, "-counters-card-points-").concat(color)).innerHTML); })));
                         }
                         return [2 /*return*/, Promise.resolve(true)];
                 }

@@ -267,7 +267,11 @@ class SplendorDuel implements SplendorDuelGame {
     private onLeavingPlayAction() {
         this.tableCenter.setBoardSelectable(null);
         this.tableCenter.setCardsSelectable(false);
-        this.getCurrentPlayerTable()?.setHandSelectable(false);
+        const currentPlayerTable = this.getCurrentPlayerTable();
+        if (currentPlayerTable) {
+            currentPlayerTable.setHandSelectable(false);
+            currentPlayerTable.setTokensSelectableByType([], []);
+        }
 
         const noticeDiv = document.getElementById('notice');
         noticeDiv.innerHTML = ``;
@@ -747,6 +751,8 @@ class SplendorDuel implements SplendorDuelGame {
 
         document.getElementById(`chooseTokenCost-button`)?.remove();
         document.getElementById(`cancelChooseTokenCost-button`)?.remove();
+
+        this.getCurrentPlayerTable().setTokensSelectableByType([], []);
     }
     
     private setActionBarChooseAction(fromCancel: boolean) {
@@ -987,7 +993,7 @@ class SplendorDuel implements SplendorDuelGame {
 
             this.incCardProduceCounter(playerId, column, Object.values(card.provides).reduce((a, b) => a + b, 0));
 
-            this.strongestColumnCounters[playerId].toValue(Math.max(...[1, 2, 3, 4, 5].map(color => Number(document.getElementById(`player-${playerId}-counters-card-${color}`).innerHTML))));
+            this.strongestColumnCounters[playerId].toValue(Math.max(...[1, 2, 3, 4, 5].map(color => Number(document.getElementById(`player-${playerId}-counters-card-points-${color}`).innerHTML))));
         }
 
         return Promise.resolve(true);
