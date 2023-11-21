@@ -25,6 +25,10 @@ class TableCenter {
             this.cardsDecks[level] = new Deck<Card>(game.cardsManager, document.getElementById(`card-deck-${level}`), {
                 cardNumber: gamedatas.cardDeckCount[level],
                 topCard: gamedatas.cardDeckTop[level],
+                counter: {
+                    hideWhenEmpty: true,
+                    position: 'center',
+                }
             });
             this.cardsDecks[level].onCardClick = card => this.game.onTableCardClick(card);
 

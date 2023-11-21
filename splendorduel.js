@@ -2450,6 +2450,10 @@ var TableCenter = /** @class */ (function () {
             this.cardsDecks[level] = new Deck(game.cardsManager, document.getElementById("card-deck-".concat(level)), {
                 cardNumber: gamedatas.cardDeckCount[level],
                 topCard: gamedatas.cardDeckTop[level],
+                counter: {
+                    hideWhenEmpty: true,
+                    position: 'center',
+                }
             });
             this.cardsDecks[level].onCardClick = function (card) { return _this.game.onTableCardClick(card); };
             var slotsIds = [];
