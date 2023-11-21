@@ -1061,9 +1061,9 @@ body > .card {
   position: relative;
 }
 .player-board .spl_miniplayerboard .spl_ressources_container .spl_ressources .spl_minigem {
-  background-image: url(img/oleum-small.webp);
+  background-image: url("img/gem-icons.png");
   background-size: auto 100%;
-  height: 14.266px;
+  height: 16px;
   position: absolute;
   right: -6px;
   top: -6px;
@@ -1071,19 +1071,19 @@ body > .card {
   z-index: 1;
 }
 .player-board .spl_miniplayerboard .spl_ressources_container .spl_ressources .spl_minigem[data-color="1"] {
-  background-position-x: 25%;
-}
-.player-board .spl_miniplayerboard .spl_ressources_container .spl_ressources .spl_minigem[data-color="2"] {
   background-position-x: 0%;
 }
-.player-board .spl_miniplayerboard .spl_ressources_container .spl_ressources .spl_minigem[data-color="3"] {
-  background-position-x: 100%;
+.player-board .spl_miniplayerboard .spl_ressources_container .spl_ressources .spl_minigem[data-color="2"] {
+  background-position-x: 25%;
 }
-.player-board .spl_miniplayerboard .spl_ressources_container .spl_ressources .spl_minigem[data-color="4"] {
+.player-board .spl_miniplayerboard .spl_ressources_container .spl_ressources .spl_minigem[data-color="3"] {
   background-position-x: 50%;
 }
-.player-board .spl_miniplayerboard .spl_ressources_container .spl_ressources .spl_minigem[data-color="5"] {
+.player-board .spl_miniplayerboard .spl_ressources_container .spl_ressources .spl_minigem[data-color="4"] {
   background-position-x: 75%;
+}
+.player-board .spl_miniplayerboard .spl_ressources_container .spl_ressources .spl_minigem[data-color="5"] {
+  background-position-x: 100%;
 }
 .player-board .spl_miniplayerboard .card-points {
   position: relative;
