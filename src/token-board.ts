@@ -288,7 +288,7 @@ class TokenBoard {
     }
 
     private getTokenCenterCoordinates(token: Token): number[] {
-        return [50 + (token.column - 1) * 83.2, 143 + (token.row - 1) * 83.2];
+        return [50 + (token.column - 1) * 83.2, 133 + (token.row - 1) * 83.2];
     }
     
     private onMouseMove(event: MouseEvent) {

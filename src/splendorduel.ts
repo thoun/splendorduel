@@ -178,10 +178,21 @@ class SplendorDuel implements SplendorDuelGame {
 
             noticeDiv.innerHTML = notice;
 
-            document.getElementById('replenish_button')?.addEventListener('click', () => this.refillBoard());
+            document.getElementById('replenish_button')?.addEventListener('click', () => this.confirmActionGivingPrivilege(() => this.refillBoard()));
             document.getElementById('usePrivilege_button')?.addEventListener('click', () => this.usePrivilege());
         }
         noticeDiv.classList.toggle('visible', showNotice);
+    }
+
+    private confirmActionGivingPrivilege(finalAction: Function) {
+        if ((this as any).prefs[201].value != 2) {
+            const confirmationMessage = `${_("This action will give a privilege to your opponent.")}
+            <br><br>
+            <i>${_("You can disable this warning in the user preferences (top right menu).")}</i>`;
+            (this as any).confirmationDialog(confirmationMessage, finalAction);
+        } else {
+            finalAction();
+        }
     }
 
     private onEnteringPlayAction(args: EnteringPlayActionArgs) {
@@ -299,6 +310,16 @@ class SplendorDuel implements SplendorDuelGame {
         this.getCurrentPlayerTable()?.setTokensSelectable(false, true);
     }
 
+    private takeSelectedTokensWithWarning() {
+        const showWarning = this.tokensSelection.filter(token => token.type == 2 && token.color == 0).length >= 2
+            || (this.tokensSelection.length == 3 && this.tokensSelection[0].color == this.tokensSelection[1].color && this.tokensSelection[0].color == this.tokensSelection[2].color);
+        if (showWarning) {
+            this.confirmActionGivingPrivilege(() => this.takeSelectedTokens());
+        } else {
+            this.takeSelectedTokens();
+        }
+    }
+
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
     //                        action status bar (ie: the HTML links in the status bar).
     //
@@ -312,6 +333,9 @@ class SplendorDuel implements SplendorDuelGame {
                     (this as any).addActionButton(`cancelUsePrivilege_button`, _("Cancel"), () => this.cancelUsePrivilege(), null, null, 'gray');
                     break;
                 case 'playAction':
+                    (this as any).addActionButton(`takeSelectedTokens_button`, _("Take selected token(s)"), () => this.takeSelectedTokensWithWarning());
+                    document.getElementById(`takeSelectedTokens_button`).classList.add('disabled');
+                    break;
                 case 'takeBoardToken':
                     (this as any).addActionButton(`takeSelectedTokens_button`, _("Take selected token(s)"), () => this.takeSelectedTokens());
                     document.getElementById(`takeSelectedTokens_button`).classList.add('disabled');

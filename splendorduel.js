@@ -2379,7 +2379,7 @@ var TokenBoard = /** @class */ (function () {
         this.mouseSelectionInitialCoordinates = [event.screenX, event.screenY];
     };
     TokenBoard.prototype.getTokenCenterCoordinates = function (token) {
-        return [50 + (token.column - 1) * 83.2, 143 + (token.row - 1) * 83.2];
+        return [50 + (token.column - 1) * 83.2, 133 + (token.row - 1) * 83.2];
     };
     TokenBoard.prototype.onMouseMove = function (event) {
         if (!this.mouseSelectionStart || !this.mouseSelectionInitialCoordinates) {
@@ -2800,10 +2800,19 @@ var SplendorDuel = /** @class */ (function () {
                 notice = _('<strong>Before</strong> taking your mandatory action, you can ${use_privilege_button}').replace('${use_privilege_button}', usePrivilegeButton);
             }
             noticeDiv.innerHTML = notice;
-            (_a = document.getElementById('replenish_button')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function () { return _this.refillBoard(); });
+            (_a = document.getElementById('replenish_button')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function () { return _this.confirmActionGivingPrivilege(function () { return _this.refillBoard(); }); });
             (_b = document.getElementById('usePrivilege_button')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', function () { return _this.usePrivilege(); });
         }
         noticeDiv.classList.toggle('visible', showNotice);
+    };
+    SplendorDuel.prototype.confirmActionGivingPrivilege = function (finalAction) {
+        if (this.prefs[201].value != 2) {
+            var confirmationMessage = "".concat(_("This action will give a privilege to your opponent."), "\n            <br><br>\n            <i>").concat(_("You can disable this warning in the user preferences (top right menu)."), "</i>");
+            this.confirmationDialog(confirmationMessage, finalAction);
+        }
+        else {
+            finalAction();
+        }
     };
     SplendorDuel.prototype.onEnteringPlayAction = function (args) {
         if (!args.canTakeTokens) {
@@ -2905,6 +2914,17 @@ var SplendorDuel = /** @class */ (function () {
         var _a;
         (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setTokensSelectable(false, true);
     };
+    SplendorDuel.prototype.takeSelectedTokensWithWarning = function () {
+        var _this = this;
+        var showWarning = this.tokensSelection.filter(function (token) { return token.type == 2 && token.color == 0; }).length >= 2
+            || (this.tokensSelection.length == 3 && this.tokensSelection[0].color == this.tokensSelection[1].color && this.tokensSelection[0].color == this.tokensSelection[2].color);
+        if (showWarning) {
+            this.confirmActionGivingPrivilege(function () { return _this.takeSelectedTokens(); });
+        }
+        else {
+            this.takeSelectedTokens();
+        }
+    };
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
     //                        action status bar (ie: the HTML links in the status bar).
     //
@@ -2918,6 +2938,9 @@ var SplendorDuel = /** @class */ (function () {
                     this.addActionButton("cancelUsePrivilege_button", _("Cancel"), function () { return _this.cancelUsePrivilege(); }, null, null, 'gray');
                     break;
                 case 'playAction':
+                    this.addActionButton("takeSelectedTokens_button", _("Take selected token(s)"), function () { return _this.takeSelectedTokensWithWarning(); });
+                    document.getElementById("takeSelectedTokens_button").classList.add('disabled');
+                    break;
                 case 'takeBoardToken':
                     this.addActionButton("takeSelectedTokens_button", _("Take selected token(s)"), function () { return _this.takeSelectedTokens(); });
                     document.getElementById("takeSelectedTokens_button").classList.add('disabled');

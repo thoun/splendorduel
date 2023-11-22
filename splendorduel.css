@@ -969,6 +969,8 @@ body > .card {
   justify-content: center;
   align-items: center;
   font-size: 24px;
+  user-select: none;
+  pointer-events: none;
 }
 
 #table-privileges {

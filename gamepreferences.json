@@ -1,0 +1,15 @@
+{
+    "201": {
+      "name": "Confirm action giving privilege",
+      "needReload": false,
+      "values": {
+        "1": {
+          "name": "Enabled"
+        },
+        "2": {
+          "name": "Disabled"
+        }
+      },
+      "default": 1
+    }
+  }
