@@ -3020,8 +3020,9 @@ var SplendorDuel = /** @class */ (function () {
             }
             html += "\n                    <div class=\"spl_ressources\">\n                        <div id=\"player-".concat(playerId, "-counters-token--1\" class=\"spl_coinpile\" data-type=\"1\"></div>\n                        <div id=\"player-").concat(playerId, "-counters-token-0\" class=\"spl_coinpile\" data-type=\"2\" data-color=\"0\"></div>\n                    </div>\n                </div>\n            </div>\n            ");
             dojo.place(html, "player_board_".concat(player.id));
-            var points = [1, 2, 3, 4, 5].map(function (color) {
-                return player.cards.filter(function (card) { return card.location === "player".concat(playerId, "-").concat(color); }).map(function (card) { return card.points; }).reduce(function (a, b) { return a + b; }, 0);
+            var points = [1, 2, 3, 4, 5, 9].map(function (color) {
+                // we ignore multicolor in gray column as they will move to another column
+                return player.cards.filter(function (card) { return card.location === "player".concat(playerId, "-").concat(color) && (color !== 9 || !card.power.includes(2)); }).map(function (card) { return card.points; }).reduce(function (a, b) { return a + b; }, 0);
             }).reduce(function (a, b) { return a + b; }, 0)
                 + player.royalCards.map(function (card) { return card.points; }).reduce(function (a, b) { return a + b; }, 0);
             _this.pointsCounters[playerId] = new ebg.counter();

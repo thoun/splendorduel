@@ -492,8 +492,9 @@ class SplendorDuel implements SplendorDuelGame {
 
             dojo.place(html, `player_board_${player.id}`);
 
-            const points = [1,2,3,4,5].map(color => {
-                return player.cards.filter(card => card.location === `player${playerId}-${color}`).map(card => card.points).reduce((a, b) => a + b, 0);
+            const points = [1,2,3,4,5,9].map(color => {
+                // we ignore multicolor in gray column as they will move to another column
+                return player.cards.filter(card => card.location === `player${playerId}-${color}` && (color !== 9 || !card.power.includes(2))).map(card => card.points).reduce((a, b) => a + b, 0);
             }).reduce((a, b) => a + b, 0) 
                 + player.royalCards.map(card => card.points).reduce((a, b) => a + b, 0);
             this.pointsCounters[playerId] = new ebg.counter();
