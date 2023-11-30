@@ -92,10 +92,10 @@ class SplendorDuel implements SplendorDuelGame {
         new HelpManager(this, { 
             buttons: [
                 new BgaHelpPopinButton({
-                    title: _("Card help").toUpperCase(),
+                    title: _("Card abilities").toUpperCase(),
                     html: this.getHelpHtml(),
                     onPopinCreated: () => this.populateHelp(),
-                    buttonBackground: '#5890a9',
+                    buttonBackground: '#e49ac3',
                 }),
             ]
         });
@@ -612,41 +612,11 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     private getHelpHtml() {
-        let html = `
-        <div id="help-popin">
-            <h1>${_("Assets")}</h2>
+        let html = [1, 2, 3, 4, 5].map((power) => `
             <div class="help-section">
-                <div class="icon vp"></div>
-                <div class="help-label">${_("Gain 1 <strong>Victory Point</strong>. The player moves their token forward 1 space on the Score Track.")}</div>
-            </div>
-            <div class="help-section">
-                <div class="icon recruit"></div>
-                <div class="help-label">${_("Gain 1 <strong>Recruit</strong>: The player adds 1 Recruit token to their ship.")} ${_("It is not possible to have more than 3.")} ${_("A recruit allows a player to draw the Viking card of their choice when Recruiting or replaces a Viking card during Exploration.")}</div>
-            </div>
-            <div class="help-section">
-                <div class="icon bracelet"></div>
-                <div class="help-label">${_("Gain 1 <strong>Silver Bracelet</strong>: The player adds 1 Silver Bracelet token to their ship.")} ${_("It is not possible to have more than 3.")} ${_("They are used for Trading.")}</div>
-            </div>
-            <div class="help-section">
-                <div class="icon reputation"></div>
-                <div class="help-label">${_("Gain 1 <strong>Reputation Point</strong>: The player moves their token forward 1 space on the Reputation Track.")}</div>
-            </div>
-            <div class="help-section">
-                <div class="icon take-card"></div>
-                <div class="help-label">${_("Draw <strong>the first Viking card</strong> from the deck: It is placed in the player’s Crew Zone (without taking any assets).")}</div>
-            </div>
-
-            <h1>${_("Powers of the artifacts (variant option)")}</h1>
-        `;
-
-        for (let i = 1; i <=7; i++) {
-            html += `
-            <div class="help-section">
-                <div id="help-artifact-${i}"></div>
-                <div>${/*this.cardsManager.getTooltip(i)*/''}</div>
-            </div> `;
-        }
-        html += `</div>`;
+                <div class="ability-icon" data-ability="${power}"></div>
+                <div class="help-label">${this.getPower(power)}</div>
+            </div>`).join('');
 
         return html;
     }
@@ -733,18 +703,21 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     private setChooseTokenCostButtonLabelAndState() {
-        const selection = this.getCurrentPlayerTable().getSelectedTokens();
-        const label = selection.length ? 
-            _('Pay ${cost}').replace('${cost}',
-                `<div class="compressed-token-icons">${
-                    selection.map(token => `<div class="token-icon" data-type="${token.type == 1 ? -1 : token.color}"></div>`).join('')
-                 }</div>`
-            ) : 
-            _('Take for free');
+        const button = document.getElementById(`chooseTokenCost-button`);
+        if (button) {
+            const selection = this.getCurrentPlayerTable().getSelectedTokens();
+            const label = selection.length ? 
+                _('Pay ${cost}').replace('${cost}',
+                    `<div class="compressed-token-icons">${
+                        selection.map(token => `<div class="token-icon" data-type="${token.type == 1 ? -1 : token.color}"></div>`).join('')
+                    }</div>`
+                ) : 
+                _('Take for free');
 
-        document.getElementById(`chooseTokenCost-button`).innerHTML = label;
-        let valid = selection.length == Object.values(this.selectedCardReducedCost).reduce((a, b) => a + b, 0); // TODO more controls
-        document.getElementById(`chooseTokenCost-button`).classList.toggle('disabled', !valid);
+            button.innerHTML = label;
+            let valid = selection.length == Object.values(this.selectedCardReducedCost).reduce((a, b) => a + b, 0); // TODO more controls
+            button.classList.toggle('disabled', !valid);
+        }
     }
 
     private setActionBarChooseTokenCost() {

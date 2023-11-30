@@ -2717,10 +2717,10 @@ var SplendorDuel = /** @class */ (function () {
         new HelpManager(this, {
             buttons: [
                 new BgaHelpPopinButton({
-                    title: _("Card help").toUpperCase(),
+                    title: _("Card abilities").toUpperCase(),
                     html: this.getHelpHtml(),
                     onPopinCreated: function () { return _this.populateHelp(); },
-                    buttonBackground: '#5890a9',
+                    buttonBackground: '#e49ac3',
                 }),
             ]
         });
@@ -3123,11 +3123,8 @@ var SplendorDuel = /** @class */ (function () {
         this.pointsCounters[playerId].incValue(inc);
     };
     SplendorDuel.prototype.getHelpHtml = function () {
-        var html = "\n        <div id=\"help-popin\">\n            <h1>".concat(_("Assets"), "</h2>\n            <div class=\"help-section\">\n                <div class=\"icon vp\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Victory Point</strong>. The player moves their token forward 1 space on the Score Track."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon recruit\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Recruit</strong>: The player adds 1 Recruit token to their ship."), " ").concat(_("It is not possible to have more than 3."), " ").concat(_("A recruit allows a player to draw the Viking card of their choice when Recruiting or replaces a Viking card during Exploration."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon bracelet\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Silver Bracelet</strong>: The player adds 1 Silver Bracelet token to their ship."), " ").concat(_("It is not possible to have more than 3."), " ").concat(_("They are used for Trading."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon reputation\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Reputation Point</strong>: The player moves their token forward 1 space on the Reputation Track."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon take-card\"></div>\n                <div class=\"help-label\">").concat(_("Draw <strong>the first Viking card</strong> from the deck: It is placed in the player’s Crew Zone (without taking any assets)."), "</div>\n            </div>\n\n            <h1>").concat(_("Powers of the artifacts (variant option)"), "</h1>\n        ");
-        for (var i = 1; i <= 7; i++) {
-            html += "\n            <div class=\"help-section\">\n                <div id=\"help-artifact-".concat(i, "\"></div>\n                <div>").concat(/*this.cardsManager.getTooltip(i)*/ '', "</div>\n            </div> ");
-        }
-        html += "</div>";
+        var _this = this;
+        var html = [1, 2, 3, 4, 5].map(function (power) { return "\n            <div class=\"help-section\">\n                <div class=\"ability-icon\" data-ability=\"".concat(power, "\"></div>\n                <div class=\"help-label\">").concat(_this.getPower(power), "</div>\n            </div>"); }).join('');
         return html;
     };
     SplendorDuel.prototype.populateHelp = function () {
@@ -3210,13 +3207,16 @@ var SplendorDuel = /** @class */ (function () {
         this.getCurrentPlayerTable().setTokensSelectableByType(allowedTypes, this.tokensSelection);
     };
     SplendorDuel.prototype.setChooseTokenCostButtonLabelAndState = function () {
-        var selection = this.getCurrentPlayerTable().getSelectedTokens();
-        var label = selection.length ?
-            _('Pay ${cost}').replace('${cost}', "<div class=\"compressed-token-icons\">".concat(selection.map(function (token) { return "<div class=\"token-icon\" data-type=\"".concat(token.type == 1 ? -1 : token.color, "\"></div>"); }).join(''), "</div>")) :
-            _('Take for free');
-        document.getElementById("chooseTokenCost-button").innerHTML = label;
-        var valid = selection.length == Object.values(this.selectedCardReducedCost).reduce(function (a, b) { return a + b; }, 0); // TODO more controls
-        document.getElementById("chooseTokenCost-button").classList.toggle('disabled', !valid);
+        var button = document.getElementById("chooseTokenCost-button");
+        if (button) {
+            var selection = this.getCurrentPlayerTable().getSelectedTokens();
+            var label = selection.length ?
+                _('Pay ${cost}').replace('${cost}', "<div class=\"compressed-token-icons\">".concat(selection.map(function (token) { return "<div class=\"token-icon\" data-type=\"".concat(token.type == 1 ? -1 : token.color, "\"></div>"); }).join(''), "</div>")) :
+                _('Take for free');
+            button.innerHTML = label;
+            var valid = selection.length == Object.values(this.selectedCardReducedCost).reduce(function (a, b) { return a + b; }, 0); // TODO more controls
+            button.classList.toggle('disabled', !valid);
+        }
     };
     SplendorDuel.prototype.setActionBarChooseTokenCost = function () {
         var _this = this;
