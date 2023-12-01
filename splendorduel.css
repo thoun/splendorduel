@@ -887,6 +887,7 @@ body > .card {
   width: 240px;
   height: 220px;
   background: url("img/bag.png");
+  cursor: pointer;
 }
 #table-center #board-wrapper #bag-and-score-tile #score-tile {
   width: 240px;

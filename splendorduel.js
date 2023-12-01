@@ -2479,6 +2479,8 @@ var TableCenter = /** @class */ (function () {
         for (var i = 0; i < tablePrivileges; i++) {
             document.getElementById('table-privileges').insertAdjacentHTML('beforeend', "<div class=\"privilege-token\"></div>");
         }
+        this.game.setTooltip('bag', _("Click to see the tokens in the bag"));
+        document.getElementById('bag').addEventListener('click', function () { return _this.showTokensInBag(); });
     }
     TableCenter.prototype.setCardsSelectable = function (selectable, selectableCards, all) {
         if (selectableCards === void 0) { selectableCards = []; }
@@ -2535,6 +2537,41 @@ var TableCenter = /** @class */ (function () {
     };
     TableCenter.prototype.setRoyalCardsSelectable = function (selectable) {
         this.royalCards.setSelectionMode(selectable ? 'single' : 'none');
+    };
+    TableCenter.prototype.showTokensInBag = function () {
+        var tokens = __spreadArray(__spreadArray([], this.board.stock.getCards(), true), this.game.getPlayersTokens(), true);
+        var tokensInBagCount = [2, 4, 4, 4, 4, 4];
+        tokensInBagCount[-1] = 3;
+        tokens.forEach(function (token) { return tokensInBagCount[token.type == 1 ? -1 : token.color]--; });
+        var bagTokens = [];
+        for (var color = -1; color <= 5; color++) {
+            for (var i = 0; i < tokensInBagCount[color]; i++) {
+                bagTokens.push({
+                    id: 1000 + 100 * color + i,
+                    location: 'bag',
+                    locationArg: 0,
+                    type: color == -1 ? 1 : 2,
+                    color: color,
+                });
+            }
+        }
+        var tokensInBagDialog = new ebg.popindialog();
+        tokensInBagDialog.create('showTokensInBagDialog');
+        tokensInBagDialog.setTitle(_("Tokens in the bag"));
+        var html = "<div id=\"bag-tokens\"></div>";
+        // Show the dialog
+        tokensInBagDialog.setContent(html);
+        tokensInBagDialog.show();
+        var stock = new LineStock(this.game.tokensManager, document.getElementById('bag-tokens'), {
+            wrap: 'wrap'
+        });
+        stock.addCards(bagTokens);
+        tokensInBagDialog.show();
+        // Replace the function call when it's clicked
+        tokensInBagDialog.replaceCloseCallback(function () {
+            stock.removeAll();
+            tokensInBagDialog.destroy();
+        });
     };
     return TableCenter;
 }());
@@ -2682,7 +2719,6 @@ var SplendorDuel = /** @class */ (function () {
         "gamedatas" argument contains all datas retrieved by your "getAllDatas" PHP method.
     */
     SplendorDuel.prototype.setup = function (gamedatas) {
-        var _this = this;
         log("Starting game setup");
         this.gamedatas = gamedatas;
         log('gamedatas', gamedatas);
@@ -2719,7 +2755,6 @@ var SplendorDuel = /** @class */ (function () {
                 new BgaHelpPopinButton({
                     title: _("Card abilities").toUpperCase(),
                     html: this.getHelpHtml(),
-                    onPopinCreated: function () { return _this.populateHelp(); },
                     buttonBackground: '#e49ac3',
                 }),
             ]
@@ -3005,6 +3040,9 @@ var SplendorDuel = /** @class */ (function () {
         var orderedPlayers = playerIndex > 0 ? __spreadArray(__spreadArray([], players.slice(playerIndex), true), players.slice(0, playerIndex), true) : players;
         return orderedPlayers;
     };
+    SplendorDuel.prototype.getPlayersTokens = function () {
+        return this.playersTables.map(function (table) { return table.getTokens(); }).flat();
+    };
     SplendorDuel.prototype.createPlayerPanels = function (gamedatas) {
         var _this = this;
         Object.values(gamedatas.players).forEach(function (player) {
@@ -3126,11 +3164,6 @@ var SplendorDuel = /** @class */ (function () {
         var _this = this;
         var html = [1, 2, 3, 4, 5].map(function (power) { return "\n            <div class=\"help-section\">\n                <div class=\"ability-icon\" data-ability=\"".concat(power, "\"></div>\n                <div class=\"help-label\">").concat(_this.getPower(power), "</div>\n            </div>"); }).join('');
         return html;
-    };
-    SplendorDuel.prototype.populateHelp = function () {
-        for (var i = 1; i <= 7; i++) {
-            //this.cardsManager.setForHelp(i, `help-artifact-${i}`);
-        }
     };
     SplendorDuel.prototype.onTableTokenSelectionChange = function (tokens, valid) {
         var _a;

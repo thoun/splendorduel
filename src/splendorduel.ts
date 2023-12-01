@@ -94,7 +94,6 @@ class SplendorDuel implements SplendorDuelGame {
                 new BgaHelpPopinButton({
                     title: _("Card abilities").toUpperCase(),
                     html: this.getHelpHtml(),
-                    onPopinCreated: () => this.populateHelp(),
                     buttonBackground: '#e49ac3',
                 }),
             ]
@@ -415,6 +414,10 @@ class SplendorDuel implements SplendorDuelGame {
         return orderedPlayers;
     }
 
+    public getPlayersTokens(): Token[] {
+        return this.playersTables.map(table => table.getTokens()).flat();
+    }
+
     private createPlayerPanels(gamedatas: SplendorDuelGamedatas) {
 
         Object.values(gamedatas.players).forEach(player => {
@@ -619,12 +622,6 @@ class SplendorDuel implements SplendorDuelGame {
             </div>`).join('');
 
         return html;
-    }
-
-    private populateHelp() {
-        for (let i = 1; i <=7; i++) {
-            //this.cardsManager.setForHelp(i, `help-artifact-${i}`);
-        }
     }
     
     public onTableTokenSelectionChange(tokens: Token[], valid: boolean): void {

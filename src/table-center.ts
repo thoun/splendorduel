@@ -1,4 +1,3 @@
-
 class TableCenter {
     public bag: VoidStock<Token>;
     private bagCounter: Counter;
@@ -64,6 +63,9 @@ class TableCenter {
         for (let i = 0; i < tablePrivileges; i++) {
             document.getElementById('table-privileges').insertAdjacentHTML('beforeend', `<div class="privilege-token"></div>`);
         }
+
+        this.game.setTooltip('bag', _("Click to see the tokens in the bag"));
+        document.getElementById('bag').addEventListener('click', () => this.showTokensInBag());
     }
     
     public setCardsSelectable(selectable: boolean, selectableCards: Card[] = [], all: boolean = false) {
@@ -106,5 +108,50 @@ class TableCenter {
     
     public setRoyalCardsSelectable(selectable: boolean) {
         this.royalCards.setSelectionMode(selectable ? 'single' : 'none');
+    }
+
+    private showTokensInBag() {
+        const tokens = [...this.board.stock.getCards(), ...this.game.getPlayersTokens()];
+
+        const tokensInBagCount = [2, 4, 4, 4, 4, 4];
+        tokensInBagCount[-1] = 3;
+
+        tokens.forEach(token => tokensInBagCount[token.type == 1 ? -1 : token.color]--);
+
+        const bagTokens = [];
+        for (let color = -1; color <= 5; color++) {
+            for (let i = 0; i < tokensInBagCount[color]; i++) {
+                bagTokens.push({
+                    id: 1000 + 100 * color + i,
+                    location: 'bag',
+                    locationArg: 0,
+                    type: color == -1 ? 1 : 2,
+                    color: color,
+                });
+            }
+        }
+
+        const tokensInBagDialog = new ebg.popindialog();
+        tokensInBagDialog.create('showTokensInBagDialog');
+        tokensInBagDialog.setTitle(_("Tokens in the bag"));
+        
+        let html = `<div id="bag-tokens"></div>`;
+        
+        // Show the dialog
+        tokensInBagDialog.setContent(html);
+        tokensInBagDialog.show();
+
+        const stock = new LineStock<Token>(this.game.tokensManager, document.getElementById('bag-tokens'), {
+            wrap: 'wrap'
+        });
+        stock.addCards(bagTokens);
+        
+        tokensInBagDialog.show();
+
+        // Replace the function call when it's clicked
+        tokensInBagDialog.replaceCloseCallback(() => {  
+            stock.removeAll();          
+            tokensInBagDialog.destroy();
+        });
     }
 }

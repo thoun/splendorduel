@@ -43,6 +43,7 @@ interface SplendorDuelGame extends Game {
     getPower(power: number): string;
     getGameStateName(): string;
     getCurrentPlayerTable(): PlayerTable | null;
+    getPlayersTokens(): Token[];
 
     setTooltip(id: string, html: string): void;
     onTableTokenSelectionChange(tokens: Token[], valid: boolean): void;
