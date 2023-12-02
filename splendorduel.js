@@ -2768,7 +2768,7 @@ var SplendorDuel = /** @class */ (function () {
                 new BgaHelpPopinButton({
                     title: _("Card abilities").toUpperCase(),
                     html: this.getHelpHtml(),
-                    buttonBackground: '#e49ac3',
+                    buttonBackground: '#692c91', // ability color
                 }),
             ]
         });
