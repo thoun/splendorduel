@@ -74,7 +74,7 @@ trait ActionTrait {
             }
         } else if ($statedId == ST_PLAYER_TAKE_BOARD_TOKEN) {
             $id = intval($this->getGameStateValue(PLAYED_CARD));
-            $card = $this->getCardFromDb($this->cards->getCard($id));
+            $card = $id > 0 ? $this->getCardFromDb($this->cards->getCard($id)) : null;
             
             $this->incStat(1, 'ability3');
             $this->incStat(1, 'ability3', $playerId);
@@ -234,7 +234,7 @@ trait ActionTrait {
 
         $this->incStat(1, 'royalCards', $playerId);
 
-        $this->applyEndTurn($playerId, $card);
+        $this->applyEndTurn($playerId, $card, false, true);
     }
 
     public function placeJoker(int $color) {
@@ -314,7 +314,7 @@ trait ActionTrait {
         $this->incStat(1, 'ability5', $playerId);
 
         $id = intval($this->getGameStateValue(PLAYED_CARD));
-        $card = $this->getCardFromDb($this->cards->getCard($id));
+        $card = $id > 0 ? $this->getCardFromDb($this->cards->getCard($id)) : null;
         $this->applyEndTurn($playerId, $card, true);
     }
 }

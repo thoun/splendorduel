@@ -391,7 +391,7 @@ trait UtilTrait {
         return false;
     }
 
-    function applyEndTurn(int $playerId, /*?Card | RoyalCard*/ $card = null, bool $ignorePower = false) {
+    function applyEndTurn(int $playerId, /*?Card | RoyalCard*/ $card = null, bool $ignorePower = false, bool $royalCard = false) {
         $takeRoyalCard = false;
 
         if ($card != null) {
@@ -412,7 +412,7 @@ trait UtilTrait {
             if (!$ignorePower) {
                 $redirected = false;
                 foreach ($card->power as $power) {
-                    $redirected = $redirected || $this->applyPower($playerId, $power, $card->id);
+                    $redirected = $redirected || $this->applyPower($playerId, $power, $royalCard ? -1 : $card->id);
                 }
                 if ($redirected) {
                     return;

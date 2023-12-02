@@ -29,6 +29,8 @@ trait DebugUtilTrait {
     }
 
     function d() {
+        $this->cards->moveCard(60, 'reserved', 2343492);
+        $this->royalCards->moveCard(4, 'deck');
         $this->gamestate->jumpToState(ST_PLAYER_PLAY_ACTION);
     }
 

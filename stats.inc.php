@@ -99,7 +99,7 @@ $commonStats = [
     ],
     "privilegesFromOpponent" => [
         "id" => 27,
-        "name" => totranslate("Privileges gained from oponent"),
+        "name" => totranslate("Privileges gained from opponent"),
         "type" => "int"
     ],
 
