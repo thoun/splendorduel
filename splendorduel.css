@@ -946,7 +946,7 @@ body > .card {
 }
 
 #mouse-selection {
-  --selection-color: red;
+  --selection-color: transparent;
   position: absolute;
   width: 80px;
   height: 80px;
@@ -954,9 +954,14 @@ body > .card {
   box-shadow: 0 0 5px 5px var(--selection-color);
   border-radius: 40px;
   pointer-events: none;
+  z-index: 1;
+  transition: box-shadow 0.2s;
 }
 #mouse-selection[data-valid=true] {
   --selection-color: green;
+}
+#mouse-selection[data-valid=false] {
+  --selection-color: red;
 }
 
 #bag-counter {

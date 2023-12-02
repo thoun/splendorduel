@@ -8,7 +8,9 @@
             </div>
             <div id="score-tile"></div>
         </div>
-        <div id="board"></div>
+        <div id="board">
+            <div id="mouse-selection"></div>
+        </div>
         <div id="table-privileges"></div>
     </div>
     <div id="cards-wrapper">

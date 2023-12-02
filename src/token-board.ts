@@ -28,9 +28,11 @@ class TokenBoard {
         });
         this.stock.addCards(board);
         this.stock.onSelectionChange = (selection: Token[], lastChange: Token) => this.onTokenSelectionChange(selection, lastChange);
+        this.mouseSelection = document.getElementById('mouse-selection') as HTMLDivElement;
         boardDiv.addEventListener('mousedown', event => this.onMouseDown(event));
         boardDiv.addEventListener('mousemove', event => this.onMouseMove(event));
         boardDiv.addEventListener('mouseup', event => this.onMouseUp(event));
+        boardDiv.addEventListener('dragstart', e => { e.stopImmediatePropagation(); e.preventDefault(); });
         document.addEventListener('mouseup', event => this.onMouseUp(null));
         document.addEventListener('keyup', (event: KeyboardEvent) => {
             if (event.key == 'Escape') {
@@ -230,7 +232,7 @@ class TokenBoard {
                 return false;
             }
         } else {
-            if (gems.length > 3) {
+            if (gems.length > this.maxSelectionToken) {
                 return false;
             }
 
@@ -283,6 +285,9 @@ class TokenBoard {
     }
     
     private onMouseDown(event: MouseEvent) {
+        if (!this.selectionType || this.maxSelectionToken <= 1) {
+            return;
+        }
         this.mouseSelectionStart = this.getTokenFromMouseEvent(event);
         this.mouseSelectionInitialCoordinates = [event.screenX, event.screenY];
     }
@@ -290,12 +295,28 @@ class TokenBoard {
     private getTokenCenterCoordinates(token: Token): number[] {
         return [50 + (token.column - 1) * 83.2, 133 + (token.row - 1) * 83.2];
     }
+
+    private cleanMouseSelection() {
+        this.mouseSelectionStart = null;
+        this.mouseSelectionInitialCoordinates = null;
+        this.mouseSelection.dataset.valid = '';
+    }
     
     private onMouseMove(event: MouseEvent) {
+        if (event.buttons != 1 && this.mouseSelection.dataset.valid) {
+            //setTimeout(() => {
+                this.cleanMouseSelection();
+            //}, 50);
+            return;
+        }
+
         if (!this.mouseSelectionStart || !this.mouseSelectionInitialCoordinates) {
             return;
         }
-        const mouseMovementDistance = Math.sqrt(Math.pow(this.mouseSelectionInitialCoordinates[0] - event.screenX, 2) + Math.pow(this.mouseSelectionInitialCoordinates[1] - event.screenY, 2));
+        const distX = this.mouseSelectionInitialCoordinates[0] - event.screenX;
+        const distY = this.mouseSelectionInitialCoordinates[1] - event.screenY;
+        const mouseMovementDistance = Math.sqrt(Math.pow(distX, 2) + Math.pow(distY, 2));
+        
         if (mouseMovementDistance < 10) {
             return;
         }
@@ -307,13 +328,8 @@ class TokenBoard {
         this.stock.unselectAll();
 
         const fromCoordinates = this.getTokenCenterCoordinates(this.mouseSelectionStart);
-        if (!this.mouseSelection) {
-            this.mouseSelection = document.createElement('div');
-            this.mouseSelection.id = 'mouse-selection';
-            this.mouseSelection.style.left = `${fromCoordinates[0] - 40}px`;
-            this.mouseSelection.style.top = `${fromCoordinates[1] - 40}px`;
-            document.getElementById(`board`).appendChild(this.mouseSelection);
-        }        
+        this.mouseSelection.style.left = `${fromCoordinates[0] - 40}px`;
+        this.mouseSelection.style.top = `${fromCoordinates[1] - 40}px`;
         this.mouseSelection.dataset.valid = this.mouseSelectionValid(this.mouseSelectionStart, mouseSelectionEnd).toString();
         const toCoordinates = this.getTokenCenterCoordinates(mouseSelectionEnd);
         const xDiff = toCoordinates[0] - fromCoordinates[0];
@@ -326,24 +342,26 @@ class TokenBoard {
 
     public onMouseUp(event: MouseEvent | null) {
         if (event && this.mouseSelectionStart) {
-            const mouseMovementDistance = Math.sqrt(Math.pow(this.mouseSelectionInitialCoordinates[0] - event.screenX, 2) + Math.pow(this.mouseSelectionInitialCoordinates[1] - event.screenY, 2));
+            const distX = this.mouseSelectionInitialCoordinates[0] - event.screenX;
+            const distY = this.mouseSelectionInitialCoordinates[1] - event.screenY;
+            const mouseMovementDistance = Math.sqrt(Math.pow(distX, 2) + Math.pow(distY, 2));
             if (mouseMovementDistance >= 10) {
                 const mouseSelectionEnd = this.getTokenFromMouseEvent(event);
                 if (mouseSelectionEnd && this.mouseSelectionValid(this.mouseSelectionStart, mouseSelectionEnd)) {
                     const selection = this.completeSelection(this.mouseSelectionStart, mouseSelectionEnd);
 
-                    this.stock.unselectAll();
-                    selection.forEach(card => this.stock.selectCard(card));
+                    this.stock.unselectAll(true);
+                    selection.forEach(card => this.stock.selectCard(card, true));
                     this.onTokenSelectionChange(selection, mouseSelectionEnd);
+                } else {
+                    this.cleanMouseSelection();
                 }
             }
 
             event.stopImmediatePropagation();
+            event.preventDefault();
         }
 
-        this.mouseSelectionStart = null;
-        this.mouseSelectionInitialCoordinates = null;
-        this.mouseSelection?.remove();
-        this.mouseSelection = null;
+        this.cleanMouseSelection();
     }
 }

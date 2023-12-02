@@ -13,15 +13,17 @@ class TokensManager extends CardManager<Token> {
         super(game, {
             getId: (card) => `token-${card.id}`,
             setupDiv: (card: Token, div: HTMLElement) => {
+                div.draggable = false;
                 div.classList.add('token');
                 div.dataset.type = ''+card.type;
                 if (card.type == 2) {
                     div.dataset.color = ''+card.color;
                 }
-                game.setTooltip(div.id, this.getTooltip(card));
+                //game.setTooltip(div.id, this.getTooltip(card));
             },
             setupFrontDiv: (card: Token, div: HTMLElement) => { 
-                div.id = `${this.getId(card)}-front`;
+                //div.id = `${this.getId(card)}-front`;
+                div.draggable = false;
             },
         });
     }

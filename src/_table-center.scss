@@ -88,7 +88,7 @@
 }
 
 #mouse-selection {
-  --selection-color: red;
+  --selection-color: transparent;
 
   position: absolute;
   width: 80px;
@@ -97,9 +97,15 @@
   box-shadow: 0 0 5px 5px var(--selection-color);
   border-radius: 40px;
   pointer-events: none;
+  z-index: 1;
+  transition: box-shadow 0.2s;
 
   &[data-valid="true"] {
     --selection-color: green;
+  }
+
+  &[data-valid="false"] {
+    --selection-color: red;
   }
 }
 

@@ -2097,15 +2097,17 @@ var TokensManager = /** @class */ (function (_super) {
         var _this = _super.call(this, game, {
             getId: function (card) { return "token-".concat(card.id); },
             setupDiv: function (card, div) {
+                div.draggable = false;
                 div.classList.add('token');
                 div.dataset.type = '' + card.type;
                 if (card.type == 2) {
                     div.dataset.color = '' + card.color;
                 }
-                game.setTooltip(div.id, _this.getTooltip(card));
+                //game.setTooltip(div.id, this.getTooltip(card));
             },
             setupFrontDiv: function (card, div) {
-                div.id = "".concat(_this.getId(card), "-front");
+                //div.id = `${this.getId(card)}-front`;
+                div.draggable = false;
             },
         }) || this;
         _this.game = game;
@@ -2138,9 +2140,11 @@ var TokenBoard = /** @class */ (function () {
         });
         this.stock.addCards(board);
         this.stock.onSelectionChange = function (selection, lastChange) { return _this.onTokenSelectionChange(selection, lastChange); };
+        this.mouseSelection = document.getElementById('mouse-selection');
         boardDiv.addEventListener('mousedown', function (event) { return _this.onMouseDown(event); });
         boardDiv.addEventListener('mousemove', function (event) { return _this.onMouseMove(event); });
         boardDiv.addEventListener('mouseup', function (event) { return _this.onMouseUp(event); });
+        boardDiv.addEventListener('dragstart', function (e) { e.stopImmediatePropagation(); e.preventDefault(); });
         document.addEventListener('mouseup', function (event) { return _this.onMouseUp(null); });
         document.addEventListener('keyup', function (event) {
             if (event.key == 'Escape') {
@@ -2328,7 +2332,7 @@ var TokenBoard = /** @class */ (function () {
             }
         }
         else {
-            if (gems.length > 3) {
+            if (gems.length > this.maxSelectionToken) {
                 return false;
             }
             gems = gems.sort(function (a, b) { return a.row == b.row ? a.column - b.column : a.row - b.row; });
@@ -2375,17 +2379,33 @@ var TokenBoard = /** @class */ (function () {
         return tokenDiv ? this.stock.getCards().find(function (card) { return tokenDiv.id == "token-".concat(card.id); }) : null;
     };
     TokenBoard.prototype.onMouseDown = function (event) {
+        if (!this.selectionType || this.maxSelectionToken <= 1) {
+            return;
+        }
         this.mouseSelectionStart = this.getTokenFromMouseEvent(event);
         this.mouseSelectionInitialCoordinates = [event.screenX, event.screenY];
     };
     TokenBoard.prototype.getTokenCenterCoordinates = function (token) {
         return [50 + (token.column - 1) * 83.2, 133 + (token.row - 1) * 83.2];
     };
+    TokenBoard.prototype.cleanMouseSelection = function () {
+        this.mouseSelectionStart = null;
+        this.mouseSelectionInitialCoordinates = null;
+        this.mouseSelection.dataset.valid = '';
+    };
     TokenBoard.prototype.onMouseMove = function (event) {
+        if (event.buttons != 1 && this.mouseSelection.dataset.valid) {
+            //setTimeout(() => {
+            this.cleanMouseSelection();
+            //}, 50);
+            return;
+        }
         if (!this.mouseSelectionStart || !this.mouseSelectionInitialCoordinates) {
             return;
         }
-        var mouseMovementDistance = Math.sqrt(Math.pow(this.mouseSelectionInitialCoordinates[0] - event.screenX, 2) + Math.pow(this.mouseSelectionInitialCoordinates[1] - event.screenY, 2));
+        var distX = this.mouseSelectionInitialCoordinates[0] - event.screenX;
+        var distY = this.mouseSelectionInitialCoordinates[1] - event.screenY;
+        var mouseMovementDistance = Math.sqrt(Math.pow(distX, 2) + Math.pow(distY, 2));
         if (mouseMovementDistance < 10) {
             return;
         }
@@ -2395,13 +2415,8 @@ var TokenBoard = /** @class */ (function () {
         }
         this.stock.unselectAll();
         var fromCoordinates = this.getTokenCenterCoordinates(this.mouseSelectionStart);
-        if (!this.mouseSelection) {
-            this.mouseSelection = document.createElement('div');
-            this.mouseSelection.id = 'mouse-selection';
-            this.mouseSelection.style.left = "".concat(fromCoordinates[0] - 40, "px");
-            this.mouseSelection.style.top = "".concat(fromCoordinates[1] - 40, "px");
-            document.getElementById("board").appendChild(this.mouseSelection);
-        }
+        this.mouseSelection.style.left = "".concat(fromCoordinates[0] - 40, "px");
+        this.mouseSelection.style.top = "".concat(fromCoordinates[1] - 40, "px");
         this.mouseSelection.dataset.valid = this.mouseSelectionValid(this.mouseSelectionStart, mouseSelectionEnd).toString();
         var toCoordinates = this.getTokenCenterCoordinates(mouseSelectionEnd);
         var xDiff = toCoordinates[0] - fromCoordinates[0];
@@ -2413,24 +2428,26 @@ var TokenBoard = /** @class */ (function () {
     };
     TokenBoard.prototype.onMouseUp = function (event) {
         var _this = this;
-        var _a;
         if (event && this.mouseSelectionStart) {
-            var mouseMovementDistance = Math.sqrt(Math.pow(this.mouseSelectionInitialCoordinates[0] - event.screenX, 2) + Math.pow(this.mouseSelectionInitialCoordinates[1] - event.screenY, 2));
+            var distX = this.mouseSelectionInitialCoordinates[0] - event.screenX;
+            var distY = this.mouseSelectionInitialCoordinates[1] - event.screenY;
+            var mouseMovementDistance = Math.sqrt(Math.pow(distX, 2) + Math.pow(distY, 2));
             if (mouseMovementDistance >= 10) {
                 var mouseSelectionEnd = this.getTokenFromMouseEvent(event);
                 if (mouseSelectionEnd && this.mouseSelectionValid(this.mouseSelectionStart, mouseSelectionEnd)) {
                     var selection = this.completeSelection(this.mouseSelectionStart, mouseSelectionEnd);
-                    this.stock.unselectAll();
-                    selection.forEach(function (card) { return _this.stock.selectCard(card); });
+                    this.stock.unselectAll(true);
+                    selection.forEach(function (card) { return _this.stock.selectCard(card, true); });
                     this.onTokenSelectionChange(selection, mouseSelectionEnd);
+                }
+                else {
+                    this.cleanMouseSelection();
                 }
             }
             event.stopImmediatePropagation();
+            event.preventDefault();
         }
-        this.mouseSelectionStart = null;
-        this.mouseSelectionInitialCoordinates = null;
-        (_a = this.mouseSelection) === null || _a === void 0 ? void 0 : _a.remove();
-        this.mouseSelection = null;
+        this.cleanMouseSelection();
     };
     return TokenBoard;
 }());
