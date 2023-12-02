@@ -48,173 +48,142 @@
 */
 
 $commonStats = [
-    // repuration
-    "reputationPoints" => [
+    // win
+    "endReason1" => [
+        "id" => 11,
+        "name" => totranslate("Win with 20 points"),
+        "type" => "bool"
+    ],
+    "endReason2" => [
+        "id" => 12,
+        "name" => totranslate("Win with 10 crowns"),
+        "type" => "bool"
+    ],
+    "endReason3" => [
+        "id" => 13,
+        "name" => totranslate("Win with 10 points in a single column"),
+        "type" => "bool"
+    ],
+
+    // optional actions
+    "tokensWithPrivileges" => [
         "id" => 20,
-        "name" => totranslate("Points gained with reputation"),
+        "name" => totranslate("Gem or Pearl tokens gained using privileges"),
         "type" => "int"
     ],
-
-    // played cards
-    "playedCards" => [
+    "replenish" => [
         "id" => 21,
-        "name" => totranslate("Played cards"),
+        "name" => totranslate("Given privileges (replenish the Board)"),
         "type" => "int"
     ],
-    "assetsCollectedByPlayedCards" => [
+    "givenPrivileges3equal" => [
         "id" => 22,
-        "name" => totranslate("Assets gained by played cards"),
+        "name" => totranslate("Given privileges (3 equal gems)"),
         "type" => "int"
     ],
-    "assetsCollectedByPlayedCards1" => [
+    "givenPrivileges2pearls" => [
         "id" => 23,
-        "name" => totranslate("Victory points gained by played cards"),
-        "type" => "int"
-    ],
-    "assetsCollectedByPlayedCards2" => [
-        "id" => 24,
-        "name" => totranslate("Bracelets gained by played cards"),
-        "type" => "int"
-    ],
-    "assetsCollectedByPlayedCards3" => [
-        "id" => 25,
-        "name" => totranslate("Recruits gained by played cards"),
-        "type" => "int"
-    ],
-    "assetsCollectedByPlayedCards4" => [
-        "id" => 26,
-        "name" => totranslate("Reputation gained by played cards"),
-        "type" => "int"
-    ],
-    "recruitsUsedToChooseCard" => [
-        "id" => 30,
-        "name" => totranslate("Recruits used to choose card"),
-        "type" => "int"
-    ],
-    "discardedCards" => [
-        "id" => 39,
-        "name" => totranslate("Discarded cards to reform deck"),
-        "type" => "int"
-    ],
-    
-    // destinations
-    "discoveredDestinations" => [
-        "id" => 40,
-        "name" => totranslate("Discovered destinations"),
-        "type" => "int"
-    ],    
-    "discoveredDestinations1" => [
-        "id" => 41,
-        "name" => totranslate("Discovered trading Lands"),
-        "type" => "int"
-    ],    
-    "discoveredDestinations2" => [
-        "id" => 42,
-        "name" => totranslate("Discovered Lands of influence"),
-        "type" => "int"
-    ],
-    "assetsCollectedByDestination" => [
-        "id" => 43,
-        "name" => totranslate("Assets gained by destinations"),
-        "type" => "int"
-    ],
-    "assetsCollectedByDestination1" => [
-        "id" => 44,
-        "name" => totranslate("Victory points gained by destinations"),
-        "type" => "int"
-    ],
-    "assetsCollectedByDestination2" => [
-        "id" => 45,
-        "name" => totranslate("Bracelets gained by destinations"),
-        "type" => "int"
-    ],
-    "assetsCollectedByDestination3" => [
-        "id" => 46,
-        "name" => totranslate("Recruits gained by destinations"),
-        "type" => "int"
-    ],
-    "assetsCollectedByDestination4" => [
-        "id" => 47,
-        "name" => totranslate("Reputation gained by destinations"),
-        "type" => "int"
-    ],
-    "assetsCollectedByDestination5" => [
-        "id" => 48,
-        "name" => totranslate("Cards gained by destinations"),
-        "type" => "int"
-    ],
-    "recruitsUsedToPayDestination" => [
-        "id" => 50,
-        "name" => totranslate("Recruits used to take a token"),
+        "name" => totranslate("Given privileges (2 pearls)"),
         "type" => "int"
     ],
 
-    // trade
-    "tradeActions" => [
-        "id" => 60,
-        "name" => totranslate("Trade actions"),
-        "type" => "int"
-    ],   
-    "tradeActions1" => [
-        "id" => 61,
-        "name" => totranslate("Trade actions with 1 bracelet"),
-        "type" => "int"
-    ],  
-    "tradeActions2" => [
-        "id" => 62,
-        "name" => totranslate("Trade actions with 2 bracelets"),
-        "type" => "int"
-    ],  
-    "tradeActions3" => [
-        "id" => 63,
-        "name" => totranslate("Trade actions with 3 bracelets"),
-        "type" => "int"
-    ], 
-    "braceletsUsed" => [
-        "id" => 64,
-        "name" => totranslate("Bracelets used for trade"),
-        "type" => "int"
-    ], 
-    "assetsCollectedByTrade" => [
-        "id" => 65,
-        "name" => totranslate("Assets gained by trade"),
+    "privileges" => [
+        "id" => 25,
+        "name" => totranslate("Privileges gained"),
         "type" => "int"
     ],
-    "assetsCollectedByTrade1" => [
-        "id" => 66,
-        "name" => totranslate("Victory points gained by trade"),
+    "privilegesFromTable" => [
+        "id" => 26,
+        "name" => totranslate("Privileges gained from table"),
         "type" => "int"
     ],
-    "assetsCollectedByTrade2" => [
-        "id" => 67,
-        "name" => totranslate("Bracelets gained by trade"),
+    "privilegesFromOpponent" => [
+        "id" => 27,
+        "name" => totranslate("Privileges gained from oponent"),
         "type" => "int"
     ],
-    "assetsCollectedByTrade3" => [
-        "id" => 68,
-        "name" => totranslate("Recruits gained by trade"),
+
+    // tokens actions
+    "takeTokens1" => [
+        "id" => 31,
+        "name" => totranslate("Take 1 token action"),
         "type" => "int"
     ],
-    "assetsCollectedByTrade4" => [
-        "id" => 69,
-        "name" => totranslate("Reputation gained by trade"),
+    "takeTokens2" => [
+        "id" => 32,
+        "name" => totranslate("Take 2 tokens action"),
         "type" => "int"
     ],
-    "assetsCollectedByTrade5" => [
-        "id" => 70,
-        "name" => totranslate("Cards gained by trade"),
+    "takeTokens3" => [
+        "id" => 33,
+        "name" => totranslate("Take 3 tokens action"),
+        "type" => "int"
+    ],
+
+    "reserveCard1" => [
+        "id" => 36,
+        "name" => totranslate("Reserved level 1 card"),
+        "type" => "int"
+    ],
+    "reserveCard2" => [
+        "id" => 37,
+        "name" => totranslate("Reserved level 2 card"),
+        "type" => "int"
+    ],
+    "reserveCard3" => [
+        "id" => 38,
+        "name" => totranslate("Reserved level 3 card"),
         "type" => "int"
     ],
     
-    //	miscellaneous
-    "recruitsMissed" => [
-        "id" => 90,
-        "name" => totranslate("Recruits missed (already at 3)"),
+    // cards
+    "purchaseCard1" => [
+        "id" => 41,
+        "name" => totranslate("Purchased level 1 card"),
+        "type" => "int"
+    ],    
+    "purchaseCard2" => [
+        "id" => 42,
+        "name" => totranslate("Purchased level 2 card"),
         "type" => "int"
     ],
-    "braceletsMissed" => [
-        "id" => 91,
-        "name" => totranslate("Bracelets missed (already at 3)"),
+    "purchaseCard3" => [
+        "id" => 43,
+        "name" => totranslate("Purchased level 3 card"),
+        "type" => "int"
+    ],
+
+    // abilities
+    "ability1" => [
+        "id" => 51,
+        "name" => totranslate("Ability used : Bonus turn"),
+        "type" => "int"
+    ],
+    "ability2" => [
+        "id" => 52,
+        "name" => totranslate("Ability used : Joker color"),
+        "type" => "int"
+    ],
+    "ability3" => [
+        "id" => 53,
+        "name" => totranslate("Ability used : Take 1 color token from board"),
+        "type" => "int"
+    ],
+    "ability4" => [
+        "id" => 54,
+        "name" => totranslate("Ability used : Take 1 Privilege"),
+        "type" => "int"
+    ],
+    "ability5" => [
+        "id" => 55,
+        "name" => totranslate("Ability used : Take 1 Gem or Pearl token from opponent"),
+        "type" => "int"
+    ],
+
+    // other
+    "discardedTokens" => [
+        "id" => 60,
+        "name" => totranslate("Discarded tokens (more than 10 tokens)"),
         "type" => "int"
     ],
 ];
@@ -231,5 +200,16 @@ $stats_type = [
     
     // Statistics existing for each player
     "player" => $commonStats + [
+        // cards
+        "crowns" => [
+            "id" => 44,
+            "name" => totranslate("Crowns"),
+            "type" => "int"
+        ],
+        "royalCards" => [
+            "id" => 45,
+            "name" => totranslate("Royal cards"),
+            "type" => "int"
+        ],
     ],
 ];

@@ -42,18 +42,20 @@ trait StateTrait {
         }
     }
 
-    function stNextPlayer() {
+    function stNextPlayer() {    
+        $this->incStat(1, 'roundNumber');
+
         $playerId = intval($this->getActivePlayerId());
 
         $this->refillCards();
 
-        $endReason = $this->getEndReason($playerId);
+        $endReasons = $this->getEndReasons($playerId);
 
-        if ($endReason > 0) {
+        if (count($endReasons) > 0) {
             $this->DbQuery("UPDATE player SET `player_score` = 1 WHERE player_id = $playerId");
 
             $message = null;
-            switch ($endReason) {
+            switch ($endReasons[0]) {
                 case 1:
                     $message = clienttranslate('${player_name} reached 20 points and wins the game!');
                     break;
@@ -69,15 +71,21 @@ trait StateTrait {
                 'playerId' => $playerId,
                 'player_name' => $this->getPlayerName($playerId),
             ]);
-        }
 
-        if (boolval($this->getGameStateValue(PLAY_AGAIN))) {
+            foreach ($endReasons as $endReason) {
+                $this->setStat(1, 'endReason'.$endReason);
+                $this->setStat(1, 'endReason'.$endReason, $playerId);
+            }
+        } else if (boolval($this->getGameStateValue(PLAY_AGAIN))) {
             self::notifyAllPlayers('log', clienttranslate('${player_name} takes another turn with played card effect'), [
                 'playerId' => $playerId,
                 'player_name' => $this->getPlayerName($playerId),
             ]);
 
             $this->setGameStateValue(PLAY_AGAIN, 0);
+            
+            $this->incStat(1, 'ability1');
+            $this->incStat(1, 'ability1', $playerId);
         } else {
             $this->activeNextPlayer();
             $playerId = $this->getActivePlayerId();
@@ -87,7 +95,7 @@ trait StateTrait {
 
         $this->setGameStateValue(PLAYER_REFILLED, 0);
 
-        $this->gamestate->nextState($endReason > 0 ? 'endScore' : 'nextPlayer');
+        $this->gamestate->nextState(count($endReasons) > 0 ? 'endScore' : 'nextPlayer');
     }
 
     function stEndScore() {

@@ -2729,7 +2729,8 @@ var SplendorDuel = /** @class */ (function () {
         new JumpToManager(this, {
             localStorageFoldedKey: LOCAL_STORAGE_JUMP_TO_FOLDED_KEY,
             topEntries: [
-                new JumpToEntry(_('Main board'), 'table-center', { 'color': '#224757' })
+                new JumpToEntry(_('Main board'), 'board', { 'color': '#83594f' }),
+                new JumpToEntry(_('Cards pyramid'), 'table-cards', { 'color': '#678e67' }),
             ],
             entryClasses: 'round-point',
             defaultFolded: true,

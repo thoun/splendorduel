@@ -28,6 +28,10 @@ trait DebugUtilTrait {
         $this->tokens->moveAllCardsInLocation('board', 'player', null, $playerId);
     }
 
+    function d() {
+        $this->gamestate->jumpToState(ST_PLAYER_PLAY_ACTION);
+    }
+
     public function debugReplacePlayersIds() {
         if ($this->getBgaEnvironment() != 'studio') { 
             return;
@@ -51,8 +55,9 @@ trait DebugUtilTrait {
 			// 'other' game specific tables. example:
 			// tables specific to your schema that use player_ids
 			$this->DbQuery("UPDATE card SET card_location_arg=$sid WHERE card_location_arg = $id" );
-			foreach ([1,2,3,4,5] as $i) { $this->DbQuery("UPDATE card SET card_location='played$sid-$i' WHERE card_location='played$id-$i'" ); }
-			$this->DbQuery("UPDATE token SET card_location='played$sid' WHERE card_location='played$id'" );
+			foreach ([1,2,3,4,5, 9] as $i) { $this->DbQuery("UPDATE card SET card_location='player$sid-$i' WHERE card_location='player$id-$i'" ); }
+			$this->DbQuery("UPDATE royal_card SET card_location_arg=$sid WHERE card_location_arg = $id" );
+			$this->DbQuery("UPDATE token SET card_location='player$sid' WHERE card_location='player$id'" );
 			$this->DbQuery("UPDATE token SET card_location_arg=$sid WHERE card_location_arg = $id" );
 
             

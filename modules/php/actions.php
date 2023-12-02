@@ -33,6 +33,9 @@ trait ActionTrait {
         if ($statedId == ST_PLAYER_USE_PRIVILEGE) {
             $this->checkUsePrivilege($playerId, $tokens);
             $this->spendPrivileges($playerId, count($tokens));
+
+            $this->incStat(count($tokens), 'tokensWithPrivileges');
+            $this->incStat(count($tokens), 'tokensWithPrivileges', $playerId);
         } else if ($statedId == ST_PLAYER_PLAY_ACTION) {
             $this->checkPlayTakeGems($playerId, $tokens);
         }
@@ -50,19 +53,32 @@ trait ActionTrait {
             if (count($tokensByColor[PEARL]) >= 2) {
                 $message = clienttranslate('${player_name2} took 2 Pearl gems and allow ${player_name} to get a privilege.');
                 $this->takePrivilege($this->getOpponentId($playerId), $message);
+                
+                $this->incStat(1, 'givenPrivileges2pearls');
+                $this->incStat(1, 'givenPrivileges2pearls', $playerId);
             } else if ($this->array_some($tokensByColor, fn($colorTokens) => count($colorTokens) >= 3)) {
                 $message = clienttranslate('${player_name2} took 3 gems of the same color and allow ${player_name} to get a privilege.');
                 $this->takePrivilege($this->getOpponentId($playerId), $message);
+                
+                $this->incStat(1, 'givenPrivileges3equal');
+                $this->incStat(1, 'givenPrivileges3equal', $playerId);
             }
 
             if (count($tokens) == 1 && $tokens[0]->type == 1) {
                 $this->gamestate->nextState('reserveCard');
             } else {
+                $this->incStat(1, 'takeTokens'.count($tokens));
+                $this->incStat(1, 'takeTokens'.count($tokens), $playerId);
+
                 $this->applyEndTurn($playerId);
             }
         } else if ($statedId == ST_PLAYER_TAKE_BOARD_TOKEN) {
             $id = intval($this->getGameStateValue(PLAYED_CARD));
             $card = $this->getCardFromDb($this->cards->getCard($id));
+            
+            $this->incStat(1, 'ability3');
+            $this->incStat(1, 'ability3', $playerId);
+
             $this->applyEndTurn($playerId, $card, true);
         }
     }
@@ -88,6 +104,9 @@ trait ActionTrait {
         $this->takePrivilege($this->getOpponentId($playerId), $message);
         $this->refillBag();
         $this->setGameStateValue(PLAYER_REFILLED, 1);
+
+        $this->incStat(1, 'replenish');
+        $this->incStat(1, 'replenish', $playerId);
 
         $this->gamestate->nextState('stay');
     } 
@@ -121,6 +140,9 @@ trait ActionTrait {
             'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'.$level))),
             'card_level' => $level, // for logs
         ]);
+
+        $this->incStat(1, 'reserveCard'.$level);
+        $this->incStat(1, 'reserveCard'.$level, $playerId);
 
         $this->applyEndTurn($playerId);
     }
@@ -182,6 +204,13 @@ trait ActionTrait {
             'spent_tokens' => $tokens, // for logs
         ]);
 
+        $this->incStat(1, 'purchaseCard'.$level);
+        $this->incStat(1, 'purchaseCard'.$level, $playerId);
+
+        if ($card->crowns > 0) {
+            $this->incStat($card->crowns, 'crowns', $playerId);
+        }
+
         $this->applyEndTurn($playerId, $card);
     }
 
@@ -202,6 +231,8 @@ trait ActionTrait {
             'player_name' => $this->getPlayerName($playerId),
             'card' => $card,
         ]);
+
+        $this->incStat(1, 'royalCards', $playerId);
 
         $this->applyEndTurn($playerId, $card);
     }
@@ -232,6 +263,9 @@ trait ActionTrait {
             'fromReserved' => false,
             'color_name' => $this->getColor($color), // for logs
         ]);
+            
+        $this->incStat(1, 'ability2');
+        $this->incStat(1, 'ability2', $playerId);
 
         $this->applyEndTurn($playerId, $card, true);
     }
@@ -255,6 +289,9 @@ trait ActionTrait {
             'tokens' => $tokens,
             'discarded_tokens' => $tokens, // for logs
         ]);
+            
+        $this->incStat(count($tokens), 'discardedTokens');
+        $this->incStat(count($tokens), 'discardedTokens', $playerId);
 
         $this->gamestate->nextState('next');
     }
@@ -272,6 +309,9 @@ trait ActionTrait {
         }
 
         $this->applyTakeTokens($playerId, [$token]);
+
+        $this->incStat(1, 'ability5');
+        $this->incStat(1, 'ability5', $playerId);
 
         $id = intval($this->getGameStateValue(PLAYED_CARD));
         $card = $this->getCardFromDb($this->cards->getCard($id));

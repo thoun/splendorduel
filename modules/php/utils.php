@@ -378,6 +378,9 @@ trait UtilTrait {
                     clienttranslate('${player_name} takes a privilege with the Royal card ability') :
                     clienttranslate('${player_name} takes a privilege with the played card ability');
                 $this->takePrivilege($playerId, $message);
+                
+                $this->incStat(1, 'ability4');
+                $this->incStat(1, 'ability4', $playerId);
                 break;
             case POWER_TAKE_GEM_FROM_OPPONENT:
                 $this->setGameStateValue(PLAYED_CARD, $cardId);
@@ -475,9 +478,17 @@ trait UtilTrait {
             'to' => $playerId,
             'count' => 1,
         ]);
+                
+        $this->incStat(1, 'privileges');
+        $this->incStat(1, 'privileges', $playerId);
+                
+        $this->incStat(1, $fromOpponent ? 'privilegesFromOpponent' : 'privilegesFromTable');
+        $this->incStat(1, $fromOpponent ? 'privilegesFromOpponent' : 'privilegesFromTable', $playerId);
     }
 
-    function getEndReason(int $playerId) {
+    function getEndReasons(int $playerId) {
+        $reasons = [];
+
         $cards = $this->getCardsByLocation('player'.$playerId.'-%');
         $totalPoints = 0;
         $pointsByColor = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
@@ -497,16 +508,16 @@ trait UtilTrait {
         }
 
         if ($totalPoints >= 20) {
-            return 1;
+            $reasons[] = 1;
         }
         if ($crowns >= 10) {
-            return 2;
+            $reasons[] = 2;
         }
         if ($this->array_some($pointsByColor, fn($colorPoints) => $colorPoints >= 10)) {
-            return 3;
+            $reasons[] = 3;
         }
 
-        return 0;
+        return $reasons;
     }
 
     function getCardReducedCost(array &$initialCost, array $playerCards) {

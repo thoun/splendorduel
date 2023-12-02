@@ -115,22 +115,25 @@ class SplendorDuel extends Table {
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
         $this->initStat('table', 'roundNumber', 0);
+        // cards
+        $this->initStat('player', 'crowns', 0);
+        $this->initStat('player', 'royalCards', 0);
         foreach(['table', 'player'] as $type) {
             foreach([
-                "reputationPoints", 
+                // win
+                "endReason1", "endReason2", "endReason3", 
+                // optional actions
+                "tokensWithPrivileges", "replenish", "givenPrivileges3equal", "givenPrivileges2pearls", 
+                "privileges", "privilegesFromTable", "privilegesFromOpponent", 
+                // tokens actions
+                "takeTokens1", "takeTokens2", "takeTokens3",
+                "reserveCard1", "reserveCard2", "reserveCard3",
                 // cards
-                "playedCards", 
-                "assetsCollectedByPlayedCards", "assetsCollectedByPlayedCards1", "assetsCollectedByPlayedCards2", "assetsCollectedByPlayedCards3", "assetsCollectedByPlayedCards4", 
-                "recruitsUsedToChooseCard", "discardedCards",
-                // destinations
-                "discoveredDestinations", "discoveredDestinations1", "discoveredDestinations2",
-                "assetsCollectedByDestination", "assetsCollectedByDestination1", "assetsCollectedByDestination2", "assetsCollectedByDestination3", "assetsCollectedByDestination4", "assetsCollectedByDestination5",
-                "recruitsUsedToPayDestination",
-                // trade
-                "tradeActions", "tradeActions1", "tradeActions2", "tradeActions3", "braceletsUsed",
-                "assetsCollectedByTrade", "assetsCollectedByTrade1", "assetsCollectedByTrade2", "assetsCollectedByTrade3", "assetsCollectedByTrade4", "assetsCollectedByTrade5",
-                //	miscellaneous
-                "recruitsMissed", "braceletsMissed",
+                "purchaseCard1", "purchaseCard2", "purchaseCard3",
+                //	abilities
+                "ability1", "ability2", "ability3", "ability4", "ability5",
+                // other 
+                "discardedTokens"
             ] as $name) {
                 $this->initStat($type, $name, 0);
             }
