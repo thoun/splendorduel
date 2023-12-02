@@ -860,43 +860,38 @@ body > .card {
   margin-left: -20px;
 }
 
-#table-center-wrapper {
+#table, #tables {
+  gap: 20px;
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
-#table-center {
-  min-width: 820px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-}
-#table-center #board-wrapper {
+#board-wrapper {
   display: flex;
   align-items: stretch;
   gap: 20px;
 }
-#table-center #board-wrapper #bag-and-score-tile {
+#board-wrapper #bag-and-score-tile {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
 }
-#table-center #board-wrapper #bag-and-score-tile #bag {
+#board-wrapper #bag-and-score-tile #bag {
   width: 240px;
   height: 220px;
   background: url("img/bag.png");
   cursor: pointer;
 }
-#table-center #board-wrapper #bag-and-score-tile #score-tile {
+#board-wrapper #bag-and-score-tile #score-tile {
   width: 240px;
   height: 203px;
   background: url("img/score-tile.jpg");
   box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.5);
   border-radius: 4px;
 }
-#table-center #board-wrapper #board {
+#board-wrapper #board {
   position: relative;
   display: grid;
   grid-template-rows: repeat(5, 1fr);
@@ -910,35 +905,36 @@ body > .card {
   box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.5);
   border-radius: 4px;
 }
-#table-center #board-wrapper #board .slot {
+#board-wrapper #board .slot {
   width: 80px;
   height: 80px;
 }
-#table-center #board-wrapper #board.selectable {
+#board-wrapper #board.selectable {
   animation: selectable-card-animation 1s alternate infinite ease-in-out;
 }
-#table-center #board-wrapper .board-tooltip-zone {
+#board-wrapper .board-tooltip-zone {
   position: absolute;
   top: 11px;
   width: 70px;
   height: 70px;
   border-radius: 8px;
 }
-#table-center #board-wrapper .board-tooltip-zone[data-index="0"] {
+#board-wrapper .board-tooltip-zone[data-index="0"] {
   left: 106px;
 }
-#table-center #board-wrapper .board-tooltip-zone[data-index="1"] {
+#board-wrapper .board-tooltip-zone[data-index="1"] {
   left: 186px;
 }
-#table-center #board-wrapper .board-tooltip-zone[data-index="2"] {
+#board-wrapper .board-tooltip-zone[data-index="2"] {
   left: 260px;
 }
-#table-center #table-cards {
+
+#table-cards {
   display: grid;
   grid-template-columns: auto auto;
   gap: 10px;
 }
-#table-center #table-cards .slot {
+#table-cards .slot {
   width: 120px;
   height: 183px;
 }
@@ -1458,14 +1454,6 @@ html, .mode_3d #game_play_area_background {
   flex-wrap: wrap;
   gap: 20px;
   flex-direction: column;
-}
-#tables-and-center.double-column {
-  flex-direction: row;
-  justify-content: center;
-  align-items: start;
-}
-#tables-and-center.double-column > div {
-  flex: 1;
 }
 
 #last-round {

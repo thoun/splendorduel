@@ -2742,14 +2742,9 @@ var SplendorDuel = /** @class */ (function () {
             element: document.getElementById('table'),
             smooth: false,
             zoomControls: {
-                color: 'black',
+                color: 'white',
             },
             localStorageZoomKey: LOCAL_STORAGE_ZOOM_KEY,
-            onDimensionsChange: function () {
-                var tablesAndCenter = document.getElementById('tables-and-center');
-                var clientWidth = tablesAndCenter.clientWidth;
-                tablesAndCenter.classList.toggle('double-column', clientWidth > 1730);
-            },
         });
         new HelpManager(this, {
             buttons: [
