@@ -864,6 +864,7 @@ body > .card {
   gap: 20px;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
   flex-wrap: wrap;
 }
 
@@ -937,6 +938,11 @@ body > .card {
 #table-cards .slot {
   width: 120px;
   height: 183px;
+}
+
+#royal-cards {
+  margin-left: 130px;
+  margin-top: 20px;
 }
 
 #mouse-selection {
