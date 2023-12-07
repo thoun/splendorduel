@@ -2604,7 +2604,7 @@ var PlayerTable = /** @class */ (function () {
         this.limitSelection = null;
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.getPlayerId();
-        var html = "\n        <div id=\"player-table-".concat(this.playerId, "\" class=\"player-table\" style=\"--player-color: #").concat(player.color, ";\">\n            <div id=\"player-table-").concat(this.playerId, "-name\" class=\"name-wrapper\">\n                ").concat(player.name, "\n                <div id=\"player-privileges-").concat(this.playerId, "\" class=\"player-privileges\"></div>\n            </div>\n            <div class=\"columns\">\n        ");
+        var html = "\n        <div id=\"player-table-".concat(this.playerId, "\" class=\"player-table\" style=\"--player-color: #").concat(player.color, ";\">\n            <div id=\"player-table-").concat(this.playerId, "-name\" class=\"name-wrapper\">\n                ").concat(player.name, "\n                <div id=\"player-privileges-").concat(this.playerId, "\" class=\"player-privileges privilege-zone\"></div>\n            </div>\n            <div class=\"columns\">\n        ");
         [1, 2, 3, 4, 5, 0, -1].forEach(function (i) {
             html += "\n                <div id=\"player-table-".concat(_this.playerId, "-tokens-").concat(i, "\" class=\"tokens\"></div>\n                ");
         });
@@ -2899,7 +2899,9 @@ var SplendorDuel = /** @class */ (function () {
         }
     };
     SplendorDuel.prototype.onEnteringTakeRoyalCard = function () {
-        this.tableCenter.setRoyalCardsSelectable(true);
+        if (this.isCurrentPlayerActive()) {
+            this.tableCenter.setRoyalCardsSelectable(true);
+        }
     };
     SplendorDuel.prototype.onEnteringDiscardTokens = function () {
         if (this.isCurrentPlayerActive()) {

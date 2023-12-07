@@ -1404,6 +1404,16 @@ html, .mode_3d #game_play_area_background {
   vertical-align: middle;
 }
 
+.privilege-zone {
+  min-height: 57px;
+  border-radius: 10px;
+  transition: background-color 0.5s;
+  padding: 10px;
+}
+.privilege-zone:not(:empty) {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
 .action-button .icon, .action-button .color, .log .icon, .log .color {
   width: 24px;
   height: 24px;

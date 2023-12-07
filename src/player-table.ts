@@ -20,7 +20,7 @@ class PlayerTable {
         <div id="player-table-${this.playerId}" class="player-table" style="--player-color: #${player.color};">
             <div id="player-table-${this.playerId}-name" class="name-wrapper">
                 ${player.name}
-                <div id="player-privileges-${this.playerId}" class="player-privileges"></div>
+                <div id="player-privileges-${this.playerId}" class="player-privileges privilege-zone"></div>
             </div>
             <div class="columns">
         `;

@@ -11,7 +11,7 @@
         <div id="board">
             <div id="mouse-selection"></div>
         </div>
-        <div id="table-privileges"></div>
+        <div id="table-privileges" class="privilege-zone"></div>
     </div>
     <div id="cards-wrapper">
         <div id="table-cards"></div>

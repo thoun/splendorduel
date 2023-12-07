@@ -234,7 +234,9 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     private onEnteringTakeRoyalCard() {
-        this.tableCenter.setRoyalCardsSelectable(true);
+        if ((this as any).isCurrentPlayerActive()) {
+            this.tableCenter.setRoyalCardsSelectable(true);
+        }
     }
 
     private onEnteringDiscardTokens() {
