@@ -3181,9 +3181,13 @@ var SplendorDuel = /** @class */ (function () {
         return html;
     };
     SplendorDuel.prototype.onTableTokenSelectionChange = function (tokens, valid) {
-        var _a;
         this.tokensSelection = tokens;
-        (_a = document.getElementById('takeSelectedTokens_button')) === null || _a === void 0 ? void 0 : _a.classList.toggle('disabled', !valid);
+        var button = document.getElementById('takeSelectedTokens_button');
+        if (button) {
+            button.classList.toggle('disabled', !valid);
+            var gold = tokens.length && tokens.every(function (token) { return token.type == 1; });
+            button.innerHTML = gold ? _("Take gold token to reserve a card") : _("Take selected token(s)");
+        }
     };
     SplendorDuel.prototype.onPlayerTokenSelectionChange = function (tokens) {
         var _a, _b;

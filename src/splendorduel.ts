@@ -625,7 +625,12 @@ class SplendorDuel implements SplendorDuelGame {
     public onTableTokenSelectionChange(tokens: Token[], valid: boolean): void {
         this.tokensSelection = tokens;
 
-        document.getElementById('takeSelectedTokens_button')?.classList.toggle('disabled', !valid);
+        const button = document.getElementById('takeSelectedTokens_button');
+        if (button) {
+            button.classList.toggle('disabled', !valid);
+            const gold = tokens.length && tokens.every(token => token.type == 1);
+            button.innerHTML = gold ? _("Take gold token to reserve a card") : _("Take selected token(s)");
+        }
     }
 
     public onPlayerTokenSelectionChange(tokens: Token[]): void {
