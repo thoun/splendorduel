@@ -988,15 +988,16 @@ class SplendorDuel implements SplendorDuelGame {
 
         const column = Number(card.location.slice(-1));
 
-        if ([1, 2, 3, 4, 5].includes(column)) {
+        if ([1, 2, 3, 4, 5].includes(column) || (column == 9 && !card.power.includes(2))) {
             const playerTable = this.getPlayerTable(playerId);
             this.crownCounters[playerId].toValue(playerTable.getCrowns());
-            this.incCardPointsCounter(playerId, column, card.points);
             this.incScore(playerId, card.points);
+            if (column <= 5) {
+                this.incCardPointsCounter(playerId, column, card.points);
+                this.incCardProduceCounter(playerId, column, Object.values(card.provides).reduce((a, b) => a + b, 0));
 
-            this.incCardProduceCounter(playerId, column, Object.values(card.provides).reduce((a, b) => a + b, 0));
-
-            this.strongestColumnCounters[playerId].toValue(Math.max(...[1, 2, 3, 4, 5].map(color => Number(document.getElementById(`player-${playerId}-counters-card-points-${color}`).innerHTML))));
+                this.strongestColumnCounters[playerId].toValue(Math.max(...[1, 2, 3, 4, 5].map(color => Number(document.getElementById(`player-${playerId}-counters-card-points-${color}`).innerHTML))));
+            }
         }
 
         return Promise.resolve(true);

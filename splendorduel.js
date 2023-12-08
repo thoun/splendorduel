@@ -3515,13 +3515,15 @@ var SplendorDuel = /** @class */ (function () {
                         _b.label = 3;
                     case 3:
                         column = Number(card.location.slice(-1));
-                        if ([1, 2, 3, 4, 5].includes(column)) {
+                        if ([1, 2, 3, 4, 5].includes(column) || (column == 9 && !card.power.includes(2))) {
                             playerTable = this.getPlayerTable(playerId);
                             this.crownCounters[playerId].toValue(playerTable.getCrowns());
-                            this.incCardPointsCounter(playerId, column, card.points);
                             this.incScore(playerId, card.points);
-                            this.incCardProduceCounter(playerId, column, Object.values(card.provides).reduce(function (a, b) { return a + b; }, 0));
-                            this.strongestColumnCounters[playerId].toValue(Math.max.apply(Math, [1, 2, 3, 4, 5].map(function (color) { return Number(document.getElementById("player-".concat(playerId, "-counters-card-points-").concat(color)).innerHTML); })));
+                            if (column <= 5) {
+                                this.incCardPointsCounter(playerId, column, card.points);
+                                this.incCardProduceCounter(playerId, column, Object.values(card.provides).reduce(function (a, b) { return a + b; }, 0));
+                                this.strongestColumnCounters[playerId].toValue(Math.max.apply(Math, [1, 2, 3, 4, 5].map(function (color) { return Number(document.getElementById("player-".concat(playerId, "-counters-card-points-").concat(color)).innerHTML); })));
+                            }
                         }
                         return [2 /*return*/, Promise.resolve(true)];
                 }
