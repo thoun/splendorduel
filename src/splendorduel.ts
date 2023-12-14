@@ -424,17 +424,17 @@ class SplendorDuel implements SplendorDuelGame {
             let html = `
             <div class="score-tile-playerboard-wrapper">
                 <div class="score-tile-playerboard">
-                    <div id="points-counter-wrapper-${player.id}" class="points-counter">
+                    <div id="end-reason-1-wrapper-${player.id}" class="points-counter">
                         <div id="points-counter-${player.id}"></div>
                         <div class="goal">/&nbsp;20</div>
                     </div>
     
-                    <div id="crown-counter-wrapper-${player.id}" class="crown-counter">
+                    <div id="end-reason-2-wrapper-${player.id}" class="crown-counter">
                         <div id="crown-counter-${player.id}"></div>
                         <div class="goal">/&nbsp;10</div>
                     </div>
     
-                    <div id="strongest-column-counter-wrapper-${player.id}" class="strongest-column-counter">
+                    <div id="end-reason-3-wrapper-${player.id}" class="strongest-column-counter">
                         <div id="strongest-column-counter-${player.id}"></div>
                         <div class="goal">/&nbsp;10</div>
                     </div>
@@ -544,6 +544,10 @@ class SplendorDuel implements SplendorDuelGame {
                 const tokens = player.tokens.filter(token => color == -1 ? token.type == 1 : token.type == 2 && token.color == color);
                 this.setTokenCounter(playerId, color, tokens.length);
             });
+
+            if (player.endReasons.length) {
+                this.setEndReasons(playerId, player.endReasons);
+            }
         });
 
         this.setTooltipToClass('points-counter', _('Points'));
@@ -552,6 +556,10 @@ class SplendorDuel implements SplendorDuelGame {
         this.setTooltipToClass('privilege-counter', _('Privilege scrolls'));
         this.setTooltipToClass('reserved-counter', _('Reserved cards'));
         this.setTooltipToClass('token-counter', _('Number of tokens'));
+    }
+    
+    private setEndReasons(playerId: number, endReasons: number[]) {
+        endReasons.forEach(endReason => document.getElementById(`end-reason-${endReason}-wrapper-${playerId}`).classList.add('end-reason'));
     }
     
     private setCardPointsCounter(playerId: number, color: number, points: number) {
@@ -911,7 +919,7 @@ class SplendorDuel implements SplendorDuelGame {
             ['takeRoyalCard', undefined],
             ['discardTokens', undefined],
             ['newTableCard', undefined],
-            ['win', 1],
+            ['win', ANIMATION_MS * 3],
         ];
     
         notifs.forEach((notif) => {
@@ -1023,6 +1031,7 @@ class SplendorDuel implements SplendorDuelGame {
 
     notif_win(args: NotifWinArgs) {
         this.setScore(args.playerId, 1);
+        this.setEndReasons(args.playerId, args.endReasons);
     }
 
     public getColor(color: number): string {

@@ -185,6 +185,8 @@ class SplendorDuel extends Table {
 
             $player['cards'] = $this->getCardsByLocation('player'.$playerId.'-%');
             $player['royalCards'] = $this->getRoyalCardsByLocation('player', $playerId);
+
+            $player['endReasons'] = $this->getEndReasons($playerId);
         }
 
         $result['board'] = $this->getBoard();

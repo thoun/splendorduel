@@ -235,3 +235,22 @@
   flex-direction: row;
   gap: 10px;
 }
+
+.end-reason {
+  box-shadow: 0 0 5px 5px gold;
+  animation: bump-animation 1.5s 1 forwards ease-in-out;
+  transform-origin: center center;
+  border-radius: 15px;
+}
+
+@keyframes bump-animation {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.5);
+    }
+    100% { 
+        transform: scale(1);
+    }
+}

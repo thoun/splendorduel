@@ -9,6 +9,7 @@ interface SplendorDuelPlayer extends Player {
     cards: Card[];
     reserved?: Card[];
     royalCards: RoyalCard[];
+    endReasons: number[];
 }
 
 interface SplendorDuelGamedatas {
@@ -142,4 +143,5 @@ interface NotifNewTableCardArgs {
 // win
 interface NotifWinArgs {
     playerId: number;
+    endReasons: number[];
 }         

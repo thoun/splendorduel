@@ -70,6 +70,7 @@ trait StateTrait {
             self::notifyAllPlayers('win', $message, [
                 'playerId' => $playerId,
                 'player_name' => $this->getPlayerName($playerId),
+                'endReasons' => $endReasons,
             ]);
 
             foreach ($endReasons as $endReason) {
