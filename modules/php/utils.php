@@ -412,8 +412,12 @@ trait UtilTrait {
             if (!$ignorePower) {
                 $redirected = false;
                 foreach ($card->power as $power) {
-                    $redirected = $redirected || $this->applyPower($playerId, $power, $royalCard ? -1 : $card->id);
+                    $powerWithRedirection = $this->applyPower($playerId, $power, $royalCard ? -1 : $card->id);
+                    if ($powerWithRedirection) {
+                        $redirected = true;
+                    }
                 }
+
                 if ($redirected) {
                     return;
                 }
