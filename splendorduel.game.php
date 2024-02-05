@@ -216,8 +216,9 @@ class SplendorDuel extends Table {
         (see states.inc.php)
     */
     function getGameProgression() {
-        $maxScore = intval($this->getUniqueValueFromDB("SELECT max(`player_score`) FROM player"));
-        return $maxScore * 100 / 40;
+        $playersIds = $this->getPlayersIds();
+
+        return max(array_map(fn($playerId) => $this->getPlayerProgress($playerId), $playersIds));
     }
 
 //////////////////////////////////////////////////////////////////////////////

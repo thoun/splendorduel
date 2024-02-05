@@ -486,9 +486,7 @@ trait UtilTrait {
         $this->incStat(1, $fromOpponent ? 'privilegesFromOpponent' : 'privilegesFromTable', $playerId);
     }
 
-    function getEndReasons(int $playerId) {
-        $reasons = [];
-
+    function getEndStatus(int $playerId) {
         $cards = $this->getCardsByLocation('player'.$playerId.'-%');
         $totalPoints = 0;
         $pointsByColor = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
@@ -507,13 +505,34 @@ trait UtilTrait {
             $totalPoints += $royalCard->points;
         }
 
+        return [$totalPoints, $crowns, max($pointsByColor)];
+    }
+
+    function getPlayerProgress(int $playerId) {
+        $status = $this->getEndStatus($playerId);
+
+        $totalPoints = $status[0];
+        $crowns = $status[1];
+        $colorMaxPoints = $status[2];
+
+        return max($totalPoints * 5, $crowns * 10, $colorMaxPoints * 10);
+    }
+
+    function getEndReasons(int $playerId) {
+        $reasons = [];
+        $status = $this->getEndStatus($playerId);
+
+        $totalPoints = $status[0];
+        $crowns = $status[1];
+        $colorMaxPoints = $status[2];
+
         if ($totalPoints >= 20) {
             $reasons[] = 1;
         }
         if ($crowns >= 10) {
             $reasons[] = 2;
         }
-        if ($this->array_some($pointsByColor, fn($colorPoints) => $colorPoints >= 10)) {
+        if ($colorMaxPoints >= 10) {
             $reasons[] = 3;
         }
 

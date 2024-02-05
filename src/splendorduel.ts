@@ -212,7 +212,9 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     private onEnteringReserveCard() {
-        this.tableCenter.setCardsSelectable(true, [], true);
+        if ((this as any).isCurrentPlayerActive()) {
+            this.tableCenter.setCardsSelectable(true, [], true);
+        }
     }
 
     private onEnteringPlaceJoker(args: EnteringPlaceJokerArgs) {

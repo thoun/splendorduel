@@ -2881,7 +2881,9 @@ var SplendorDuel = /** @class */ (function () {
         }
     };
     SplendorDuel.prototype.onEnteringReserveCard = function () {
-        this.tableCenter.setCardsSelectable(true, [], true);
+        if (this.isCurrentPlayerActive()) {
+            this.tableCenter.setCardsSelectable(true, [], true);
+        }
     };
     SplendorDuel.prototype.onEnteringPlaceJoker = function (args) {
         if (this.isCurrentPlayerActive()) {
