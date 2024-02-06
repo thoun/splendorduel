@@ -2511,6 +2511,11 @@ var TableCenter = /** @class */ (function () {
             }
         }
     };
+    TableCenter.prototype.unselectTableCards = function () {
+        for (var level = 3; level >= 1; level--) {
+            this.cards[level].unselectAll();
+        }
+    };
     TableCenter.prototype.refillBoard = function (refilledTokens) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -3303,6 +3308,7 @@ var SplendorDuel = /** @class */ (function () {
         this.tokensSelection = null;
         (_a = document.getElementById("chooseTokenCost-button")) === null || _a === void 0 ? void 0 : _a.remove();
         (_b = document.getElementById("cancelChooseTokenCost-button")) === null || _b === void 0 ? void 0 : _b.remove();
+        this.tableCenter.unselectTableCards();
         this.getCurrentPlayerTable().setTokensSelectableByType([], []);
     };
     SplendorDuel.prototype.setActionBarChooseAction = function (fromCancel) {

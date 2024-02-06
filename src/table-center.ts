@@ -80,6 +80,12 @@ class TableCenter {
         }
     }
     
+    public unselectTableCards() {
+        for (let level = 3; level >= 1; level--) {
+            this.cards[level].unselectAll();
+        }
+    }
+    
     public async refillBoard(refilledTokens: Token[]): Promise<any> {
         await this.board.refill(refilledTokens, this.bag);        
         this.bagCounter.toValue(0);

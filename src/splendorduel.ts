@@ -761,6 +761,8 @@ class SplendorDuel implements SplendorDuelGame {
         document.getElementById(`chooseTokenCost-button`)?.remove();
         document.getElementById(`cancelChooseTokenCost-button`)?.remove();
 
+        this.tableCenter.unselectTableCards();
+
         this.getCurrentPlayerTable().setTokensSelectableByType([], []);
     }
     

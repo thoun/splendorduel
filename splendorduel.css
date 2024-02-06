@@ -518,7 +518,7 @@ body > .card {
   box-shadow: unset;
 }
 .splendorduel-card.bga-cards_selected-card:not(.bga-cards_disabled-card) {
-  box-shadow: 0 0 5px 5px orange;
+  box-shadow: 0 0 6px 6px orange;
 }
 .splendorduel-card.bga-cards_selected-card:not(.bga-cards_disabled-card) .card-side {
   box-shadow: unset;
@@ -736,10 +736,10 @@ body > .card {
 
 @keyframes selectable-card-animation {
   0% {
-    box-shadow: 0 0 3px 2px rgb(255, 212, 131);
+    box-shadow: 0 0 3px 3px rgb(255, 212, 131);
   }
   100% {
-    box-shadow: 0 0 5px 3px rgb(255, 212, 131);
+    box-shadow: 0 0 5px 4px rgb(255, 212, 131);
   }
 }
 .royal-card {
@@ -808,13 +808,13 @@ body > .card {
   box-shadow: unset;
 }
 .token.bga-cards_selected-card:not(.bga-cards_disabled-card) {
-  box-shadow: 0 0 5px 5px orange;
+  box-shadow: 0 0 6px 6px orange;
 }
 .token.bga-cards_selected-card:not(.bga-cards_disabled-card) .card-side {
   box-shadow: unset;
 }
 .token.selected-pay-token {
-  outline: 5px solid orange;
+  outline: 6px solid orange;
 }
 .token.selected-pay-token .card-side {
   box-shadow: unset;
@@ -846,10 +846,10 @@ body > .card {
 
 @keyframes selectable-card-animation {
   0% {
-    box-shadow: 0 0 3px 2px rgb(255, 212, 131);
+    box-shadow: 0 0 3px 3px rgb(255, 212, 131);
   }
   100% {
-    box-shadow: 0 0 5px 3px rgb(255, 212, 131);
+    box-shadow: 0 0 5px 4px rgb(255, 212, 131);
   }
 }
 .compressed-token-icons {

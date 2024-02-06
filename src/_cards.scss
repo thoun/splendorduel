@@ -28,7 +28,7 @@
     }    
 
     &.bga-cards_selected-card:not(.bga-cards_disabled-card) {
-        box-shadow: 0 0 5px 5px orange;
+        box-shadow: 0 0 6px 6px orange;
 
         .card-side {
             box-shadow: unset;
@@ -62,9 +62,9 @@
 
 @keyframes selectable-card-animation {
     0% {
-      box-shadow: 0 0 3px 2px rgb(255, 212, 131);
+      box-shadow: 0 0 3px 3px rgb(255, 212, 131);
     }
     100% { 
-      box-shadow: 0 0 5px 3px rgb(255, 212, 131);
+      box-shadow: 0 0 5px 4px rgb(255, 212, 131);
     }
 }
