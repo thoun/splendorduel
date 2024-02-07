@@ -2511,9 +2511,9 @@ var TableCenter = /** @class */ (function () {
             }
         }
     };
-    TableCenter.prototype.unselectTableCards = function () {
+    TableCenter.prototype.unselectTableCard = function (card) {
         for (var level = 3; level >= 1; level--) {
-            this.cards[level].unselectAll();
+            this.cards[level].unselectCard(card);
         }
     };
     TableCenter.prototype.refillBoard = function (refilledTokens) {
@@ -3222,7 +3222,10 @@ var SplendorDuel = /** @class */ (function () {
             this.reserveCard(card.id);
         }
         else if (this.gamedatas.gamestate.name == 'playAction') {
-            if (card != this.selectedCard) {
+            if (card == this.selectedCard) {
+                this.cancelChooseTokenCost();
+            }
+            else {
                 if (this.selectedCard) {
                     this.cancelChooseTokenCost();
                 }
@@ -3232,12 +3235,12 @@ var SplendorDuel = /** @class */ (function () {
     };
     SplendorDuel.prototype.onBuyCardClick = function (card) {
         var _this = this;
-        this.selectedCard = card;
         var goldTokens = this.getCurrentPlayerTable().tokens[-1].getCards();
         var reductedCost = structuredClone(this.gamedatas.gamestate.args.reducedCosts[card.id]);
         if (!reductedCost) {
             return;
         }
+        this.selectedCard = card;
         var selectedTokens = [];
         var remaining = 0;
         var remainingOfColors = 0;
@@ -3303,13 +3306,17 @@ var SplendorDuel = /** @class */ (function () {
     };
     SplendorDuel.prototype.cancelChooseTokenCost = function () {
         var _a, _b;
+        var table = this.getCurrentPlayerTable();
+        if (this.selectedCard) {
+            this.tableCenter.unselectTableCard(this.selectedCard);
+            table.reserved.unselectCard(this.selectedCard);
+        }
         this.setActionBarChooseAction(true);
         this.selectedCard = null;
         this.tokensSelection = null;
         (_a = document.getElementById("chooseTokenCost-button")) === null || _a === void 0 ? void 0 : _a.remove();
         (_b = document.getElementById("cancelChooseTokenCost-button")) === null || _b === void 0 ? void 0 : _b.remove();
-        this.tableCenter.unselectTableCards();
-        this.getCurrentPlayerTable().setTokensSelectableByType([], []);
+        table.setTokensSelectableByType([], []);
     };
     SplendorDuel.prototype.setActionBarChooseAction = function (fromCancel) {
         document.getElementById("generalactions").innerHTML = '';
@@ -3326,7 +3333,7 @@ var SplendorDuel = /** @class */ (function () {
         this.takeRoyalCard(card.id);
     };
     SplendorDuel.prototype.onReservedCardClick = function (card) {
-        this.onBuyCardClick(card);
+        this.onTableCardClick(card);
     };
     SplendorDuel.prototype.onColumnClick = function (color) {
         if (this.gamedatas.gamestate.name == 'placeJoker') {

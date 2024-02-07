@@ -80,9 +80,9 @@ class TableCenter {
         }
     }
     
-    public unselectTableCards() {
+    public unselectTableCard(card: Card) {
         for (let level = 3; level >= 1; level--) {
-            this.cards[level].unselectAll();
+            this.cards[level].unselectCard(card);
         }
     }
     

@@ -662,7 +662,9 @@ class SplendorDuel implements SplendorDuelGame {
         if (this.gamedatas.gamestate.name == 'reserveCard') {
             this.reserveCard(card.id);
         } else if (this.gamedatas.gamestate.name == 'playAction') {
-            if (card != this.selectedCard) {
+            if (card == this.selectedCard) {
+                this.cancelChooseTokenCost();
+            } else {
                 if (this.selectedCard) {
                     this.cancelChooseTokenCost();
                 }
@@ -672,7 +674,6 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     public onBuyCardClick(card: Card): void {
-        this.selectedCard = card;
 
         const goldTokens = this.getCurrentPlayerTable().tokens[-1].getCards();
         const reductedCost = structuredClone((this.gamedatas.gamestate.args as EnteringPlayActionArgs).reducedCosts[card.id]);
@@ -680,6 +681,7 @@ class SplendorDuel implements SplendorDuelGame {
             return;
         }
 
+        this.selectedCard = card;
         let selectedTokens: Token[] = [];
         let remaining = 0;
         let remainingOfColors = 0;
@@ -754,6 +756,12 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     public cancelChooseTokenCost() {
+        const table = this.getCurrentPlayerTable();
+
+        if (this.selectedCard) {
+            this.tableCenter.unselectTableCard(this.selectedCard);
+            table.reserved.unselectCard(this.selectedCard);
+        }
         this.setActionBarChooseAction(true);
         this.selectedCard = null;
         this.tokensSelection = null;
@@ -761,9 +769,8 @@ class SplendorDuel implements SplendorDuelGame {
         document.getElementById(`chooseTokenCost-button`)?.remove();
         document.getElementById(`cancelChooseTokenCost-button`)?.remove();
 
-        this.tableCenter.unselectTableCards();
 
-        this.getCurrentPlayerTable().setTokensSelectableByType([], []);
+        table.setTokensSelectableByType([], []);
     }
     
     private setActionBarChooseAction(fromCancel: boolean) {
@@ -784,7 +791,7 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     public onReservedCardClick(card: Card): void {
-        this.onBuyCardClick(card);
+        this.onTableCardClick(card);
     }
 
     public onColumnClick(color: number): void {
