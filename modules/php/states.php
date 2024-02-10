@@ -17,7 +17,7 @@ trait StateTrait {
 
         if (!$this->array_some($board, fn($token) => $token->color == $color)) {
             self::notifyAllPlayers('log', clienttranslate('Card ability is skipped, as there is no ${color_name} token on the board'), [
-                'color_name' => $this->getColor($color), // for logs
+                'color_name' => $this->getColorName($color), // for logs
             ]);
 
             $playerId = intval($this->getActivePlayerId());

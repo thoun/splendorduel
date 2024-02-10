@@ -202,6 +202,8 @@ trait ActionTrait {
             'tokens' => $tokens,
             'card_level' => $level, // for logs
             'spent_tokens' => $tokens, // for logs
+            'preserve' => ['tokens'],
+            'i18n' => ['spent_tokens'],
         ]);
 
         $this->incStat(1, 'purchaseCard'.$level);
@@ -261,7 +263,7 @@ trait ActionTrait {
             'player_name' => $this->getPlayerName($playerId),
             'card' => $card,
             'fromReserved' => false,
-            'color_name' => $this->getColor($color), // for logs
+            'color_name' => $this->getColorName($color), // for logs
         ]);
             
         $this->incStat(1, 'ability2');
@@ -288,6 +290,8 @@ trait ActionTrait {
             'player_name' => $this->getPlayerName($playerId),
             'tokens' => $tokens,
             'discarded_tokens' => $tokens, // for logs
+            'preserve' => ['tokens'],
+            'i18n' => ['discarded_tokens'],
         ]);
             
         $this->incStat(count($tokens), 'discardedTokens');

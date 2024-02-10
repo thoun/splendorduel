@@ -73,7 +73,7 @@ trait ArgsTrait {
 
         return [
             'color' => $card->color,
-            'color_name' => $this->getColor($card->color), // for title
+            'color_name' => $this->getColorName($card->color), // for title
         ];
     }
 

@@ -1125,7 +1125,7 @@ class SplendorDuel implements SplendorDuelGame {
                 
                 ['new_tokens', 'spent_tokens', 'discarded_tokens'].forEach(property => {                
                     if (args[property] && (typeof args[property] !== 'string' || args[property][0] !== '<')) {
-                        args[property] = args[property].map(token => `<div class="token-icon" data-type="${token.type == 1 ? -1 : token.color}"></div>`).join(' ');
+                        args[property] = args.tokens.map(token => `<div class="token-icon" data-type="${token.type == 1 ? -1 : token.color}"></div>`).join(' ');
                     }
                 });
 

@@ -288,13 +288,19 @@ trait UtilTrait {
 
     function getColorName(int $color) {
         switch ($color) {
+            case -1: return clienttranslate("Gold");
             case PEARL: return clienttranslate("Pearl");
             case BLUE: return clienttranslate("Blue");
             case WHITE: return clienttranslate("White");
             case GREEN: return clienttranslate("Green");
             case BLACK: return clienttranslate("Black");
             case RED: return clienttranslate("Red");
+            case GRAY: return clienttranslate("Gray");
         }
+    }
+
+    function getTokensNames(array $tokens) {
+        return array_map(fn($token) => $this->getColorName($token->type == 1 ? -1 : $token->color), $tokens);
     }
     
     function checkUsePrivilege(int $playerId, array $tokens)  {
@@ -356,7 +362,9 @@ trait UtilTrait {
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
             'tokens' => $tokens,
-            'new_tokens' => $tokens, // for logs
+            'new_tokens' => $this->getTokensNames($tokens), // for logs
+            'preserve' => ['tokens'],
+            'i18n' => ['new_tokens'],
         ]);
     }
 
@@ -623,18 +631,6 @@ trait UtilTrait {
                     ]);
                 }
             }
-        }
-    }
-
-    function getColor(int $color) {
-        switch ($color) {
-            case 0: return clienttranslate("Pearl");
-            case 1: return clienttranslate("Blue");
-            case 2: return clienttranslate("White");
-            case 3: return clienttranslate("Green");
-            case 4: return clienttranslate("Black");
-            case 5: return clienttranslate("Red");
-            case 9: return clienttranslate("Gray");
         }
     }
 }

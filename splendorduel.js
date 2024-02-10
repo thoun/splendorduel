@@ -3649,7 +3649,7 @@ var SplendorDuel = /** @class */ (function () {
             if (log && args && !args.processed) {
                 ['new_tokens', 'spent_tokens', 'discarded_tokens'].forEach(function (property) {
                     if (args[property] && (typeof args[property] !== 'string' || args[property][0] !== '<')) {
-                        args[property] = args[property].map(function (token) { return "<div class=\"token-icon\" data-type=\"".concat(token.type == 1 ? -1 : token.color, "\"></div>"); }).join(' ');
+                        args[property] = args.tokens.map(function (token) { return "<div class=\"token-icon\" data-type=\"".concat(token.type == 1 ? -1 : token.color, "\"></div>"); }).join(' ');
                     }
                 });
                 for (var property in args) {
