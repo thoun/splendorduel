@@ -1117,6 +1117,8 @@ class SplendorDuel implements SplendorDuelGame {
         }
     }
 
+    private CARD_REGEX = /<card>(.*)<\/card>/;
+    private cardLogId = 0;
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */
     public format_string_recursive(log: string, args: any) {
@@ -1133,6 +1135,20 @@ class SplendorDuel implements SplendorDuelGame {
                     if (['card_level', 'color_name'].includes(property) && args[property][0] != '<') {
                         args[property] = `<strong>${_(args[property])}</strong>`;
                     }
+                }
+
+                const cardRegex = /<card>(.*)<\/card>/;
+                const cardMatch = log.match(this.CARD_REGEX);
+                if (cardMatch) {
+                    const cardLogId = this.cardLogId++;
+
+                    log = log.replace(cardRegex, (_, innerText) => 
+                    `<span id="card-log-${cardLogId}" class="card-log-int">${innerText}</span>`
+                    );
+
+                    const cardForLog = this.cardsManager.createCardElement({ ...args['card'], id: `card-for-log-${cardLogId}` } );
+
+                    setTimeout(() => (this as any).addTooltipHtml(`card-log-${cardLogId}`, cardForLog.outerHTML, 500));
                 }
             }
         } catch (e) {

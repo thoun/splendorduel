@@ -2727,6 +2727,8 @@ var SplendorDuel = /** @class */ (function () {
         this.strongestColumnCounters = [];
         this.tokenCounters = [];
         this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
+        this.CARD_REGEX = /<card>(.*)<\/card>/;
+        this.cardLogId = 0;
     }
     /*
         setup:
@@ -3645,6 +3647,7 @@ var SplendorDuel = /** @class */ (function () {
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */
     SplendorDuel.prototype.format_string_recursive = function (log, args) {
+        var _this = this;
         try {
             if (log && args && !args.processed) {
                 ['new_tokens', 'spent_tokens', 'discarded_tokens'].forEach(function (property) {
@@ -3656,6 +3659,16 @@ var SplendorDuel = /** @class */ (function () {
                     if (['card_level', 'color_name'].includes(property) && args[property][0] != '<') {
                         args[property] = "<strong>".concat(_(args[property]), "</strong>");
                     }
+                }
+                var cardRegex = /<card>(.*)<\/card>/;
+                var cardMatch = log.match(this.CARD_REGEX);
+                if (cardMatch) {
+                    var cardLogId_1 = this.cardLogId++;
+                    log = log.replace(cardRegex, function (_, innerText) {
+                        return "<span id=\"card-log-".concat(cardLogId_1, "\" class=\"card-log-int\">").concat(innerText, "</span>");
+                    });
+                    var cardForLog_1 = this.cardsManager.createCardElement(__assign(__assign({}, args['card']), { id: "card-for-log-".concat(cardLogId_1) }));
+                    setTimeout(function () { return _this.addTooltipHtml("card-log-".concat(cardLogId_1), cardForLog_1.outerHTML, 500); });
                 }
             }
         }

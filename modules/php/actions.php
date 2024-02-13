@@ -126,7 +126,7 @@ trait ActionTrait {
 
         $message = $fromDeck ?
             clienttranslate('${player_name} reserves a level ${card_level} card from the deck') :
-            clienttranslate('${player_name} reserves a visible level ${card_level} card');
+            clienttranslate('${player_name} reserves <card>a visible level ${card_level} card</card>');
 
         $this->cards->moveCard($id, 'reserved', $playerId);
         
@@ -139,6 +139,7 @@ trait ActionTrait {
             'cardDeckCount' => intval($this->cards->countCardInLocation('deck'.$level)),
             'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'.$level))),
             'card_level' => $level, // for logs
+            'preserve' => ['card'],
         ]);
 
         $this->incStat(1, 'reserveCard'.$level);
@@ -201,7 +202,7 @@ trait ActionTrait {
             'fromReserved' => $fromReserved,
             'tokens' => $tokens,
             'card_level' => $level, // for logs
-            'spent_tokens' => $tokens, // for logs
+            'spent_tokens' => $this->getTokensNames($tokens), // for logs
             'preserve' => ['tokens'],
             'i18n' => ['spent_tokens'],
         ]);
@@ -289,7 +290,7 @@ trait ActionTrait {
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
             'tokens' => $tokens,
-            'discarded_tokens' => $tokens, // for logs
+            'discarded_tokens' => $this->getTokensNames($tokens), // for logs
             'preserve' => ['tokens'],
             'i18n' => ['discarded_tokens'],
         ]);
