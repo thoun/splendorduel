@@ -3037,6 +3037,9 @@ var SplendorDuel = /** @class */ (function () {
         var _this = this;
         return this.playersTables.find(function (playerTable) { return playerTable.playerId === _this.getPlayerId(); });
     };
+    SplendorDuel.prototype.getOpponentId = function (playerId) {
+        return Number(Object.values(this.gamedatas.players).find(function (player) { return Number(player.id) != playerId; }).id);
+    };
     SplendorDuel.prototype.getGameStateName = function () {
         return this.gamedatas.gamestate.name;
     };
@@ -3504,6 +3507,7 @@ var SplendorDuel = /** @class */ (function () {
                     case 1:
                         _a.sent();
                         this.updateTokenCounters(playerId);
+                        this.updateTokenCounters(this.getOpponentId(playerId));
                         return [2 /*return*/];
                 }
             });

@@ -382,6 +382,10 @@ class SplendorDuel implements SplendorDuelGame {
         return this.playersTables.find(playerTable => playerTable.playerId === this.getPlayerId());
     }
 
+    public getOpponentId(playerId: number): number {
+      return Number(Object.values(this.gamedatas.players).find((player) => Number(player.id) != playerId).id);
+    }
+
     public getGameStateName(): string {
         return this.gamedatas.gamestate.name;
     }
@@ -981,6 +985,7 @@ class SplendorDuel implements SplendorDuelGame {
         await this.getPlayerTable(playerId).addTokens(tokens);
 
         this.updateTokenCounters(playerId);
+        this.updateTokenCounters(this.getOpponentId(playerId));
     }
 
     notif_reserveCard(args: NotifReserveCardArgs) {
