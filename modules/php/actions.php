@@ -51,7 +51,7 @@ trait ActionTrait {
             }
 
             if (count($tokensByColor[PEARL]) >= 2) {
-                $message = clienttranslate('${player_name2} took 2 Pearl gems and allow ${player_name} to get a privilege.');
+                $message = clienttranslate('${player_name2} took 2 Pearls and allow ${player_name} to get a privilege.');
                 $this->takePrivilege($this->getOpponentId($playerId), $message);
                 
                 $this->incStat(1, 'givenPrivileges2pearls');
