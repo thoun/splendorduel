@@ -110,7 +110,7 @@ $this->CARDS = [
 
         11 => new CardType(GRAY, [RED => 8], [MULTICOLOR => 1], 3, 0, [POWER_MULTICOLOR, POWER_PLAY_AGAIN]),
         12 => new CardType(GRAY, [BLACK => 8], [MULTICOLOR => 1], 0, 3, [POWER_MULTICOLOR]),
-        13 => new CardType(GRAY, [WHITE => 8], [MULTICOLOR => 1], 6),
+        13 => new CardType(GRAY, [WHITE => 8], [], 6),
     ],
 ];
 
