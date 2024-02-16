@@ -174,18 +174,27 @@ class SplendorDuel implements SplendorDuelGame {
 
             noticeDiv.innerHTML = notice;
 
-            document.getElementById('replenish_button')?.addEventListener('click', () => this.confirmActionGivingPrivilege(() => this.refillBoard()));
+            document.getElementById('replenish_button')?.addEventListener('click', () => this.confirmActionTakeTokens(() => this.refillBoard(), true, false));
             document.getElementById('usePrivilege_button')?.addEventListener('click', () => this.usePrivilege());
         }
         noticeDiv.classList.toggle('visible', showNotice);
     }
 
-    private confirmActionGivingPrivilege(finalAction: Function) {
-        if ((this as any).prefs[201].value != 2) {
-            const confirmationMessage = `${_("This action will give a privilege to your opponent.")}
+    private confirmActionTakeTokens(finalAction: Function, showPrivilegeWarning: boolean, showLimitWarning: boolean) {
+        const warnings = [];
+
+        if (showLimitWarning && this.gamedatas.gamestate.args.canBuyCard) {
+            warnings.push(_("You will have more than 10 tokens, and you'll need to discard some of them."));
+        }
+
+        if (showPrivilegeWarning && (this as any).prefs[201].value != 2) {
+            warnings.push(`${_("This action will give a privilege to your opponent.")}
             <br><br>
-            <i>${_("You can disable this warning in the user preferences (top right menu).")}</i>`;
-            (this as any).confirmationDialog(confirmationMessage, finalAction);
+            <i>${_("You can disable this warning in the user preferences (top right menu).")}</i>`)
+        }
+
+        if (warnings.length) {
+            (this as any).confirmationDialog(warnings.join('<br><br>'), finalAction);
         } else {
             finalAction();
         }
@@ -311,10 +320,13 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     private takeSelectedTokensWithWarning() {
-        const showWarning = this.tokensSelection.filter(token => token.type == 2 && token.color == 0).length >= 2
+        const showPrivilegeWarning = this.tokensSelection.filter(token => token.type == 2 && token.color == 0).length >= 2
             || (this.tokensSelection.length == 3 && this.tokensSelection[0].color == this.tokensSelection[1].color && this.tokensSelection[0].color == this.tokensSelection[2].color);
-        if (showWarning) {
-            this.confirmActionGivingPrivilege(() => this.takeSelectedTokens());
+
+        const showLimitWarning = this.tokensSelection.length + this.getCurrentPlayerTable().getTokens().length > 10;
+
+        if (showPrivilegeWarning || showLimitWarning) {
+            this.confirmActionTakeTokens(() => this.takeSelectedTokens(), showPrivilegeWarning, showLimitWarning);
         } else {
             this.takeSelectedTokens();
         }

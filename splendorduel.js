@@ -2855,15 +2855,21 @@ var SplendorDuel = /** @class */ (function () {
                 notice = _('<strong>Before</strong> taking your mandatory action, you can ${use_privilege_button}').replace('${use_privilege_button}', usePrivilegeButton);
             }
             noticeDiv.innerHTML = notice;
-            (_a = document.getElementById('replenish_button')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function () { return _this.confirmActionGivingPrivilege(function () { return _this.refillBoard(); }); });
+            (_a = document.getElementById('replenish_button')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function () { return _this.confirmActionTakeTokens(function () { return _this.refillBoard(); }, true, false); });
             (_b = document.getElementById('usePrivilege_button')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', function () { return _this.usePrivilege(); });
         }
         noticeDiv.classList.toggle('visible', showNotice);
     };
-    SplendorDuel.prototype.confirmActionGivingPrivilege = function (finalAction) {
-        if (this.prefs[201].value != 2) {
-            var confirmationMessage = "".concat(_("This action will give a privilege to your opponent."), "\n            <br><br>\n            <i>").concat(_("You can disable this warning in the user preferences (top right menu)."), "</i>");
-            this.confirmationDialog(confirmationMessage, finalAction);
+    SplendorDuel.prototype.confirmActionTakeTokens = function (finalAction, showPrivilegeWarning, showLimitWarning) {
+        var warnings = [];
+        if (showLimitWarning && this.gamedatas.gamestate.args.canBuyCard) {
+            warnings.push(_("You will have more than 10 tokens, and you'll need to discard some of them."));
+        }
+        if (showPrivilegeWarning && this.prefs[201].value != 2) {
+            warnings.push("".concat(_("This action will give a privilege to your opponent."), "\n            <br><br>\n            <i>").concat(_("You can disable this warning in the user preferences (top right menu)."), "</i>"));
+        }
+        if (warnings.length) {
+            this.confirmationDialog(warnings.join('<br><br>'), finalAction);
         }
         else {
             finalAction();
@@ -2975,10 +2981,11 @@ var SplendorDuel = /** @class */ (function () {
     };
     SplendorDuel.prototype.takeSelectedTokensWithWarning = function () {
         var _this = this;
-        var showWarning = this.tokensSelection.filter(function (token) { return token.type == 2 && token.color == 0; }).length >= 2
+        var showPrivilegeWarning = this.tokensSelection.filter(function (token) { return token.type == 2 && token.color == 0; }).length >= 2
             || (this.tokensSelection.length == 3 && this.tokensSelection[0].color == this.tokensSelection[1].color && this.tokensSelection[0].color == this.tokensSelection[2].color);
-        if (showWarning) {
-            this.confirmActionGivingPrivilege(function () { return _this.takeSelectedTokens(); });
+        var showLimitWarning = this.tokensSelection.length + this.getCurrentPlayerTable().getTokens().length > 10;
+        if (showPrivilegeWarning || showLimitWarning) {
+            this.confirmActionTakeTokens(function () { return _this.takeSelectedTokens(); }, showPrivilegeWarning, showLimitWarning);
         }
         else {
             this.takeSelectedTokens();
