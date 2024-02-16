@@ -677,8 +677,9 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     public onBuyCardClick(card: Card): void {
-
-        const goldTokens = this.getCurrentPlayerTable().tokens[-1].getCards();
+        const playerId = this.getPlayerId();
+        const table = this.getPlayerTable(playerId);
+        const goldTokens = table.tokens[-1].getCards();
         const reductedCost = structuredClone((this.gamedatas.gamestate.args as EnteringPlayActionArgs).reducedCosts[card.id]);
         if (!reductedCost) {
             return;
@@ -691,7 +692,7 @@ class SplendorDuel implements SplendorDuelGame {
         Object.entries(reductedCost).forEach(entry => {
             const color = Number(entry[0]);
             const number = entry[1] as number;
-            const tokensOfColor = this.getCurrentPlayerTable().tokens[color].getCards();
+            const tokensOfColor = table.tokens[color].getCards();
             selectedTokens.push(...tokensOfColor.slice(0, Math.min(number, tokensOfColor.length)));
             if (number > tokensOfColor.length) {
                 remaining += number - tokensOfColor.length;
@@ -703,9 +704,15 @@ class SplendorDuel implements SplendorDuelGame {
             selectedTokens.push(...goldTokens.slice(0, remaining));
         }
 
+        let mustSelectTokens = false;
+
         // can use more gold to pay
         if (goldTokens.length > remaining) {
             this.tokensSelection = [];
+
+            if (remaining > 0) {
+                mustSelectTokens = true;
+            }
         } else {
             this.tokensSelection = selectedTokens;
         }
@@ -716,6 +723,26 @@ class SplendorDuel implements SplendorDuelGame {
         this.selectedCardReducedCost = reductedCost;
         this.setActionBarChooseTokenCost();
         this.getCurrentPlayerTable().setTokensSelectableByType(allowedTypes, this.tokensSelection);
+
+        // scroll to tokens, if the play must select them manually
+        if (mustSelectTokens) {
+            const element = document.getElementById(`player-table-${playerId}-tokens-2`);
+                const rect = element.getBoundingClientRect();
+            const isVisible = (
+                rect.top >= 0 &&
+                rect.left >= 0 &&
+                rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+                rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+            );
+            
+            if (!isVisible) {
+                element.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'center',
+                });
+            }
+        }
     }
 
     private setChooseTokenCostButtonLabelAndState() {

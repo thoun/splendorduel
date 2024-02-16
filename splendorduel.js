@@ -3239,8 +3239,9 @@ var SplendorDuel = /** @class */ (function () {
         }
     };
     SplendorDuel.prototype.onBuyCardClick = function (card) {
-        var _this = this;
-        var goldTokens = this.getCurrentPlayerTable().tokens[-1].getCards();
+        var playerId = this.getPlayerId();
+        var table = this.getPlayerTable(playerId);
+        var goldTokens = table.tokens[-1].getCards();
         var reductedCost = structuredClone(this.gamedatas.gamestate.args.reducedCosts[card.id]);
         if (!reductedCost) {
             return;
@@ -3252,7 +3253,7 @@ var SplendorDuel = /** @class */ (function () {
         Object.entries(reductedCost).forEach(function (entry) {
             var color = Number(entry[0]);
             var number = entry[1];
-            var tokensOfColor = _this.getCurrentPlayerTable().tokens[color].getCards();
+            var tokensOfColor = table.tokens[color].getCards();
             selectedTokens.push.apply(selectedTokens, tokensOfColor.slice(0, Math.min(number, tokensOfColor.length)));
             if (number > tokensOfColor.length) {
                 remaining += number - tokensOfColor.length;
@@ -3264,9 +3265,13 @@ var SplendorDuel = /** @class */ (function () {
         if (remaining > 0) {
             selectedTokens.push.apply(selectedTokens, goldTokens.slice(0, remaining));
         }
+        var mustSelectTokens = false;
         // can use more gold to pay
         if (goldTokens.length > remaining) {
             this.tokensSelection = [];
+            if (remaining > 0) {
+                mustSelectTokens = true;
+            }
         }
         else {
             this.tokensSelection = selectedTokens;
@@ -3278,6 +3283,22 @@ var SplendorDuel = /** @class */ (function () {
         this.selectedCardReducedCost = reductedCost;
         this.setActionBarChooseTokenCost();
         this.getCurrentPlayerTable().setTokensSelectableByType(allowedTypes, this.tokensSelection);
+        // scroll to tokens, if the play must select them manually
+        if (mustSelectTokens) {
+            var element = document.getElementById("player-table-".concat(playerId, "-tokens-2"));
+            var rect = element.getBoundingClientRect();
+            var isVisible = (rect.top >= 0 &&
+                rect.left >= 0 &&
+                rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+                rect.right <= (window.innerWidth || document.documentElement.clientWidth));
+            if (!isVisible) {
+                element.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'center',
+                });
+            }
+        }
     };
     SplendorDuel.prototype.setChooseTokenCostButtonLabelAndState = function () {
         var button = document.getElementById("chooseTokenCost-button");
