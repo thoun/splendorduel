@@ -1147,7 +1147,7 @@ class SplendorDuel implements SplendorDuelGame {
                 if (cardMatch) {
                     const cardLogId = this.cardLogId++;
 
-                    log = log.replace(cardRegex, (_, innerText) => 
+                    log = _(log).replace(cardRegex, (_, innerText) => 
                     `<span id="card-log-${cardLogId}" class="card-log-int">${innerText}</span>`
                     );
 

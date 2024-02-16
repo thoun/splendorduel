@@ -3668,7 +3668,7 @@ var SplendorDuel = /** @class */ (function () {
                 var cardMatch = log.match(this.CARD_REGEX);
                 if (cardMatch) {
                     var cardLogId_1 = this.cardLogId++;
-                    log = log.replace(cardRegex, function (_, innerText) {
+                    log = _(log).replace(cardRegex, function (_, innerText) {
                         return "<span id=\"card-log-".concat(cardLogId_1, "\" class=\"card-log-int\">").concat(innerText, "</span>");
                     });
                     var cardForLog_1 = this.cardsManager.createCardElement(__assign(__assign({}, args['card']), { id: "card-for-log-".concat(cardLogId_1) }));
