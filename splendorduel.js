@@ -2610,10 +2610,10 @@ var PlayerTable = /** @class */ (function () {
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.getPlayerId();
         var html = "\n        <div id=\"player-table-".concat(this.playerId, "\" class=\"player-table\" style=\"--player-color: #").concat(player.color, ";\">\n            <div id=\"player-table-").concat(this.playerId, "-name\" class=\"name-wrapper\">\n                ").concat(player.name, "\n                <div id=\"player-privileges-").concat(this.playerId, "\" class=\"player-privileges privilege-zone\"></div>\n            </div>\n            <div class=\"columns\">\n        ");
-        [1, 2, 3, 4, 5, 0, -1].forEach(function (i) {
+        [2, 1, 3, 5, 4, 0, -1].forEach(function (i) {
             html += "\n                <div id=\"player-table-".concat(_this.playerId, "-tokens-").concat(i, "\" class=\"tokens\"></div>\n                ");
         });
-        [1, 2, 3, 4, 5, 9].forEach(function (i) {
+        [2, 1, 3, 5, 4, 9].forEach(function (i) {
             html += "\n                <div id=\"player-table-".concat(_this.playerId, "-played-").concat(i, "\" class=\"cards\" data-color=\"").concat(i, "\"></div>\n                ");
         });
         html += "\n                <div class=\"hand-wrapper\">\n                    <div class=\"block-label\">".concat(_('Reserved cards'), "</div>\n                    <div id=\"player-table-").concat(this.playerId, "-reserved\" class=\"cards\"></div>\n                </div>\n            </div>\n\n            <div id=\"player-table-").concat(this.playerId, "-royal-cards\"></div>\n            \n        </div>\n        ");
@@ -3076,13 +3076,13 @@ var SplendorDuel = /** @class */ (function () {
             var playerId = Number(player.id);
             var html = "\n            <div class=\"score-tile-playerboard-wrapper\">\n                <div class=\"score-tile-playerboard\">\n                    <div id=\"end-reason-1-wrapper-".concat(player.id, "\" class=\"points-counter\">\n                        <div id=\"points-counter-").concat(player.id, "\"></div>\n                        <div class=\"goal\">/&nbsp;20</div>\n                    </div>\n    \n                    <div id=\"end-reason-2-wrapper-").concat(player.id, "\" class=\"crown-counter\">\n                        <div id=\"crown-counter-").concat(player.id, "\"></div>\n                        <div class=\"goal\">/&nbsp;10</div>\n                    </div>\n    \n                    <div id=\"end-reason-3-wrapper-").concat(player.id, "\" class=\"strongest-column-counter\">\n                        <div id=\"strongest-column-counter-").concat(player.id, "\"></div>\n                        <div class=\"goal\">/&nbsp;10</div>\n                    </div>\n             </div>\n            </div>\n            \n            <div class=\"counters\">\n                <div id=\"privilege-counter-wrapper-").concat(player.id, "\" class=\"privilege-counter\">\n                    <div class=\"privilege icon\"></div>\n                    <span id=\"privilege-counter-").concat(player.id, "\"></span><span class=\"goal\">&nbsp;/&nbsp;3</span>\n                </div>\n\n                <div id=\"reserved-counter-wrapper-").concat(player.id, "\" class=\"reserved-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"reserved-counter-").concat(player.id, "\"></span><span class=\"goal\">&nbsp;/&nbsp;3</span>\n                </div>\n\n                <div id=\"token-counter-wrapper-").concat(player.id, "\" class=\"token-counter\">\n                    <div class=\"token icon\"></div> \n                    <span id=\"token-counter-").concat(player.id, "\"></span><span class=\"goal\">&nbsp;/&nbsp;10</span>\n                </div>\n            </div>");
             html += "\n            <div class=\"spl_miniplayerboard\">\n                <div class=\"spl_ressources_container\">";
-            [1, 2, 3, 4, 5].forEach(function (color) {
+            [2, 1, 3, 5, 4].forEach(function (color) {
                 html += "            \n                    <div id=\"player-".concat(playerId, "-counters-card-points-").concat(color, "\" class=\"card-points points icon\"></div>");
             });
             html += "<div></div>\n            </div>\n            <div class=\"spl_ressources_container\">";
-            for (var color = 1; color <= 5; color++) {
+            [2, 1, 3, 5, 4].forEach(function (color) {
                 html += "            \n                <div class=\"spl_ressources\">\n                    <div class=\"spl_minigem\" data-color=\"".concat(color, "\"></div>\n                    <div id=\"player-").concat(playerId, "-counters-card-").concat(color, "\" class=\"spl_cardcount\" data-color=\"").concat(color, "\">\n                    </div>\n                    <div id=\"player-").concat(playerId, "-counters-token-").concat(color, "\" class=\"spl_coinpile\" data-type=\"2\" data-color=\"").concat(color, "\">\n                    </div>\n                </div>");
-            }
+            });
             html += "\n                    <div class=\"spl_ressources\">\n                        <div id=\"player-".concat(playerId, "-counters-token--1\" class=\"spl_coinpile\" data-type=\"1\"></div>\n                        <div id=\"player-").concat(playerId, "-counters-token-0\" class=\"spl_coinpile\" data-type=\"2\" data-color=\"0\"></div>\n                    </div>\n                </div>\n            </div>\n            ");
             dojo.place(html, "player_board_".concat(player.id));
             var points = [1, 2, 3, 4, 5, 9].map(function (color) {

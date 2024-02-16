@@ -469,7 +469,7 @@ class SplendorDuel implements SplendorDuelGame {
             <div class="spl_miniplayerboard">
                 <div class="spl_ressources_container">`;
 
-                [1, 2, 3, 4, 5].forEach(color => {
+                [2,1,3,5,4].forEach(color => {
                 html += `            
                     <div id="player-${playerId}-counters-card-points-${color}" class="card-points points icon"></div>`;
                 });
@@ -477,9 +477,8 @@ class SplendorDuel implements SplendorDuelGame {
             html += `<div></div>
             </div>
             <div class="spl_ressources_container">`;
-
-            for (let color = 1; color <= 5; color++) {
-            html += `            
+            [2,1,3,5,4].forEach(color => {
+                html += `            
                 <div class="spl_ressources">
                     <div class="spl_minigem" data-color="${color}"></div>
                     <div id="player-${playerId}-counters-card-${color}" class="spl_cardcount" data-color="${color}">
@@ -487,7 +486,7 @@ class SplendorDuel implements SplendorDuelGame {
                     <div id="player-${playerId}-counters-token-${color}" class="spl_coinpile" data-type="2" data-color="${color}">
                     </div>
                 </div>`;
-            }
+            });
 
             html += `
                     <div class="spl_ressources">

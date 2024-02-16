@@ -24,12 +24,12 @@ class PlayerTable {
             </div>
             <div class="columns">
         `;
-            [1,2,3,4,5,0,-1].forEach(i => {
+            [2,1,3,5,4,0,-1].forEach(i => {
                 html += `
                 <div id="player-table-${this.playerId}-tokens-${i}" class="tokens"></div>
                 `;
             });         
-            [1,2,3,4,5,9].forEach(i => {
+            [2,1,3,5,4,9].forEach(i => {
                 html += `
                 <div id="player-table-${this.playerId}-played-${i}" class="cards" data-color="${i}"></div>
                 `;
