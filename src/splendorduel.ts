@@ -183,7 +183,7 @@ class SplendorDuel implements SplendorDuelGame {
     private confirmActionTakeTokens(finalAction: Function, showPrivilegeWarning: boolean, showLimitWarning: boolean) {
         const warnings = [];
 
-        if (showLimitWarning && this.gamedatas.gamestate.args.canBuyCard) {
+        if (showLimitWarning/* && this.gamedatas.gamestate.args.canBuyCard*/) { // you might not be able to buy a card, but you may be able to use privilege or take a gold instead
             warnings.push(_("You will have more than 10 tokens, and you'll need to discard some of them."));
         }
 
