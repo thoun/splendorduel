@@ -100,6 +100,10 @@ trait ActionTrait {
 
         $playerId = intval($this->getActivePlayerId());
 
+        if (intval($this->tokens->countCardInLocation('bag')) == 0) {
+            throw new BgaUserException("Bag is empty");
+        }
+
         $message = clienttranslate('${player_name2} chooses to replenish the board and allow ${player_name} to get a privilege.');
         $this->takePrivilege($this->getOpponentId($playerId), $message);
         $this->refillBag();
