@@ -340,16 +340,17 @@ class SplendorDuel implements SplendorDuelGame {
         if ((this as any).isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'usePrivilege':
-                    (this as any).addActionButton(`takeSelectedTokens_button`, _("Take selected token(s)"), () => this.takeSelectedTokens());
-                    document.getElementById(`takeSelectedTokens_button`).classList.add('disabled');
+                    (this as any).addActionButton(`takeSelectedTokens_button`, '', () => this.takeSelectedTokens());
+                    this.onTableTokenSelectionChange([], false);
                     (this as any).addActionButton(`cancelUsePrivilege_button`, _("Cancel"), () => this.cancelUsePrivilege(), null, null, 'gray');
                     break;
                 case 'playAction':
-                    (this as any).addActionButton(`takeSelectedTokens_button`, _("Take selected token(s)"), () => this.takeSelectedTokensWithWarning());
+                    (this as any).addActionButton(`takeSelectedTokens_button`, '', () => this.takeSelectedTokensWithWarning());
+                    this.onTableTokenSelectionChange([], false);
                     document.getElementById(`takeSelectedTokens_button`).classList.add('disabled');
                     break;
                 case 'takeBoardToken':
-                    (this as any).addActionButton(`takeSelectedTokens_button`, _("Take selected token(s)"), () => this.takeSelectedTokens());
+                    (this as any).addActionButton(`takeSelectedTokens_button`, _("Take selected token"), () => this.takeSelectedTokens());
                     document.getElementById(`takeSelectedTokens_button`).classList.add('disabled');
                     break;
                 case 'takeOpponentToken':
@@ -655,7 +656,7 @@ class SplendorDuel implements SplendorDuelGame {
         if (button) {
             button.classList.toggle('disabled', !valid);
             const gold = tokens.length && tokens.every(token => token.type == 1);
-            button.innerHTML = gold ? _("Take gold token to reserve a card") : _("Take selected token(s)");
+            button.innerHTML = gold ? _("Take gold token to reserve a card") : _("Take ${number} selected token(s)").replace('${number}', tokens.length);
         }
     }
 

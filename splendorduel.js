@@ -2999,16 +2999,17 @@ var SplendorDuel = /** @class */ (function () {
         if (this.isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'usePrivilege':
-                    this.addActionButton("takeSelectedTokens_button", _("Take selected token(s)"), function () { return _this.takeSelectedTokens(); });
-                    document.getElementById("takeSelectedTokens_button").classList.add('disabled');
+                    this.addActionButton("takeSelectedTokens_button", '', function () { return _this.takeSelectedTokens(); });
+                    this.onTableTokenSelectionChange([], false);
                     this.addActionButton("cancelUsePrivilege_button", _("Cancel"), function () { return _this.cancelUsePrivilege(); }, null, null, 'gray');
                     break;
                 case 'playAction':
-                    this.addActionButton("takeSelectedTokens_button", _("Take selected token(s)"), function () { return _this.takeSelectedTokensWithWarning(); });
+                    this.addActionButton("takeSelectedTokens_button", '', function () { return _this.takeSelectedTokensWithWarning(); });
+                    this.onTableTokenSelectionChange([], false);
                     document.getElementById("takeSelectedTokens_button").classList.add('disabled');
                     break;
                 case 'takeBoardToken':
-                    this.addActionButton("takeSelectedTokens_button", _("Take selected token(s)"), function () { return _this.takeSelectedTokens(); });
+                    this.addActionButton("takeSelectedTokens_button", _("Take selected token"), function () { return _this.takeSelectedTokens(); });
                     document.getElementById("takeSelectedTokens_button").classList.add('disabled');
                     break;
                 case 'takeOpponentToken':
@@ -3211,7 +3212,7 @@ var SplendorDuel = /** @class */ (function () {
         if (button) {
             button.classList.toggle('disabled', !valid);
             var gold = tokens.length && tokens.every(function (token) { return token.type == 1; });
-            button.innerHTML = gold ? _("Take gold token to reserve a card") : _("Take selected token(s)");
+            button.innerHTML = gold ? _("Take gold token to reserve a card") : _("Take ${number} selected token(s)").replace('${number}', tokens.length);
         }
     };
     SplendorDuel.prototype.onPlayerTokenSelectionChange = function (tokens) {
