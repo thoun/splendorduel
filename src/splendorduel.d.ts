@@ -68,6 +68,8 @@ interface EnteringPlayActionArgs {
     canBuyCard: boolean;
     buyableCards: Card[];
     reducedCosts: { [card: number]: { [color: number]: number } };
+    playerAntiPlaying: boolean;
+    opponentAntiPlaying: boolean;
 }
 
 interface EnteringPlaceJokerArgs {

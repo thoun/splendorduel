@@ -90,15 +90,19 @@ trait UtilTrait {
     }
 
     function getPlayerName(int $playerId) {
-        return self::getUniqueValueFromDB("SELECT player_name FROM player WHERE player_id = $playerId");
+        return $this->getUniqueValueFromDB("SELECT player_name FROM player WHERE player_id = $playerId");
     }
 
     function getPlayerPrivileges(int $playerId) {
-        return intval(self::getUniqueValueFromDB("SELECT player_privileges FROM player WHERE player_id = $playerId"));
+        return intval($this->getUniqueValueFromDB("SELECT player_privileges FROM player WHERE player_id = $playerId"));
     }
     
     function getOpponentId(int $playerId) {
-        return intval(self::getUniqueValueFromDB("SELECT player_id FROM player WHERE player_id <> $playerId"));
+        return intval($this->getUniqueValueFromDB("SELECT player_id FROM player WHERE player_id <> $playerId"));
+    }
+
+    function getPlayerAntiPlayingTurns(int $playerId) {
+        return intval($this->getUniqueValueFromDB("SELECT player_anti_playing_turns FROM player WHERE player_id = $playerId"));
     }
 
     function getPlayer(int $id) {

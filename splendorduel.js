@@ -2829,6 +2829,25 @@ var SplendorDuel = /** @class */ (function () {
             this.tableCenter.setBoardSelectable('privileges', false, args.privileges);
         }
     };
+    SplendorDuel.prototype.setAntiPlayingNotice = function (args) {
+        var _this = this;
+        var _a;
+        var noticeDiv = document.getElementById('anti-playing-notice');
+        var showNotice = args.playerAntiPlaying || args.opponentAntiPlaying;
+        if (showNotice) {
+            var notice = _("Blocking play by retaining all pearl and gold tokens is an anti-playing practice.");
+            var refillButton = args.opponentAntiPlaying ? "<button type=\"button\" id=\"end_the_game_button\" class=\"bgabutton bgabutton_blue\">".concat(_("End the game (win immediately)"), "</button>") : null;
+            if (args.playerAntiPlaying) {
+                notice += _('Please buy a card to unblock the situation.');
+            }
+            else if (args.opponentAntiPlaying) {
+                notice += _('You can ${end_the_game_button} and it will be considered as a victory for you.').replace('${end_the_game_button}', refillButton);
+            }
+            noticeDiv.innerHTML = notice;
+            (_a = document.getElementById('end_the_game_button')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function () { return _this.endGameAntiPlaying(); });
+        }
+        noticeDiv.classList.toggle('visible', showNotice);
+    };
     SplendorDuel.prototype.setNotice = function (args) {
         var _this = this;
         var _a, _b;
@@ -2883,6 +2902,7 @@ var SplendorDuel = /** @class */ (function () {
             this.setGamestateDescription('OnlyTokens');
         }
         if (this.isCurrentPlayerActive()) {
+            this.setAntiPlayingNotice(args);
             this.setNotice(args);
             if (args.canTakeTokens) {
                 this.tableCenter.setBoardSelectable('play', args.canReserve, 3);
@@ -2956,6 +2976,9 @@ var SplendorDuel = /** @class */ (function () {
             currentPlayerTable.setHandSelectable(false);
             currentPlayerTable.setTokensSelectableByType([], []);
         }
+        var antiPlayingNoticeDiv = document.getElementById('anti-playing-notice');
+        antiPlayingNoticeDiv.innerHTML = "";
+        antiPlayingNoticeDiv.classList.remove('visible');
         var noticeDiv = document.getElementById('notice');
         noticeDiv.innerHTML = "";
         noticeDiv.classList.remove('visible');
@@ -3373,6 +3396,12 @@ var SplendorDuel = /** @class */ (function () {
         if (this.gamedatas.gamestate.name == 'placeJoker') {
             this.placeJoker(color);
         }
+    };
+    SplendorDuel.prototype.endGameAntiPlaying = function () {
+        if (!this.checkAction('endGameAntiPlaying')) {
+            return;
+        }
+        this.takeAction('endGameAntiPlaying');
     };
     SplendorDuel.prototype.takeSelectedTokens = function () {
         if (!this.checkAction('takeTokens')) {

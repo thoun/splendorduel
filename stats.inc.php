@@ -196,6 +196,25 @@ $stats_type = [
             "name" => totranslate("Number of rounds"),
             "type" => "int"
         ],
+
+        "antiPlayingStartRound" => [
+            "id" => 90,
+            "name" => totranslate("Start of round with anti-playing notice"),
+            "type" => "int",
+            "display" => "limited",
+        ],
+        "antiPlayingEndRound" => [
+            "id" => 91,
+            "name" => totranslate("End of round with anti-playing notice"),
+            "type" => "int",
+            "display" => "limited",
+        ],
+        "antiPlayingEndGame" => [
+            "id" => 92,
+            "name" => totranslate("Game ended with anti-playing situation"),
+            "type" => "int",
+            "display" => "limited",
+        ],
     ],
     
     // Statistics existing for each player

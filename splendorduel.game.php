@@ -282,9 +282,11 @@ class SplendorDuel extends Table {
         // For example, if the game was running with a release of your game named "140430-1345",
         // $from_version is equal to 1404301345
 
-        /*if ($from_version <= 2305241900) {
+        if ($from_version <= 2403081617) {
             // ! important ! Use DBPREFIX_<table_name> for all tables
-            self::applyDbUpgradeToAllDB("ALTER TABLE DBPREFIX_player CHANGE COLUMN `player_fame` `player_reputation` tinyint UNSIGNED NOT NULL DEFAULT 0");
-        }*/
+            $sql = "ALTER TABLE `DBPREFIX_player` ADD `player_anti_playing_turns` tinyint UNSIGNED NOT NULL DEFAULT 0";
+            self::applyDbUpgradeToAllDB($sql);
+            
+        }
     }    
 }

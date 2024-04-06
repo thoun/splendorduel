@@ -83,6 +83,27 @@ trait ActionTrait {
         }
     }
     
+    public function endGameAntiPlaying() {
+        self::checkAction('endGameAntiPlaying');
+
+        $playerId = intval($this->getActivePlayerId());
+
+        if ($this->getPlayerAntiPlayingTurns($this->getOpponentId($playerId)) < 3) {
+            throw new BgaUserException("Your opponent isn't in the anti-playing situation.");
+        }
+
+        $this->DbQuery("UPDATE player SET `player_score` = 1 WHERE player_id = $playerId");
+        
+        self::notifyAllPlayers('log', clienttranslate('${player_name} wins by ending the game immediatly due to opponent anti-playing'), [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+        ]);
+
+        $this->incStat(1, 'antiPlayingEndGame');
+
+        $this->gamestate->nextState('endGameAntiPlaying');
+    }
+    
     public function cancelUsePrivilege() {
         self::checkAction('cancelUsePrivilege');
 
@@ -198,6 +219,8 @@ trait ActionTrait {
         $card->locationArg = $locationArg;
 
         $this->tokens->moveCards($tokensIds, 'bag');
+
+        $this->DbQuery("UPDATE player SET player_anti_playing_turns = 0 WHERE player_id = $playerId");
         
         self::notifyAllPlayers('buyCard', $message, [
             'playerId' => $playerId,

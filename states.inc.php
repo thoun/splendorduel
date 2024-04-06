@@ -109,11 +109,13 @@ $playerActionsGameStates = [
             "refillBoard",
             "takeTokens",
             "buyCard",
+            "endGameAntiPlaying",
         ],
         "transitions" => $playedCardTransitions + [
             "reserveCard" => ST_PLAYER_RESERVE_CARD,
             "stay" => ST_PLAYER_PLAY_ACTION,
             "usePrivilege" => ST_PLAYER_USE_PRIVILEGE,
+            "endGameAntiPlaying" => ST_END_GAME,
         ],
     ],
 

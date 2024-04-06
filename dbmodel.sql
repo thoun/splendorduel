@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS `token` (
 
 -- Example 2: add a custom field to the standard "player" table
 ALTER TABLE `player` ADD `player_privileges` tinyint UNSIGNED NOT NULL DEFAULT 0;
+ALTER TABLE `player` ADD `player_anti_playing_turns` tinyint UNSIGNED NOT NULL DEFAULT 0;
 
 CREATE TABLE IF NOT EXISTS `global_variables` (
   `name` varchar(50) NOT NULL,

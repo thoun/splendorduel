@@ -1,4 +1,5 @@
 {OVERALL_GAME_HEADER}
+<div id="anti-playing-notice"></div>
 <div id="notice"></div>
 <div id="table">
     <div id="board-wrapper">

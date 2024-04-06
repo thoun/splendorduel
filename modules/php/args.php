@@ -45,6 +45,9 @@ trait ArgsTrait {
 
         $mustRefill = $canRefill && !$canTakeTokens && !$canBuyCard;
 
+        $playerAntiPlaying = $this->getPlayerAntiPlayingTurns($playerId) >= 3;
+        $opponentAntiPlaying = $this->getPlayerAntiPlayingTurns($this->getOpponentId($playerId)) >= 3;
+
         return [
             'privileges' => $privileges,
             'canRefill' => $canRefill,
@@ -52,6 +55,8 @@ trait ArgsTrait {
             'canTakeTokens' => $canTakeTokens,
             'canReserve' => $canReserve,
             'canBuyCard' => $canBuyCard,
+            'playerAntiPlaying' => $playerAntiPlaying,
+            'opponentAntiPlaying' => $opponentAntiPlaying,            
         ] + $buyableCardsAndCosts;
     }
 

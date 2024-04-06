@@ -1342,6 +1342,21 @@ html, .mode_3d #game_play_area_background {
   background-position: top;
 }
 
+#anti-playing-notice {
+  background: darkred;
+  color: white;
+  font-weight: bold;
+  border-radius: 15px;
+  display: none;
+  text-align: center;
+}
+#anti-playing-notice.visible {
+  display: block;
+}
+#anti-playing-notice button {
+  width: auto;
+}
+
 #notice {
   background: #ffd247;
   border-radius: 15px;

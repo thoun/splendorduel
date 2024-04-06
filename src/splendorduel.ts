@@ -150,6 +150,26 @@ class SplendorDuel implements SplendorDuelGame {
             this.tableCenter.setBoardSelectable('privileges', false, args.privileges);
         }
     }
+    
+    private setAntiPlayingNotice(args: EnteringPlayActionArgs) {
+        const noticeDiv = document.getElementById('anti-playing-notice');
+        const showNotice = args.playerAntiPlaying || args.opponentAntiPlaying;
+        if (showNotice) {
+            let notice = _("Blocking play by retaining all pearl and gold tokens is an anti-playing practice.");
+
+            const refillButton = args.opponentAntiPlaying ? `<button type="button" id="end_the_game_button" class="bgabutton bgabutton_blue">${_("End the game (win immediately)")}</button>` : null;
+            if (args.playerAntiPlaying) {
+                notice += _('Please buy a card to unblock the situation.');
+            } else if (args.opponentAntiPlaying) {
+                notice += _('You can ${end_the_game_button} and it will be considered as a victory for you.').replace('${end_the_game_button}', refillButton);
+            }
+
+            noticeDiv.innerHTML = notice;
+
+            document.getElementById('end_the_game_button')?.addEventListener('click', () => this.endGameAntiPlaying());
+        }
+        noticeDiv.classList.toggle('visible', showNotice);
+    }
 
     private setNotice(args: EnteringPlayActionArgs) {
         const noticeDiv = document.getElementById('notice');
@@ -209,6 +229,7 @@ class SplendorDuel implements SplendorDuelGame {
         }
 
         if ((this as any).isCurrentPlayerActive()) {
+            this.setAntiPlayingNotice(args);
             this.setNotice(args);
 
             if (args.canTakeTokens) {
@@ -293,6 +314,9 @@ class SplendorDuel implements SplendorDuelGame {
             currentPlayerTable.setTokensSelectableByType([], []);
         }
 
+        const antiPlayingNoticeDiv = document.getElementById('anti-playing-notice');
+        antiPlayingNoticeDiv.innerHTML = ``;
+        antiPlayingNoticeDiv.classList.remove('visible');
         const noticeDiv = document.getElementById('notice');
         noticeDiv.innerHTML = ``;
         noticeDiv.classList.remove('visible');
@@ -841,6 +865,14 @@ class SplendorDuel implements SplendorDuelGame {
         if (this.gamedatas.gamestate.name == 'placeJoker') {
             this.placeJoker(color);
         }
+    }
+  	
+    public endGameAntiPlaying() {
+        if(!(this as any).checkAction('endGameAntiPlaying')) {
+            return;
+        }
+
+        this.takeAction('endGameAntiPlaying');
     }
   	
     public takeSelectedTokens() {

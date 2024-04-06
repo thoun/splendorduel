@@ -39,6 +39,14 @@
       }
   	} 
 
+    public function endGameAntiPlaying() {
+        self::setAjaxMode();
+
+        $this->game->endGameAntiPlaying();
+
+        self::ajaxResponse();
+    } 
+
     public function takeTokens() {
         self::setAjaxMode();   
 

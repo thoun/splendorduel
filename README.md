@@ -36,3 +36,10 @@ Make sure ftp-sync.json and node_modules are in .gitignore
 The empty space left buy a card is refilled only at the end of the turn.
 When a player must refill, we only change the title on his side, not on everyone side (so the opponent doesn't know if he must refill or if he can play a secret reserved card)
 If there's only one possibility to pay, we preselect, but we let the user confirm.
+
+In case of blocking by keeping 3 golds and 2 pearls :
+if player A have 3 golds and 2 pearls at the beginning of his turn 3 times in a row, display
+"Blocking play by retaining all pearl and gold tokens is an anti-playing practice. Please buy a card to unblock the situation."
+if player A doesn't buy a card, then player B got this message
+"Blocking play by retaining all pearl and gold tokens is an anti-playing practice. You can [end the game (win immediately)] and it will be considered as a victory for you."
+with a End game (win) button for player B
