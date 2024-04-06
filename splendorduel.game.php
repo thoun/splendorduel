@@ -285,8 +285,15 @@ class SplendorDuel extends Table {
         if ($from_version <= 2403081617) {
             // ! important ! Use DBPREFIX_<table_name> for all tables
             $sql = "ALTER TABLE `DBPREFIX_player` ADD `player_anti_playing_turns` tinyint UNSIGNED NOT NULL DEFAULT 0";
-            self::applyDbUpgradeToAllDB($sql);
-            
+            self::applyDbUpgradeToAllDB($sql);            
+        }
+
+        if ($from_version <= 2404061313) {
+            $result = self::getUniqueValueFromDB("SHOW COLUMNS FROM `player` LIKE 'player_anti_playing_turns'");
+            if (is_null($result)) {
+                $sql = "ALTER TABLE `DBPREFIX_player` ADD `player_anti_playing_turns` tinyint unsigned NOT NULL DEFAULT 0";
+                self::applyDbUpgradeToAllDB($sql);
+            }            
         }
     }    
 }
