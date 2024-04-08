@@ -252,6 +252,11 @@ trait UtilTrait {
         return $tokensByColor;
     }
 
+    function playerHasAllGoldAndPearls(int $playerId) {
+        $tokens = $this->getPlayerTokensByColor($playerId);
+        return count($tokens[-1]) >= 3 && count($tokens[0]) >= 2;
+    }
+
     function setupTokens() {
         $cards = [
             [ 'type' => 1, 'type_arg' => 0, 'nbr' => 3 ], // gold

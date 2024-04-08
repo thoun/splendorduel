@@ -2835,7 +2835,7 @@ var SplendorDuel = /** @class */ (function () {
         var noticeDiv = document.getElementById('anti-playing-notice');
         var showNotice = args.playerAntiPlaying || args.opponentAntiPlaying;
         if (showNotice) {
-            var notice = _("Blocking play by retaining all pearl and gold tokens is an anti-playing practice.");
+            var notice = _("Blocking play by retaining all pearl and gold tokens is an anti-playing practice.") + ' ';
             var refillButton = args.opponentAntiPlaying ? "<button type=\"button\" id=\"end_the_game_button\" class=\"bgabutton bgabutton_blue\">".concat(_("End the game (win immediately)"), "</button>") : null;
             if (args.playerAntiPlaying) {
                 notice += _('Please buy a card to unblock the situation.');

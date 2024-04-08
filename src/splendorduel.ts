@@ -155,7 +155,7 @@ class SplendorDuel implements SplendorDuelGame {
         const noticeDiv = document.getElementById('anti-playing-notice');
         const showNotice = args.playerAntiPlaying || args.opponentAntiPlaying;
         if (showNotice) {
-            let notice = _("Blocking play by retaining all pearl and gold tokens is an anti-playing practice.");
+            let notice = _("Blocking play by retaining all pearl and gold tokens is an anti-playing practice.") + ' ';
 
             const refillButton = args.opponentAntiPlaying ? `<button type="button" id="end_the_game_button" class="bgabutton bgabutton_blue">${_("End the game (win immediately)")}</button>` : null;
             if (args.playerAntiPlaying) {

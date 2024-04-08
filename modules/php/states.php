@@ -88,15 +88,19 @@ trait StateTrait {
             $this->incStat(1, 'ability1');
             $this->incStat(1, 'ability1', $playerId);
         } else {
-            if ($this->getPlayerAntiPlayingTurns($playerId) >= 3) {
+            $playerAntiPlayingTurns = $this->getPlayerAntiPlayingTurns($playerId);
+            if ($playerAntiPlayingTurns > 0 && !$this->playerHasAllGoldAndPearls($playerId)) {
+                $this->DbQuery("UPDATE player SET player_anti_playing_turns = 0 WHERE player_id = $playerId");
+                $playerAntiPlayingTurns = 0;
+            }
+            if ($playerAntiPlayingTurns >= 3) {
                 $this->incStat(1, 'antiPlayingEndRound');
-            } 
+            }
 
             $this->activeNextPlayer();
             $playerId = $this->getActivePlayerId();
 
-            $tokens = $this->getPlayerTokensByColor($playerId);
-            if (count($tokens[-1]) >= 3 && count($tokens[0]) >= 2) {
+            if ($this->playerHasAllGoldAndPearls($playerId)) {
                 // if the player has all 3 golds and 2 pearls at the beginning of his turn
                 $this->DbQuery("UPDATE player SET player_anti_playing_turns = player_anti_playing_turns + 1 WHERE player_id = $playerId");
 

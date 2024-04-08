@@ -43,3 +43,4 @@ if player A have 3 golds and 2 pearls at the beginning of his turn 3 times in a 
 if player A doesn't buy a card, then player B got this message
 "Blocking play by retaining all pearl and gold tokens is an anti-playing practice. You can [end the game (win immediately)] and it will be considered as a victory for you."
 with a End game (win) button for player B
+If player A doesn't buy a card but give back a pearl (10 tokens limit), the anti-playing is also over as if he bought a card
