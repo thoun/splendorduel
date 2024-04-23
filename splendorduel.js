@@ -3699,7 +3699,7 @@ var SplendorDuel = /** @class */ (function () {
     SplendorDuel.prototype.getPower = function (power) {
         switch (power) {
             case 1: return _("Take another turn immediately after this one ends.");
-            case 2: return _("Place this card so that it overlaps a Jewel card with a bonus (see on the right). Treat this card’s <ICON_MULTI> bonus as though it were the same color of the card it is overlapping.").replace('<ICON_MULTI>', "<div class=\"token-icon\" data-type=\"9\"></div>") +
+            case 2: return _("Place this card so that it overlaps a Jewel card with a bonus. Treat this card’s <ICON_MULTI> bonus as though it were the same color of the card it is overlapping.").replace('<ICON_MULTI>', "<div class=\"token-icon\" data-type=\"9\"></div>") +
                 "<br><i>".concat(_("If you do not have a card with a bonus, you cannot purchase this card."), "</i>");
             case 3: return _("Take 1 token matching the color of this card from the board. If there are no such tokens left, ignore this effect.");
             case 4: return _("Take 1 Privilege. If none are available, take 1 from your opponent.");
