@@ -3390,11 +3390,12 @@ var SplendorDuel = /** @class */ (function () {
         var button = document.getElementById("chooseTokenCost-button");
         if (button) {
             var selection = this.getCurrentPlayerTable().getSelectedTokens();
-            var label = selection.length ?
-                _('Pay ${cost}').replace('${cost}', "<div class=\"compressed-token-icons\">".concat(selection.map(function (token) { return "<div class=\"token-icon\" data-type=\"".concat(token.type == 1 ? -1 : token.color, "\"></div>"); }).join(''), "</div>")) :
+            var expectedTileCount = Object.values(this.selectedCardReducedCost).reduce(function (a, b) { return a + b; }, 0);
+            var valid = selection.length == expectedTileCount; // TODO more controls
+            var label = expectedTileCount > 0 ?
+                _('Pay ${cost}').replace('${cost}', "<div class=\"compressed-token-icons\">".concat(selection.map(function (token) { return "<div class=\"token-icon\" data-type=\"".concat(token.type == 1 ? -1 : token.color, "\"></div>"); }).join('')).concat(new Array(expectedTileCount - selection.length).fill(0).map(function () { return "<div class=\"fake token-icon\">?</div>"; }).join(''), "</div>")) :
                 _('Take for free');
             button.innerHTML = label;
-            var valid = selection.length == Object.values(this.selectedCardReducedCost).reduce(function (a, b) { return a + b; }, 0); // TODO more controls
             button.classList.toggle('disabled', !valid);
         }
     };

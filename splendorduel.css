@@ -859,6 +859,9 @@ body > .card {
 .compressed-token-icons .token-icon {
   margin-left: -20px;
 }
+.compressed-token-icons .token-icon.fake:not(:first-child) {
+  margin-left: 2px;
+}
 
 #table, #tables {
   gap: 20px;
@@ -1489,6 +1492,12 @@ html, .mode_3d #game_play_area_background {
 }
 .token-icon[data-type="9"] {
   background-position-x: 100%;
+}
+.token-icon.fake {
+  background: transparent;
+  outline: 1px dashed white;
+  text-align: center;
+  line-height: 32px;
 }
 
 #tables-and-center {

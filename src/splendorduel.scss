@@ -172,6 +172,13 @@ html, .mode_3d #game_play_area_background {
   &[data-type="9"] {
     background-position-x: #{7 * 100% / 7};
   }
+
+  &.fake {
+    background: transparent;
+    outline: 1px dashed white;
+    text-align: center;
+    line-height: 32px;
+  }
 }
 
 #tables-and-center {

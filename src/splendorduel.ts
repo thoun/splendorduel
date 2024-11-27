@@ -786,16 +786,18 @@ class SplendorDuel implements SplendorDuelGame {
         const button = document.getElementById(`chooseTokenCost-button`);
         if (button) {
             const selection = this.getCurrentPlayerTable().getSelectedTokens();
-            const label = selection.length ? 
+            const expectedTileCount = Object.values(this.selectedCardReducedCost).reduce((a, b) => a + b, 0);
+            const valid = selection.length == expectedTileCount; // TODO more controls
+            
+            const label = expectedTileCount > 0 ? 
                 _('Pay ${cost}').replace('${cost}',
                     `<div class="compressed-token-icons">${
                         selection.map(token => `<div class="token-icon" data-type="${token.type == 1 ? -1 : token.color}"></div>`).join('')
-                    }</div>`
+                    }${new Array(expectedTileCount - selection.length).fill(0).map(() => `<div class="fake token-icon">?</div>`).join('')}</div>`
                 ) : 
                 _('Take for free');
 
             button.innerHTML = label;
-            let valid = selection.length == Object.values(this.selectedCardReducedCost).reduce((a, b) => a + b, 0); // TODO more controls
             button.classList.toggle('disabled', !valid);
         }
     }

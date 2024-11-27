@@ -74,5 +74,9 @@
     
     .token-icon {
         margin-left: -20px;
+
+        &.fake:not(:first-child) {
+            margin-left: 2px;
+        }
     }
 }
