@@ -1,0 +1,289 @@
+{
+    "table": {
+        "endReason1": {
+            "id": 11,
+            "name": "Win with 20 points",
+            "type": "bool"
+        },
+        "endReason2": {
+            "id": 12,
+            "name": "Win with 10 crowns",
+            "type": "bool"
+        },
+        "endReason3": {
+            "id": 13,
+            "name": "Win with 10 points in a single column",
+            "type": "bool"
+        },
+        "tokensWithPrivileges": {
+            "id": 20,
+            "name": "Gem or Pearl tokens gained using privileges",
+            "type": "int"
+        },
+        "replenish": {
+            "id": 21,
+            "name": "Given privileges (replenish the Board)",
+            "type": "int"
+        },
+        "givenPrivileges3equal": {
+            "id": 22,
+            "name": "Given privileges (3 equal gems)",
+            "type": "int"
+        },
+        "givenPrivileges2pearls": {
+            "id": 23,
+            "name": "Given privileges (2 pearls)",
+            "type": "int"
+        },
+        "privileges": {
+            "id": 25,
+            "name": "Privileges gained",
+            "type": "int"
+        },
+        "privilegesFromTable": {
+            "id": 26,
+            "name": "Privileges gained from table",
+            "type": "int"
+        },
+        "privilegesFromOpponent": {
+            "id": 27,
+            "name": "Privileges gained from opponent",
+            "type": "int"
+        },
+        "takeTokens1": {
+            "id": 31,
+            "name": "Take 1 token action",
+            "type": "int"
+        },
+        "takeTokens2": {
+            "id": 32,
+            "name": "Take 2 tokens action",
+            "type": "int"
+        },
+        "takeTokens3": {
+            "id": 33,
+            "name": "Take 3 tokens action",
+            "type": "int"
+        },
+        "reserveCard1": {
+            "id": 36,
+            "name": "Reserved level 1 card",
+            "type": "int"
+        },
+        "reserveCard2": {
+            "id": 37,
+            "name": "Reserved level 2 card",
+            "type": "int"
+        },
+        "reserveCard3": {
+            "id": 38,
+            "name": "Reserved level 3 card",
+            "type": "int"
+        },
+        "purchaseCard1": {
+            "id": 41,
+            "name": "Purchased level 1 card",
+            "type": "int"
+        },
+        "purchaseCard2": {
+            "id": 42,
+            "name": "Purchased level 2 card",
+            "type": "int"
+        },
+        "purchaseCard3": {
+            "id": 43,
+            "name": "Purchased level 3 card",
+            "type": "int"
+        },
+        "ability1": {
+            "id": 51,
+            "name": "Ability used : Bonus turn",
+            "type": "int"
+        },
+        "ability2": {
+            "id": 52,
+            "name": "Ability used : Joker color",
+            "type": "int"
+        },
+        "ability3": {
+            "id": 53,
+            "name": "Ability used : Take 1 color token from board",
+            "type": "int"
+        },
+        "ability4": {
+            "id": 54,
+            "name": "Ability used : Take 1 Privilege",
+            "type": "int"
+        },
+        "ability5": {
+            "id": 55,
+            "name": "Ability used : Take 1 Gem or Pearl token from opponent",
+            "type": "int"
+        },
+        "discardedTokens": {
+            "id": 60,
+            "name": "Discarded tokens (more than 10 tokens)",
+            "type": "int"
+        },
+        "roundNumber": {
+            "id": 10,
+            "name": "Number of rounds",
+            "type": "int"
+        },
+        "antiPlayingStartRound": {
+            "id": 90,
+            "name": "Start of round with anti-playing notice",
+            "type": "int",
+            "display": "limited"
+        },
+        "antiPlayingEndRound": {
+            "id": 91,
+            "name": "End of round with anti-playing notice",
+            "type": "int",
+            "display": "limited"
+        },
+        "antiPlayingEndGame": {
+            "id": 92,
+            "name": "Game ended with anti-playing situation",
+            "type": "int",
+            "display": "limited"
+        }
+    },
+    "player": {
+        "endReason1": {
+            "id": 11,
+            "name": "Win with 20 points",
+            "type": "bool"
+        },
+        "endReason2": {
+            "id": 12,
+            "name": "Win with 10 crowns",
+            "type": "bool"
+        },
+        "endReason3": {
+            "id": 13,
+            "name": "Win with 10 points in a single column",
+            "type": "bool"
+        },
+        "tokensWithPrivileges": {
+            "id": 20,
+            "name": "Gem or Pearl tokens gained using privileges",
+            "type": "int"
+        },
+        "replenish": {
+            "id": 21,
+            "name": "Given privileges (replenish the Board)",
+            "type": "int"
+        },
+        "givenPrivileges3equal": {
+            "id": 22,
+            "name": "Given privileges (3 equal gems)",
+            "type": "int"
+        },
+        "givenPrivileges2pearls": {
+            "id": 23,
+            "name": "Given privileges (2 pearls)",
+            "type": "int"
+        },
+        "privileges": {
+            "id": 25,
+            "name": "Privileges gained",
+            "type": "int"
+        },
+        "privilegesFromTable": {
+            "id": 26,
+            "name": "Privileges gained from table",
+            "type": "int"
+        },
+        "privilegesFromOpponent": {
+            "id": 27,
+            "name": "Privileges gained from opponent",
+            "type": "int"
+        },
+        "takeTokens1": {
+            "id": 31,
+            "name": "Take 1 token action",
+            "type": "int"
+        },
+        "takeTokens2": {
+            "id": 32,
+            "name": "Take 2 tokens action",
+            "type": "int"
+        },
+        "takeTokens3": {
+            "id": 33,
+            "name": "Take 3 tokens action",
+            "type": "int"
+        },
+        "reserveCard1": {
+            "id": 36,
+            "name": "Reserved level 1 card",
+            "type": "int"
+        },
+        "reserveCard2": {
+            "id": 37,
+            "name": "Reserved level 2 card",
+            "type": "int"
+        },
+        "reserveCard3": {
+            "id": 38,
+            "name": "Reserved level 3 card",
+            "type": "int"
+        },
+        "purchaseCard1": {
+            "id": 41,
+            "name": "Purchased level 1 card",
+            "type": "int"
+        },
+        "purchaseCard2": {
+            "id": 42,
+            "name": "Purchased level 2 card",
+            "type": "int"
+        },
+        "purchaseCard3": {
+            "id": 43,
+            "name": "Purchased level 3 card",
+            "type": "int"
+        },
+        "ability1": {
+            "id": 51,
+            "name": "Ability used : Bonus turn",
+            "type": "int"
+        },
+        "ability2": {
+            "id": 52,
+            "name": "Ability used : Joker color",
+            "type": "int"
+        },
+        "ability3": {
+            "id": 53,
+            "name": "Ability used : Take 1 color token from board",
+            "type": "int"
+        },
+        "ability4": {
+            "id": 54,
+            "name": "Ability used : Take 1 Privilege",
+            "type": "int"
+        },
+        "ability5": {
+            "id": 55,
+            "name": "Ability used : Take 1 Gem or Pearl token from opponent",
+            "type": "int"
+        },
+        "discardedTokens": {
+            "id": 60,
+            "name": "Discarded tokens (more than 10 tokens)",
+            "type": "int"
+        },
+        "crowns": {
+            "id": 44,
+            "name": "Crowns",
+            "type": "int"
+        },
+        "royalCards": {
+            "id": 45,
+            "name": "Royal cards",
+            "type": "int"
+        }
+    }
+}

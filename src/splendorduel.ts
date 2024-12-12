@@ -139,10 +139,10 @@ class SplendorDuel implements SplendorDuelGame {
     }
     
     private setGamestateDescription(property: string = '') {
-        const originalState = this.gamedatas.gamestates[this.gamedatas.gamestate.id];
-        //this.gamedatas.gamestate.description = `${originalState['description' + property]}`; 
-        this.gamedatas.gamestate.descriptionmyturn = `${originalState['descriptionmyturn' + property]}`;
-        (this as any).updatePageTitle();
+        if ((this as any).isCurrentPlayerActive()) { // we don't want opponent to see the restriction the current player has
+            const originalState = this.gamedatas.gamestates[this.gamedatas.gamestate.id];
+            (this as any).statusBar.setTitle(_(originalState['descriptionmyturn'  + property], []));
+        }
     }
 
     private onEnteringUsePrivilege(args: EnteringUsePrivilegeArgs) {
@@ -166,7 +166,7 @@ class SplendorDuel implements SplendorDuelGame {
 
             noticeDiv.innerHTML = notice;
 
-            document.getElementById('end_the_game_button')?.addEventListener('click', () => this.endGameAntiPlaying());
+            document.getElementById('end_the_game_button')?.addEventListener('click', () => (this as any).bgaPerformAction('actEndGameAntiPlaying'));
         }
         noticeDiv.classList.toggle('visible', showNotice);
     }
@@ -194,8 +194,8 @@ class SplendorDuel implements SplendorDuelGame {
 
             noticeDiv.innerHTML = notice;
 
-            document.getElementById('replenish_button')?.addEventListener('click', () => this.confirmActionTakeTokens(() => this.refillBoard(), true, false));
-            document.getElementById('usePrivilege_button')?.addEventListener('click', () => this.usePrivilege());
+            document.getElementById('replenish_button')?.addEventListener('click', () => this.confirmActionTakeTokens(() => (this as any).bgaPerformAction('actRefillBoard'), true, false));
+            document.getElementById('usePrivilege_button')?.addEventListener('click', () => (this as any).bgaPerformAction('actUsePrivilege'));
         }
         noticeDiv.classList.toggle('visible', showNotice);
     }
@@ -364,26 +364,45 @@ class SplendorDuel implements SplendorDuelGame {
         if ((this as any).isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'usePrivilege':
-                    (this as any).addActionButton(`takeSelectedTokens_button`, '', () => this.takeSelectedTokens());
+                    (this as any).statusBar.addActionButton(
+                        '', 
+                        () => this.takeSelectedTokens(), 
+                        { id: `takeSelectedTokens_button` }
+                    );
                     this.onTableTokenSelectionChange([], false);
-                    (this as any).addActionButton(`cancelUsePrivilege_button`, _("Cancel"), () => this.cancelUsePrivilege(), null, null, 'gray');
+                    (this as any).statusBar.addActionButton(
+                        _("Cancel"), 
+                        () => (this as any).bgaPerformAction('actCancelUsePrivilege'), 
+                        { color: 'secondary' }
+                    );
                     break;
                 case 'playAction':
-                    (this as any).addActionButton(`takeSelectedTokens_button`, '', () => this.takeSelectedTokensWithWarning());
+                    (this as any).statusBar.addActionButton(
+                        '', 
+                        () => this.takeSelectedTokensWithWarning(),
+                        { id: `takeSelectedTokens_button` }
+                    );
                     this.onTableTokenSelectionChange([], false);
-                    document.getElementById(`takeSelectedTokens_button`).classList.add('disabled');
                     break;
                 case 'takeBoardToken':
-                    (this as any).addActionButton(`takeSelectedTokens_button`, _("Take selected token"), () => this.takeSelectedTokens());
-                    document.getElementById(`takeSelectedTokens_button`).classList.add('disabled');
+                    (this as any).statusBar.addActionButton(
+                        _("Take selected token"), 
+                        () => this.takeSelectedTokens(),
+                        { id: `takeSelectedTokens_button`, classes: 'disabled' }
+                    );
                     break;
                 case 'takeOpponentToken':
-                    (this as any).addActionButton(`takeSelectedTokens_button`, _("Take selected token"), () => this.takeOpponentToken(this.tokensSelection[0].id));
-                    document.getElementById(`takeSelectedTokens_button`).classList.add('disabled');
+                    (this as any).statusBar.addActionButton(
+                        _("Take selected token"), 
+                        () => this.takeOpponentToken(this.tokensSelection[0].id),                    
+                        { id: `takeSelectedTokens_button`, classes: 'disabled' }
+                    );
                     break;
                 case 'discardTokens':
-                    (this as any).addActionButton(`discardSelectedTokens_button`, _("Discard selected token(s)"), () => this.discardSelectedTokens());
-                    document.getElementById(`discardSelectedTokens_button`).classList.add('disabled');
+                    (this as any).statusBar.addActionButton(
+                        _("Discard selected token(s)"), 
+                        () => this.discardSelectedTokens(),                  
+                        { id: `discardSelectedTokens_button`, classes: 'disabled' });
                     break;
                     
             }
@@ -793,7 +812,7 @@ class SplendorDuel implements SplendorDuelGame {
                 _('Pay ${cost}').replace('${cost}',
                     `<div class="compressed-token-icons">${
                         selection.map(token => `<div class="token-icon" data-type="${token.type == 1 ? -1 : token.color}"></div>`).join('')
-                    }${new Array(expectedTileCount - selection.length).fill(0).map(() => `<div class="fake token-icon">?</div>`).join('')}</div>`
+                    }${new Array(Math.max(0, expectedTileCount - selection.length)).fill(0).map(() => `<div class="fake token-icon">?</div>`).join('')}</div>`
                 ) : 
                 _('Take for free');
 
@@ -803,7 +822,7 @@ class SplendorDuel implements SplendorDuelGame {
     }
 
     private setActionBarChooseTokenCost() {
-        const question = _("You must select the tokens to pay ${cost}").replace('${cost}', 
+        const question = _("${you} must select the tokens to pay ${cost}").replace('${cost}', 
             `<div class="compressed-token-icons">${
                 Object.entries(this.selectedCardReducedCost).map(([color, number]) => new Array(number).fill(0).map(() => `<div class="token-icon" data-type="${color}"></div>`).join('')).join('')
             }</div>`
@@ -811,9 +830,17 @@ class SplendorDuel implements SplendorDuelGame {
         this.setChooseActionGamestateDescription(question);
 
         document.getElementById(`generalactions`).innerHTML = '';
-        (this as any).addActionButton(`chooseTokenCost-button`, ``, () => this.buyCard());
+        (this as any).statusBar.addActionButton(
+            ``, 
+            () => this.buyCard(), 
+            { id: `chooseTokenCost-button` }
+        );
         this.setChooseTokenCostButtonLabelAndState();
-        (this as any).addActionButton(`cancelChooseTokenCost-button`, _("Cancel"), () => this.cancelChooseTokenCost(), null, null, 'gray');
+        (this as any).statusBar.addActionButton(
+            _("Cancel"), 
+            () => this.cancelChooseTokenCost(), 
+            { color: 'secondary', id: `cancelChooseTokenCost-button` }
+        );
     }
     
     private setChooseActionGamestateDescription(newText?: string) {
@@ -821,7 +848,7 @@ class SplendorDuel implements SplendorDuelGame {
             this.originalTextChooseAction = document.getElementById('pagemaintitletext').innerHTML;
         }
 
-        document.getElementById('pagemaintitletext').innerHTML = newText ?? this.originalTextChooseAction;
+        (this as any).statusBar.setTitle(newText ?? this.originalTextChooseAction);
     }
 
     public cancelChooseTokenCost() {
@@ -865,123 +892,53 @@ class SplendorDuel implements SplendorDuelGame {
 
     public onColumnClick(color: number): void {
         if (this.gamedatas.gamestate.name == 'placeJoker') {
-            this.placeJoker(color);
+            (this as any).bgaPerformAction('actPlaceJoker', {
+                color
+            });
         }
-    }
-  	
-    public endGameAntiPlaying() {
-        if(!(this as any).checkAction('endGameAntiPlaying')) {
-            return;
-        }
-
-        this.takeAction('endGameAntiPlaying');
     }
   	
     public takeSelectedTokens() {
-        if(!(this as any).checkAction('takeTokens')) {
-            return;
-        }
-
         const tokensIds = this.tokensSelection.map(token => token.id).sort((a, b) => a - b);
 
-        this.takeAction('takeTokens', {
+        (this as any).bgaPerformAction('actTakeTokens', {
             ids: tokensIds.join(','), 
         });
     }
   	
     public discardSelectedTokens() {
-        if(!(this as any).checkAction('discardTokens')) {
-            return;
-        }
-
         const tokensIds = this.tokensSelection.map(token => token.id).sort((a, b) => a - b);
 
-        this.takeAction('discardTokens', {
+        (this as any).bgaPerformAction('actDiscardTokens', {
             ids: tokensIds.join(','), 
         });
     }
   	
-    public cancelUsePrivilege() {
-        if(!(this as any).checkAction('cancelUsePrivilege')) {
-            return;
-        }
-
-        this.takeAction('cancelUsePrivilege');
-    }
-
-    public refillBoard() {
-        if(!(this as any).checkAction('refillBoard')) {
-            return;
-        }
-
-        this.takeAction('refillBoard');
-    }
-
-    public usePrivilege() {
-        if(!(this as any).checkAction('usePrivilege')) {
-            return;
-        }
-
-        this.takeAction('usePrivilege');
-    }
-  	
     public reserveCard(id: number) {
-        if(!(this as any).checkAction('reserveCard')) {
-            return;
-        }
-
-        this.takeAction('reserveCard', {
+        (this as any).bgaPerformAction('actReserveCard', {
             id
         });
     }
   	
     public buyCard() {
-        if(!(this as any).checkAction('buyCard')) {
-            return;
-        }
-
         const tokensIds = this.tokensSelection.map(token => token.id).sort((a, b) => a - b);
 
-        this.takeAction('buyCard', {
+        (this as any).bgaPerformAction('actBuyCard', {
             id: this.selectedCard.id,
             tokensIds: tokensIds.join(','), 
         });
     }
   	
     public takeRoyalCard(id: number) {
-        if(!(this as any).checkAction('takeRoyalCard')) {
-            return;
-        }
-
-        this.takeAction('takeRoyalCard', {
+        (this as any).bgaPerformAction('actTakeRoyalCard', {
             id
         });
     }
   	
     public takeOpponentToken(id: number) {
-        if(!(this as any).checkAction('takeOpponentToken')) {
-            return;
-        }
-
-        this.takeAction('takeOpponentToken', {
+        (this as any).bgaPerformAction('actTakeOpponentToken', {
             id
         });
-    }
-  	
-    public placeJoker(color: number) {
-        if(!(this as any).checkAction('placeJoker')) {
-            return;
-        }
-
-        this.takeAction('placeJoker', {
-            color
-        });
-    }
-
-    public takeAction(action: string, data?: any) {
-        data = data || {};
-        data.lock = true;
-        (this as any).ajaxcall(`/splendorduel/splendorduel/${action}.html`, data, this, () => {});
     }
 
     ///////////////////////////////////////////////////
@@ -1124,53 +1081,6 @@ class SplendorDuel implements SplendorDuelGame {
         this.setScore(args.playerId, 1);
         this.setEndReasons(args.playerId, args.endReasons);
     }
-    
-    /**
-    * Load production bug report handler
-    */
-   notif_loadBug(args) {
-     const that: any = this;
-     function fetchNextUrl() {
-       var url = args.urls.shift();
-       console.log('Fetching URL', url, '...');
-       // all the calls have to be made with ajaxcall in order to add the csrf token, otherwise you'll get "Invalid session information for this action. Please try reloading the page or logging in again"
-       that.ajaxcall(
-         url,
-         {
-           lock: true,
-         },
-         that,
-         function (success) {
-           console.log('=> Success ', success);
-
-           if (args.urls.length > 1) {
-             fetchNextUrl();
-           } else if (args.urls.length > 0) {
-             //except the last one, clearing php cache
-             url = args.urls.shift();
-             (dojo as any).xhrGet({
-               url: url,
-               headers: {
-                 'X-Request-Token': bgaConfig.requestToken,
-               },
-               load: success => {
-                 console.log('Success for URL', url, success);
-                 console.log('Done, reloading page');
-                 window.location.reload();
-               },
-               handleAs: 'text',
-               error: error => console.log('Error while loading : ', error),
-             });
-           }
-         },
-         error => {
-           if (error) console.log('=> Error ', error);
-         },
-       );
-     }
-     console.log('Notif: load bug', args);
-     fetchNextUrl();
-   }
 
     public getColor(color: number): string {
         switch (color) {

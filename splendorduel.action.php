@@ -37,15 +37,7 @@
             $this->view = "splendorduel_splendorduel";
             self::trace( "Complete reinitialization of board game" );
       }
-  	} 
-
-    public function endGameAntiPlaying() {
-        self::setAjaxMode();
-
-        $this->game->endGameAntiPlaying();
-
-        self::ajaxResponse();
-    } 
+  	}
 
     public function takeTokens() {
         self::setAjaxMode();   
@@ -138,17 +130,6 @@
         $this->game->takeOpponentToken($id);
 
         self::ajaxResponse();
-    }
-
-    //////////////////
-    ///// DEBUG  /////
-    //////////////////
-    public function loadBugSQL()
-    {
-      self::setAjaxMode();
-      $reportId = (int) self::getArg('report_id', AT_int, true);
-      $this->game->loadBugSQL($reportId);
-      self::ajaxResponse();
     }
   }
   

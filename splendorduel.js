@@ -2874,10 +2874,10 @@ var SplendorDuel = /** @class */ (function () {
     };
     SplendorDuel.prototype.setGamestateDescription = function (property) {
         if (property === void 0) { property = ''; }
-        var originalState = this.gamedatas.gamestates[this.gamedatas.gamestate.id];
-        //this.gamedatas.gamestate.description = `${originalState['description' + property]}`; 
-        this.gamedatas.gamestate.descriptionmyturn = "".concat(originalState['descriptionmyturn' + property]);
-        this.updatePageTitle();
+        if (this.isCurrentPlayerActive()) { // we don't want opponent to see the restriction the current player has
+            var originalState = this.gamedatas.gamestates[this.gamedatas.gamestate.id];
+            this.statusBar.setTitle(_(originalState['descriptionmyturn' + property], []));
+        }
     };
     SplendorDuel.prototype.onEnteringUsePrivilege = function (args) {
         if (this.isCurrentPlayerActive()) {
@@ -2899,7 +2899,7 @@ var SplendorDuel = /** @class */ (function () {
                 notice += _('You can ${end_the_game_button} and it will be considered as a victory for you.').replace('${end_the_game_button}', refillButton);
             }
             noticeDiv.innerHTML = notice;
-            (_a = document.getElementById('end_the_game_button')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function () { return _this.endGameAntiPlaying(); });
+            (_a = document.getElementById('end_the_game_button')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function () { return _this.bgaPerformAction('actEndGameAntiPlaying'); });
         }
         noticeDiv.classList.toggle('visible', showNotice);
     };
@@ -2929,8 +2929,8 @@ var SplendorDuel = /** @class */ (function () {
                 notice = _('<strong>Before</strong> taking your mandatory action, you can ${use_privilege_button}').replace('${use_privilege_button}', usePrivilegeButton);
             }
             noticeDiv.innerHTML = notice;
-            (_a = document.getElementById('replenish_button')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function () { return _this.confirmActionTakeTokens(function () { return _this.refillBoard(); }, true, false); });
-            (_b = document.getElementById('usePrivilege_button')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', function () { return _this.usePrivilege(); });
+            (_a = document.getElementById('replenish_button')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function () { return _this.confirmActionTakeTokens(function () { return _this.bgaPerformAction('actRefillBoard'); }, true, false); });
+            (_b = document.getElementById('usePrivilege_button')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', function () { return _this.bgaPerformAction('actUsePrivilege'); });
         }
         noticeDiv.classList.toggle('visible', showNotice);
     };
@@ -3077,26 +3077,22 @@ var SplendorDuel = /** @class */ (function () {
         if (this.isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'usePrivilege':
-                    this.addActionButton("takeSelectedTokens_button", '', function () { return _this.takeSelectedTokens(); });
+                    this.statusBar.addActionButton('', function () { return _this.takeSelectedTokens(); }, { id: "takeSelectedTokens_button" });
                     this.onTableTokenSelectionChange([], false);
-                    this.addActionButton("cancelUsePrivilege_button", _("Cancel"), function () { return _this.cancelUsePrivilege(); }, null, null, 'gray');
+                    this.statusBar.addActionButton(_("Cancel"), function () { return _this.bgaPerformAction('actCancelUsePrivilege'); }, { color: 'secondary' });
                     break;
                 case 'playAction':
-                    this.addActionButton("takeSelectedTokens_button", '', function () { return _this.takeSelectedTokensWithWarning(); });
+                    this.statusBar.addActionButton('', function () { return _this.takeSelectedTokensWithWarning(); }, { id: "takeSelectedTokens_button" });
                     this.onTableTokenSelectionChange([], false);
-                    document.getElementById("takeSelectedTokens_button").classList.add('disabled');
                     break;
                 case 'takeBoardToken':
-                    this.addActionButton("takeSelectedTokens_button", _("Take selected token"), function () { return _this.takeSelectedTokens(); });
-                    document.getElementById("takeSelectedTokens_button").classList.add('disabled');
+                    this.statusBar.addActionButton(_("Take selected token"), function () { return _this.takeSelectedTokens(); }, { id: "takeSelectedTokens_button", classes: 'disabled' });
                     break;
                 case 'takeOpponentToken':
-                    this.addActionButton("takeSelectedTokens_button", _("Take selected token"), function () { return _this.takeOpponentToken(_this.tokensSelection[0].id); });
-                    document.getElementById("takeSelectedTokens_button").classList.add('disabled');
+                    this.statusBar.addActionButton(_("Take selected token"), function () { return _this.takeOpponentToken(_this.tokensSelection[0].id); }, { id: "takeSelectedTokens_button", classes: 'disabled' });
                     break;
                 case 'discardTokens':
-                    this.addActionButton("discardSelectedTokens_button", _("Discard selected token(s)"), function () { return _this.discardSelectedTokens(); });
-                    document.getElementById("discardSelectedTokens_button").classList.add('disabled');
+                    this.statusBar.addActionButton(_("Discard selected token(s)"), function () { return _this.discardSelectedTokens(); }, { id: "discardSelectedTokens_button", classes: 'disabled' });
                     break;
             }
         }
@@ -3393,7 +3389,7 @@ var SplendorDuel = /** @class */ (function () {
             var expectedTileCount = Object.values(this.selectedCardReducedCost).reduce(function (a, b) { return a + b; }, 0);
             var valid = selection.length == expectedTileCount; // TODO more controls
             var label = expectedTileCount > 0 ?
-                _('Pay ${cost}').replace('${cost}', "<div class=\"compressed-token-icons\">".concat(selection.map(function (token) { return "<div class=\"token-icon\" data-type=\"".concat(token.type == 1 ? -1 : token.color, "\"></div>"); }).join('')).concat(new Array(expectedTileCount - selection.length).fill(0).map(function () { return "<div class=\"fake token-icon\">?</div>"; }).join(''), "</div>")) :
+                _('Pay ${cost}').replace('${cost}', "<div class=\"compressed-token-icons\">".concat(selection.map(function (token) { return "<div class=\"token-icon\" data-type=\"".concat(token.type == 1 ? -1 : token.color, "\"></div>"); }).join('')).concat(new Array(Math.max(0, expectedTileCount - selection.length)).fill(0).map(function () { return "<div class=\"fake token-icon\">?</div>"; }).join(''), "</div>")) :
                 _('Take for free');
             button.innerHTML = label;
             button.classList.toggle('disabled', !valid);
@@ -3401,21 +3397,21 @@ var SplendorDuel = /** @class */ (function () {
     };
     SplendorDuel.prototype.setActionBarChooseTokenCost = function () {
         var _this = this;
-        var question = _("You must select the tokens to pay ${cost}").replace('${cost}', "<div class=\"compressed-token-icons\">".concat(Object.entries(this.selectedCardReducedCost).map(function (_a) {
+        var question = _("${you} must select the tokens to pay ${cost}").replace('${cost}', "<div class=\"compressed-token-icons\">".concat(Object.entries(this.selectedCardReducedCost).map(function (_a) {
             var color = _a[0], number = _a[1];
             return new Array(number).fill(0).map(function () { return "<div class=\"token-icon\" data-type=\"".concat(color, "\"></div>"); }).join('');
         }).join(''), "</div>"));
         this.setChooseActionGamestateDescription(question);
         document.getElementById("generalactions").innerHTML = '';
-        this.addActionButton("chooseTokenCost-button", "", function () { return _this.buyCard(); });
+        this.statusBar.addActionButton("", function () { return _this.buyCard(); }, { id: "chooseTokenCost-button" });
         this.setChooseTokenCostButtonLabelAndState();
-        this.addActionButton("cancelChooseTokenCost-button", _("Cancel"), function () { return _this.cancelChooseTokenCost(); }, null, null, 'gray');
+        this.statusBar.addActionButton(_("Cancel"), function () { return _this.cancelChooseTokenCost(); }, { color: 'secondary', id: "cancelChooseTokenCost-button" });
     };
     SplendorDuel.prototype.setChooseActionGamestateDescription = function (newText) {
         if (!this.originalTextChooseAction) {
             this.originalTextChooseAction = document.getElementById('pagemaintitletext').innerHTML;
         }
-        document.getElementById('pagemaintitletext').innerHTML = newText !== null && newText !== void 0 ? newText : this.originalTextChooseAction;
+        this.statusBar.setTitle(newText !== null && newText !== void 0 ? newText : this.originalTextChooseAction);
     };
     SplendorDuel.prototype.cancelChooseTokenCost = function () {
         var _a, _b;
@@ -3450,97 +3446,44 @@ var SplendorDuel = /** @class */ (function () {
     };
     SplendorDuel.prototype.onColumnClick = function (color) {
         if (this.gamedatas.gamestate.name == 'placeJoker') {
-            this.placeJoker(color);
+            this.bgaPerformAction('actPlaceJoker', {
+                color: color
+            });
         }
-    };
-    SplendorDuel.prototype.endGameAntiPlaying = function () {
-        if (!this.checkAction('endGameAntiPlaying')) {
-            return;
-        }
-        this.takeAction('endGameAntiPlaying');
     };
     SplendorDuel.prototype.takeSelectedTokens = function () {
-        if (!this.checkAction('takeTokens')) {
-            return;
-        }
         var tokensIds = this.tokensSelection.map(function (token) { return token.id; }).sort(function (a, b) { return a - b; });
-        this.takeAction('takeTokens', {
+        this.bgaPerformAction('actTakeTokens', {
             ids: tokensIds.join(','),
         });
     };
     SplendorDuel.prototype.discardSelectedTokens = function () {
-        if (!this.checkAction('discardTokens')) {
-            return;
-        }
         var tokensIds = this.tokensSelection.map(function (token) { return token.id; }).sort(function (a, b) { return a - b; });
-        this.takeAction('discardTokens', {
+        this.bgaPerformAction('actDiscardTokens', {
             ids: tokensIds.join(','),
         });
     };
-    SplendorDuel.prototype.cancelUsePrivilege = function () {
-        if (!this.checkAction('cancelUsePrivilege')) {
-            return;
-        }
-        this.takeAction('cancelUsePrivilege');
-    };
-    SplendorDuel.prototype.refillBoard = function () {
-        if (!this.checkAction('refillBoard')) {
-            return;
-        }
-        this.takeAction('refillBoard');
-    };
-    SplendorDuel.prototype.usePrivilege = function () {
-        if (!this.checkAction('usePrivilege')) {
-            return;
-        }
-        this.takeAction('usePrivilege');
-    };
     SplendorDuel.prototype.reserveCard = function (id) {
-        if (!this.checkAction('reserveCard')) {
-            return;
-        }
-        this.takeAction('reserveCard', {
+        this.bgaPerformAction('actReserveCard', {
             id: id
         });
     };
     SplendorDuel.prototype.buyCard = function () {
-        if (!this.checkAction('buyCard')) {
-            return;
-        }
         var tokensIds = this.tokensSelection.map(function (token) { return token.id; }).sort(function (a, b) { return a - b; });
-        this.takeAction('buyCard', {
+        this.bgaPerformAction('actBuyCard', {
             id: this.selectedCard.id,
             tokensIds: tokensIds.join(','),
         });
     };
     SplendorDuel.prototype.takeRoyalCard = function (id) {
-        if (!this.checkAction('takeRoyalCard')) {
-            return;
-        }
-        this.takeAction('takeRoyalCard', {
+        this.bgaPerformAction('actTakeRoyalCard', {
             id: id
         });
     };
     SplendorDuel.prototype.takeOpponentToken = function (id) {
-        if (!this.checkAction('takeOpponentToken')) {
-            return;
-        }
-        this.takeAction('takeOpponentToken', {
+        this.bgaPerformAction('actTakeOpponentToken', {
             id: id
         });
-    };
-    SplendorDuel.prototype.placeJoker = function (color) {
-        if (!this.checkAction('placeJoker')) {
-            return;
-        }
-        this.takeAction('placeJoker', {
-            color: color
-        });
-    };
-    SplendorDuel.prototype.takeAction = function (action, data) {
-        data = data || {};
-        data.lock = true;
-        this.ajaxcall("/splendorduel/splendorduel/".concat(action, ".html"), data, this, function () { });
     };
     ///////////////////////////////////////////////////
     //// Reaction to cometD notifications
@@ -3699,47 +3642,6 @@ var SplendorDuel = /** @class */ (function () {
     SplendorDuel.prototype.notif_win = function (args) {
         this.setScore(args.playerId, 1);
         this.setEndReasons(args.playerId, args.endReasons);
-    };
-    /**
-    * Load production bug report handler
-    */
-    SplendorDuel.prototype.notif_loadBug = function (args) {
-        var that = this;
-        function fetchNextUrl() {
-            var url = args.urls.shift();
-            console.log('Fetching URL', url, '...');
-            // all the calls have to be made with ajaxcall in order to add the csrf token, otherwise you'll get "Invalid session information for this action. Please try reloading the page or logging in again"
-            that.ajaxcall(url, {
-                lock: true,
-            }, that, function (success) {
-                console.log('=> Success ', success);
-                if (args.urls.length > 1) {
-                    fetchNextUrl();
-                }
-                else if (args.urls.length > 0) {
-                    //except the last one, clearing php cache
-                    url = args.urls.shift();
-                    dojo.xhrGet({
-                        url: url,
-                        headers: {
-                            'X-Request-Token': bgaConfig.requestToken,
-                        },
-                        load: function (success) {
-                            console.log('Success for URL', url, success);
-                            console.log('Done, reloading page');
-                            window.location.reload();
-                        },
-                        handleAs: 'text',
-                        error: function (error) { return console.log('Error while loading : ', error); },
-                    });
-                }
-            }, function (error) {
-                if (error)
-                    console.log('=> Error ', error);
-            });
-        }
-        console.log('Notif: load bug', args);
-        fetchNextUrl();
     };
     SplendorDuel.prototype.getColor = function (color) {
         switch (color) {

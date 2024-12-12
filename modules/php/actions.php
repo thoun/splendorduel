@@ -1,10 +1,6 @@
 <?php
 
-if (!function_exists('str_starts_with')) {
-    function str_starts_with($haystack, $needle) {
-        return (string)$needle !== '' && strncmp($haystack, $needle, strlen($needle)) === 0;
-    }
-}
+use Bga\GameFramework\Actions\Types\IntArrayParam;
 
 trait ActionTrait {
 
@@ -20,6 +16,10 @@ trait ActionTrait {
     public function takeTokens(array $ids) {
         self::checkAction('takeTokens');
 
+        $this->actTakeTokens($ids);
+    }
+
+    public function actTakeTokens(#[IntArrayParam] array $ids) {
         $playerId = intval($this->getActivePlayerId());
 
         $board = $this->getBoard();
@@ -83,9 +83,7 @@ trait ActionTrait {
         }
     }
     
-    public function endGameAntiPlaying() {
-        self::checkAction('endGameAntiPlaying');
-
+    public function actEndGameAntiPlaying() {
         $playerId = intval($this->getActivePlayerId());
 
         if ($this->getPlayerAntiPlayingTurns($this->getOpponentId($playerId)) < 3) {
@@ -107,18 +105,30 @@ trait ActionTrait {
     public function cancelUsePrivilege() {
         self::checkAction('cancelUsePrivilege');
 
+        $this->actCancelUsePrivilege();
+    }
+    
+    public function actCancelUsePrivilege() {
         $this->gamestate->nextState('next');
     }
 
     public function usePrivilege() {
         self::checkAction('usePrivilege');
 
+        $this->actUsePrivilege();
+    } 
+
+    public function actUsePrivilege() {
         $this->gamestate->nextState('usePrivilege');
     } 
 
     public function refillBoard() {
         self::checkAction('refillBoard');
 
+        $this->actRefillBoard();
+    }
+
+    public function actRefillBoard() {
         $playerId = intval($this->getActivePlayerId());
 
         if (intval($this->tokens->countCardInLocation('bag')) == 0) {
@@ -139,6 +149,10 @@ trait ActionTrait {
     public function reserveCard(int $id) {
         self::checkAction('reserveCard');
 
+        $this->actReserveCard($id);
+    }
+
+    public function actReserveCard(int $id) {
         $playerId = intval($this->getActivePlayerId());
 
         $card = $this->getCardFromDb($this->cards->getCard($id));
@@ -176,6 +190,10 @@ trait ActionTrait {
     public function buyCard(int $id, array $tokensIds) {
         self::checkAction('buyCard');
 
+        $this->actBuyCard($id, $tokensIds);
+    }
+
+    public function actBuyCard(int $id, #[IntArrayParam] array $tokensIds) {
         $playerId = intval($this->getActivePlayerId());
 
         $card = $this->getCardFromDb($this->cards->getCard($id));
@@ -247,6 +265,10 @@ trait ActionTrait {
     public function takeRoyalCard(int $id) {
         self::checkAction('takeRoyalCard');
 
+        $this->actTakeRoyalCard($id);
+    }
+
+    public function actTakeRoyalCard(int $id) {
         $playerId = intval($this->getActivePlayerId());
 
         $card = $this->getRoyalCardFromDb($this->royalCards->getCard($id));
@@ -270,6 +292,10 @@ trait ActionTrait {
     public function placeJoker(int $color) {
         self::checkAction('placeJoker');
 
+        $this->actPlaceJoker($color);
+    }
+
+    public function actPlaceJoker(int $color) {
         $playerId = intval($this->getActivePlayerId());
 
         $args = $this->argPlaceJoker();
@@ -303,6 +329,10 @@ trait ActionTrait {
     public function discardTokens(array $ids) {
         self::checkAction('discardTokens');
 
+        $this->actDiscardTokens($ids);
+    }
+
+    public function actDiscardTokens(#[IntArrayParam] array $ids) {
         $playerId = intval($this->getActivePlayerId());
 
         $playerTokens = $this->getPlayerTokens($playerId);
@@ -331,6 +361,10 @@ trait ActionTrait {
     public function takeOpponentToken(int $id) {
         self::checkAction('takeOpponentToken');
 
+        $this->actTakeOpponentToken($id);
+    }
+
+    public function actTakeOpponentToken(int $id) {
         $playerId = intval($this->getActivePlayerId());
         $opponentId = $this->getOpponentId($playerId);
 

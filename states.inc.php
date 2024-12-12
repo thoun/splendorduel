@@ -88,6 +88,9 @@ $playerActionsGameStates = [
         "possibleactions" => [ 
             "takeTokens",
             "cancelUsePrivilege",
+
+            "actTakeTokens",
+            "actCancelUsePrivilege",
         ],
         "transitions" => [
             "next" => ST_PLAYER_PLAY_ACTION,
@@ -109,7 +112,12 @@ $playerActionsGameStates = [
             "refillBoard",
             "takeTokens",
             "buyCard",
-            "endGameAntiPlaying",
+
+            "actUsePrivilege",
+            "actRefillBoard",
+            "actTakeTokens",
+            "actBuyCard",
+            "actEndGameAntiPlaying",
         ],
         "transitions" => $playedCardTransitions + [
             "reserveCard" => ST_PLAYER_RESERVE_CARD,
@@ -127,6 +135,8 @@ $playerActionsGameStates = [
         //"args" => "argReserveCard",
         "possibleactions" => [ 
             "reserveCard",
+
+            "actReserveCard",
         ],
         "transitions" => $playedCardTransitions,
     ],
@@ -139,6 +149,8 @@ $playerActionsGameStates = [
         "args" => "argPlaceJoker",
         "possibleactions" => [ 
             "placeJoker",
+
+            "actPlaceJoker",
         ],
         "transitions" => $playedCardTransitions,
     ],
@@ -150,6 +162,8 @@ $playerActionsGameStates = [
         "type" => "activeplayer",
         "possibleactions" => [ 
             "takeRoyalCard",
+
+            "actTakeRoyalCard",
         ],
         "transitions" => $playedCardTransitions,
     ],
@@ -163,6 +177,8 @@ $playerActionsGameStates = [
         "action" => "stTakeBoardToken",
         "possibleactions" => [ 
             "takeTokens",
+
+            "actTakeTokens",
         ],
         "transitions" => $playedCardTransitions,
     ],
@@ -176,6 +192,8 @@ $playerActionsGameStates = [
         "action" => "stTakeOpponentToken",
         "possibleactions" => [ 
             "takeOpponentToken",
+
+            "actTakeOpponentToken",
         ],
         "transitions" => $playedCardTransitions,
     ],
@@ -188,6 +206,8 @@ $playerActionsGameStates = [
         "args" => "argDiscardTokens",
         "possibleactions" => [ 
             "discardTokens",
+
+            "actDiscardTokens",
         ],
         "transitions" => [
             "next" => ST_NEXT_PLAYER,
