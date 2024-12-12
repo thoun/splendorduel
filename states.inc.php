@@ -86,9 +86,6 @@ $playerActionsGameStates = [
         "type" => "activeplayer",
         "args" => "argUsePrivilege",
         "possibleactions" => [ 
-            "takeTokens",
-            "cancelUsePrivilege",
-
             "actTakeTokens",
             "actCancelUsePrivilege",
         ],
@@ -108,11 +105,6 @@ $playerActionsGameStates = [
         "type" => "activeplayer",
         "args" => "argPlayAction",
         "possibleactions" => [ 
-            "usePrivilege",
-            "refillBoard",
-            "takeTokens",
-            "buyCard",
-
             "actUsePrivilege",
             "actRefillBoard",
             "actTakeTokens",
@@ -134,8 +126,6 @@ $playerActionsGameStates = [
         "type" => "activeplayer",
         //"args" => "argReserveCard",
         "possibleactions" => [ 
-            "reserveCard",
-
             "actReserveCard",
         ],
         "transitions" => $playedCardTransitions,
@@ -148,8 +138,6 @@ $playerActionsGameStates = [
         "type" => "activeplayer",
         "args" => "argPlaceJoker",
         "possibleactions" => [ 
-            "placeJoker",
-
             "actPlaceJoker",
         ],
         "transitions" => $playedCardTransitions,
@@ -161,8 +149,6 @@ $playerActionsGameStates = [
         "descriptionmyturn" => clienttranslate('${you} must take a Royal card'),
         "type" => "activeplayer",
         "possibleactions" => [ 
-            "takeRoyalCard",
-
             "actTakeRoyalCard",
         ],
         "transitions" => $playedCardTransitions,
@@ -176,8 +162,6 @@ $playerActionsGameStates = [
         "args" => "argTakeBoardToken",
         "action" => "stTakeBoardToken",
         "possibleactions" => [ 
-            "takeTokens",
-
             "actTakeTokens",
         ],
         "transitions" => $playedCardTransitions,
@@ -190,9 +174,7 @@ $playerActionsGameStates = [
         "type" => "activeplayer",
         "args" => "argTakeOpponentToken",
         "action" => "stTakeOpponentToken",
-        "possibleactions" => [ 
-            "takeOpponentToken",
-
+        "possibleactions" => [
             "actTakeOpponentToken",
         ],
         "transitions" => $playedCardTransitions,
@@ -205,8 +187,6 @@ $playerActionsGameStates = [
         "type" => "activeplayer",
         "args" => "argDiscardTokens",
         "possibleactions" => [ 
-            "discardTokens",
-
             "actDiscardTokens",
         ],
         "transitions" => [
