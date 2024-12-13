@@ -13,12 +13,6 @@ trait ActionTrait {
         (note: each method below must match an input method in nicodemus.action.php)
     */
 
-    public function takeTokens(array $ids) {
-        self::checkAction('takeTokens');
-
-        $this->actTakeTokens($ids);
-    }
-
     public function actTakeTokens(#[IntArrayParam] array $ids) {
         $playerId = intval($this->getActivePlayerId());
 
@@ -102,31 +96,13 @@ trait ActionTrait {
         $this->gamestate->nextState('endGameAntiPlaying');
     }
     
-    public function cancelUsePrivilege() {
-        self::checkAction('cancelUsePrivilege');
-
-        $this->actCancelUsePrivilege();
-    }
-    
     public function actCancelUsePrivilege() {
         $this->gamestate->nextState('next');
     }
 
-    public function usePrivilege() {
-        self::checkAction('usePrivilege');
-
-        $this->actUsePrivilege();
-    } 
-
     public function actUsePrivilege() {
         $this->gamestate->nextState('usePrivilege');
     } 
-
-    public function refillBoard() {
-        self::checkAction('refillBoard');
-
-        $this->actRefillBoard();
-    }
 
     public function actRefillBoard() {
         $playerId = intval($this->getActivePlayerId());
@@ -145,12 +121,6 @@ trait ActionTrait {
 
         $this->gamestate->nextState('stay');
     } 
-
-    public function reserveCard(int $id) {
-        self::checkAction('reserveCard');
-
-        $this->actReserveCard($id);
-    }
 
     public function actReserveCard(int $id) {
         $playerId = intval($this->getActivePlayerId());
@@ -185,12 +155,6 @@ trait ActionTrait {
         $this->incStat(1, 'reserveCard'.$level, $playerId);
 
         $this->applyEndTurn($playerId);
-    }
-
-    public function buyCard(int $id, array $tokensIds) {
-        self::checkAction('buyCard');
-
-        $this->actBuyCard($id, $tokensIds);
     }
 
     public function actBuyCard(int $id, #[IntArrayParam] array $tokensIds) {
@@ -262,12 +226,6 @@ trait ActionTrait {
         $this->applyEndTurn($playerId, $card);
     }
 
-    public function takeRoyalCard(int $id) {
-        self::checkAction('takeRoyalCard');
-
-        $this->actTakeRoyalCard($id);
-    }
-
     public function actTakeRoyalCard(int $id) {
         $playerId = intval($this->getActivePlayerId());
 
@@ -287,12 +245,6 @@ trait ActionTrait {
         $this->incStat(1, 'royalCards', $playerId);
 
         $this->applyEndTurn($playerId, $card, false, true);
-    }
-
-    public function placeJoker(int $color) {
-        self::checkAction('placeJoker');
-
-        $this->actPlaceJoker($color);
     }
 
     public function actPlaceJoker(int $color) {
@@ -326,12 +278,6 @@ trait ActionTrait {
         $this->applyEndTurn($playerId, $card, true);
     }
 
-    public function discardTokens(array $ids) {
-        self::checkAction('discardTokens');
-
-        $this->actDiscardTokens($ids);
-    }
-
     public function actDiscardTokens(#[IntArrayParam] array $ids) {
         $playerId = intval($this->getActivePlayerId());
 
@@ -356,12 +302,6 @@ trait ActionTrait {
         $this->incStat(count($tokens), 'discardedTokens', $playerId);
 
         $this->gamestate->nextState('next');
-    }
-
-    public function takeOpponentToken(int $id) {
-        self::checkAction('takeOpponentToken');
-
-        $this->actTakeOpponentToken($id);
     }
 
     public function actTakeOpponentToken(int $id) {
