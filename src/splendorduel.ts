@@ -96,7 +96,6 @@ class SplendorDuel implements SplendorDuelGame {
             ]
         });
         this.setupNotifications();
-        this.setupPreferences();
 
         log( "Ending game setup" );
     }
@@ -207,7 +206,7 @@ class SplendorDuel implements SplendorDuelGame {
             warnings.push(_("You will have more than 10 tokens, and you'll need to discard some of them."));
         }
 
-        if (showPrivilegeWarning && (this as any).prefs[201].value != 2) {
+        if (showPrivilegeWarning && (this as any).bga.userPreferences.get(201) != 2) {
             warnings.push(`${_("This action will give a privilege to your opponent.")}
             <br><br>
             <i>${_("You can disable this warning in the user preferences (top right menu).")}</i>`)
@@ -347,7 +346,8 @@ class SplendorDuel implements SplendorDuelGame {
         const showPrivilegeWarning = this.tokensSelection.filter(token => token.type == 2 && token.color == 0).length >= 2
             || (this.tokensSelection.length == 3 && this.tokensSelection[0].color == this.tokensSelection[1].color && this.tokensSelection[0].color == this.tokensSelection[2].color);
 
-        const showLimitWarning = this.tokensSelection.length + this.getCurrentPlayerTable().getTokens().length > 10;
+        const futureTokens = [...this.tokensSelection, ...this.getCurrentPlayerTable().getTokens()];
+        const showLimitWarning = futureTokens.length > 10;
 
         if (showPrivilegeWarning || showLimitWarning) {
             this.confirmActionTakeTokens(() => this.takeSelectedTokens(), showPrivilegeWarning, showLimitWarning);
@@ -444,28 +444,6 @@ class SplendorDuel implements SplendorDuelGame {
 
     public getGameStateName(): string {
         return this.gamedatas.gamestate.name;
-    }
-
-    private setupPreferences() {
-        // Extract the ID and value from the UI control
-        const onchange = (e) => {
-          var match = e.target.id.match(/^preference_[cf]ontrol_(\d+)$/);
-          if (!match) {
-            return;
-          }
-          var prefId = +match[1];
-          var prefValue = +e.target.value;
-          (this as any).prefs[prefId].value = prefValue;
-        }
-        
-        // Call onPreferenceChange() when any value changes
-        dojo.query(".preference_control").connect("onchange", onchange);
-        
-        // Call onPreferenceChange() now
-        dojo.forEach(
-          dojo.query("#ingame_menu_content .preference_control"),
-          el => onchange({ target: el })
-        );
     }
 
     private getOrderedPlayers(gamedatas: SplendorDuelGamedatas) {

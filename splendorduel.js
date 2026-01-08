@@ -2835,7 +2835,6 @@ var SplendorDuel = /** @class */ (function () {
             ]
         });
         this.setupNotifications();
-        this.setupPreferences();
         log("Ending game setup");
     };
     ///////////////////////////////////////////////////
@@ -2939,7 +2938,7 @@ var SplendorDuel = /** @class */ (function () {
         if (showLimitWarning /* && this.gamedatas.gamestate.args.canBuyCard*/) { // you might not be able to buy a card, but you may be able to use privilege or take a gold instead
             warnings.push(_("You will have more than 10 tokens, and you'll need to discard some of them."));
         }
-        if (showPrivilegeWarning && this.prefs[201].value != 2) {
+        if (showPrivilegeWarning && this.bga.userPreferences.get(201) != 2) {
             warnings.push("".concat(_("This action will give a privilege to your opponent."), "\n            <br><br>\n            <i>").concat(_("You can disable this warning in the user preferences (top right menu)."), "</i>"));
         }
         if (warnings.length) {
@@ -3061,7 +3060,8 @@ var SplendorDuel = /** @class */ (function () {
         var _this = this;
         var showPrivilegeWarning = this.tokensSelection.filter(function (token) { return token.type == 2 && token.color == 0; }).length >= 2
             || (this.tokensSelection.length == 3 && this.tokensSelection[0].color == this.tokensSelection[1].color && this.tokensSelection[0].color == this.tokensSelection[2].color);
-        var showLimitWarning = this.tokensSelection.length + this.getCurrentPlayerTable().getTokens().length > 10;
+        var futureTokens = __spreadArray(__spreadArray([], this.tokensSelection, true), this.getCurrentPlayerTable().getTokens(), true);
+        var showLimitWarning = futureTokens.length > 10;
         if (showPrivilegeWarning || showLimitWarning) {
             this.confirmActionTakeTokens(function () { return _this.takeSelectedTokens(); }, showPrivilegeWarning, showLimitWarning);
         }
@@ -3124,23 +3124,6 @@ var SplendorDuel = /** @class */ (function () {
     };
     SplendorDuel.prototype.getGameStateName = function () {
         return this.gamedatas.gamestate.name;
-    };
-    SplendorDuel.prototype.setupPreferences = function () {
-        var _this = this;
-        // Extract the ID and value from the UI control
-        var onchange = function (e) {
-            var match = e.target.id.match(/^preference_[cf]ontrol_(\d+)$/);
-            if (!match) {
-                return;
-            }
-            var prefId = +match[1];
-            var prefValue = +e.target.value;
-            _this.prefs[prefId].value = prefValue;
-        };
-        // Call onPreferenceChange() when any value changes
-        dojo.query(".preference_control").connect("onchange", onchange);
-        // Call onPreferenceChange() now
-        dojo.forEach(dojo.query("#ingame_menu_content .preference_control"), function (el) { return onchange({ target: el }); });
     };
     SplendorDuel.prototype.getOrderedPlayers = function (gamedatas) {
         var _this = this;

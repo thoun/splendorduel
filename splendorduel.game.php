@@ -16,8 +16,8 @@
   *
   */
 
-
-require_once(APP_GAMEMODULE_PATH.'module/table/table.game.php');
+use Bga\GameFramework\Components\Deck;
+use Bga\GameFramework\Table;
 
 require_once('modules/php/objects/card.php');
 require_once('modules/php/objects/token.php');
@@ -36,6 +36,10 @@ class SplendorDuel extends Table {
     use StateTrait;
     use ArgsTrait;
     use DebugUtilTrait;
+		
+    public Deck $cards;
+	public Deck $royalCards;
+	public Deck $tokens;
 
 	function __construct() {
         // Your global variables labels:
@@ -53,20 +57,10 @@ class SplendorDuel extends Table {
             PLAYER_REFILLED => PLAYER_REFILLED,
         ]);   
 		
-        $this->cards = $this->getNew("module.common.deck");
-        $this->cards->init("card");
-		
-        $this->royalCards = $this->getNew("module.common.deck");
-        $this->royalCards->init("royal_card");
-		
-        $this->tokens = $this->getNew("module.common.deck");
-        $this->tokens->init("token");
+        $this->cards = $this->deckFactory->createDeck("card");		
+        $this->royalCards = $this->deckFactory->createDeck("royal_card");		
+        $this->tokens = $this->deckFactory->createDeck("token");
 	}
-	
-    protected function getGameName() {
-		// Used for translations and stuff. Please do not modify.
-        return "splendorduel";
-    }	
 
     /*
         setupNewGame:
@@ -147,10 +141,7 @@ class SplendorDuel extends Table {
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
 
-        // TODO TEMP
-        //$this->debugSetup();
-
-        /************ End of the game initialization *****/
+        return \ST_PLAYER_PLAY_ACTION;
     }
 
     /*
@@ -162,7 +153,7 @@ class SplendorDuel extends Table {
         _ when the game starts
         _ when a player refreshes the game page (F5)
     */
-    protected function getAllDatas() {
+    protected function getAllDatas(): array {
         $result = [];
     
         $currentPlayerId = intval(self::getCurrentPlayerId());    // !! We must only return informations visible by this player !!
