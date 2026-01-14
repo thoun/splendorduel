@@ -114,6 +114,22 @@ class SplendorDuel implements SplendorDuelGame {
         });
         this.setupNotifications();
 
+        if ((this as any).bgaInternal.flags['ingame_player_panels']) {
+            setTimeout(() => {
+                Object.keys(gamedatas.players).forEach(playerId => {
+                    const playerPanel = document.getElementById(`overall_player_board_${playerId}`)
+                    const playerTable = document.getElementById(`player-table-${playerId}-name`) as HTMLDivElement;
+                    playerTable.firstChild.remove();
+                    playerTable.insertAdjacentElement('afterbegin', playerPanel);
+                    playerTable.style.color = 'black';
+                    playerTable.style.fontWeight = 'inherit';
+                    playerTable.style.fontSize = 'unset';
+                    (playerTable.firstElementChild as HTMLDivElement).style.minWidth = '300px';
+                    playerTable.style.textAlign = 'inherit';
+                });
+            });
+        }
+
         log( "Ending game setup" );
     }
 
