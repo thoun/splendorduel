@@ -1,11 +1,3 @@
-declare const define;
-declare const ebg;
-declare const $;
-declare const dojo: Dojo;
-declare const _;
-declare const g_gamethemeurl;
-declare const bgaConfig;
-
 const ANIMATION_MS = 500;
 const ACTION_TIMER_DURATION = 5;
 
@@ -36,6 +28,8 @@ class SplendorDuel implements SplendorDuelGame {
     
     private TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
 
+    public bga: Bga;
+
     constructor() {
     }
     
@@ -54,6 +48,29 @@ class SplendorDuel implements SplendorDuelGame {
 
     public setup(gamedatas: SplendorDuelGamedatas) {
         log( "Starting game setup" );
+        this.bga.gameArea.getElement().insertAdjacentHTML('beforeend', `
+            <div id="anti-playing-notice"></div>
+            <div id="notice"></div>
+            <div id="table">
+                <div id="board-wrapper">
+                    <div id="bag-and-score-tile">
+                        <div id="bag">
+                            <div id="bag-counter"></div>
+                        </div>
+                        <div id="score-tile"></div>
+                    </div>
+                    <div id="board">
+                        <div id="mouse-selection"></div>
+                    </div>
+                    <div id="table-privileges" class="privilege-zone"></div>
+                </div>
+                <div id="cards-wrapper">
+                    <div id="table-cards"></div>
+                    <div id="royal-cards"></div>
+                </div>
+                <div id="tables"></div>
+            </div>
+        `);
         
         this.gamedatas = gamedatas;
 
@@ -140,7 +157,7 @@ class SplendorDuel implements SplendorDuelGame {
     private setGamestateDescription(property: string = '') {
         if ((this as any).isCurrentPlayerActive()) { // we don't want opponent to see the restriction the current player has
             const originalState = this.gamedatas.gamestates[this.gamedatas.gamestate.id];
-            (this as any).statusBar.setTitle(_(originalState['descriptionmyturn'  + property], []));
+            this.bga.statusBar.setTitle(_(originalState['descriptionmyturn'  + property]), []);
         }
     }
 
@@ -176,7 +193,7 @@ class SplendorDuel implements SplendorDuelGame {
         if (showNotice) {
             let notice = ``;
             const refillButton = args.canRefill ? `<button type="button" id="replenish_button" class="bgabutton bgabutton_blue">${_("Replenish the board")}</button>` : null;
-            const usePrivilegeButton = args.privileges ? `<button type="button" id="usePrivilege_button" class="bgabutton bgabutton_blue">${_("Use up to ${number} privilege(s) to take gem(s)").replace('${number}', args.privileges)}</button>` : null;
+            const usePrivilegeButton = args.privileges ? `<button type="button" id="usePrivilege_button" class="bgabutton bgabutton_blue">${_("Use up to ${number} privilege(s) to take gem(s)").replace('${number}', `${args.privileges}`)}</button>` : null;
             if (args.canRefill) {
                 if (args.mustRefill) {
                     notice = _('Before you can take your mandatory action, you <strong>must</strong> ${replenish_button} !').replace('${replenish_button}', refillButton);
@@ -677,7 +694,7 @@ class SplendorDuel implements SplendorDuelGame {
         if (button) {
             button.classList.toggle('disabled', !valid);
             const gold = tokens.length && tokens.every(token => token.type == 1);
-            button.innerHTML = gold ? _("Take gold token to reserve a card") : _("Take ${number} selected token(s)").replace('${number}', tokens.length);
+            button.innerHTML = gold ? _("Take gold token to reserve a card") : _("Take ${number} selected token(s)").replace('${number}', `${tokens.length}`);
         }
     }
 

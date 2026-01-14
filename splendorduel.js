@@ -2799,6 +2799,7 @@ var SplendorDuel = /** @class */ (function () {
     */
     SplendorDuel.prototype.setup = function (gamedatas) {
         log("Starting game setup");
+        this.bga.gameArea.getElement().insertAdjacentHTML('beforeend', "\n            <div id=\"anti-playing-notice\"></div>\n            <div id=\"notice\"></div>\n            <div id=\"table\">\n                <div id=\"board-wrapper\">\n                    <div id=\"bag-and-score-tile\">\n                        <div id=\"bag\">\n                            <div id=\"bag-counter\"></div>\n                        </div>\n                        <div id=\"score-tile\"></div>\n                    </div>\n                    <div id=\"board\">\n                        <div id=\"mouse-selection\"></div>\n                    </div>\n                    <div id=\"table-privileges\" class=\"privilege-zone\"></div>\n                </div>\n                <div id=\"cards-wrapper\">\n                    <div id=\"table-cards\"></div>\n                    <div id=\"royal-cards\"></div>\n                </div>\n                <div id=\"tables\"></div>\n            </div>\n        ");
         this.gamedatas = gamedatas;
         log('gamedatas', gamedatas);
         this.animationManager = new AnimationManager(this);
@@ -2875,7 +2876,7 @@ var SplendorDuel = /** @class */ (function () {
         if (property === void 0) { property = ''; }
         if (this.isCurrentPlayerActive()) { // we don't want opponent to see the restriction the current player has
             var originalState = this.gamedatas.gamestates[this.gamedatas.gamestate.id];
-            this.statusBar.setTitle(_(originalState['descriptionmyturn' + property], []));
+            this.bga.statusBar.setTitle(_(originalState['descriptionmyturn' + property]), []);
         }
     };
     SplendorDuel.prototype.onEnteringUsePrivilege = function (args) {
@@ -2910,7 +2911,7 @@ var SplendorDuel = /** @class */ (function () {
         if (showNotice) {
             var notice = "";
             var refillButton = args.canRefill ? "<button type=\"button\" id=\"replenish_button\" class=\"bgabutton bgabutton_blue\">".concat(_("Replenish the board"), "</button>") : null;
-            var usePrivilegeButton = args.privileges ? "<button type=\"button\" id=\"usePrivilege_button\" class=\"bgabutton bgabutton_blue\">".concat(_("Use up to ${number} privilege(s) to take gem(s)").replace('${number}', args.privileges), "</button>") : null;
+            var usePrivilegeButton = args.privileges ? "<button type=\"button\" id=\"usePrivilege_button\" class=\"bgabutton bgabutton_blue\">".concat(_("Use up to ${number} privilege(s) to take gem(s)").replace('${number}', "".concat(args.privileges)), "</button>") : null;
             if (args.canRefill) {
                 if (args.mustRefill) {
                     notice = _('Before you can take your mandatory action, you <strong>must</strong> ${replenish_button} !').replace('${replenish_button}', refillButton);
@@ -3269,7 +3270,7 @@ var SplendorDuel = /** @class */ (function () {
         if (button) {
             button.classList.toggle('disabled', !valid);
             var gold = tokens.length && tokens.every(function (token) { return token.type == 1; });
-            button.innerHTML = gold ? _("Take gold token to reserve a card") : _("Take ${number} selected token(s)").replace('${number}', tokens.length);
+            button.innerHTML = gold ? _("Take gold token to reserve a card") : _("Take ${number} selected token(s)").replace('${number}', "".concat(tokens.length));
         }
     };
     SplendorDuel.prototype.onPlayerTokenSelectionChange = function (tokens) {
