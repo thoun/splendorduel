@@ -17,8 +17,9 @@
   */
 
 use Bga\GameFramework\Components\Deck;
-use Bga\GameFramework\Table;
+use Bga\GameFramework\VisibleSystemException;
 
+require_once('modules/php/framework-prototype/Helpers/Arrays.php');
 require_once('modules/php/objects/card.php');
 require_once('modules/php/objects/token.php');
 require_once('modules/php/objects/player.php');
@@ -29,17 +30,19 @@ require_once('modules/php/actions.php');
 require_once('modules/php/states.php');
 require_once('modules/php/args.php');
 require_once('modules/php/debug-util.php');
+require_once('modules/php/CounterfeiterCardManager.php');
 
-class SplendorDuel extends Table {
+class SplendorDuel extends \Bga\GameFramework\Table {
     use UtilTrait;
     use ActionTrait;
     use StateTrait;
     use ArgsTrait;
     use DebugUtilTrait;
-		
+
     public Deck $cards;
-	public Deck $royalCards;
-	public Deck $tokens;
+    public Deck $royalCards;
+    public Deck $tokens;
+    public CounterfeiterCardManager $counterfeiterCards;
 
 	function __construct() {
         // Your global variables labels:
@@ -50,16 +53,18 @@ class SplendorDuel extends Table {
         // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
         
-        self::initGameStateLabels([
+        $this->initGameStateLabels([
             PLAY_AGAIN => PLAY_AGAIN,
             PLAYED_CARD => PLAYED_CARD,
             TAKE_ROYAL_CARD => TAKE_ROYAL_CARD,
             PLAYER_REFILLED => PLAYER_REFILLED,
         ]);   
 		
-        $this->cards = $this->deckFactory->createDeck("card");		
-        $this->royalCards = $this->deckFactory->createDeck("royal_card");		
-        $this->tokens = $this->deckFactory->createDeck("token");
+        $this->cards = $this->bga->deckFactory->createDeck("card");		
+        $this->royalCards = $this->bga->deckFactory->createDeck("royal_card");		
+        $this->tokens = $this->bga->deckFactory->createDeck("token");
+
+        $this->counterfeiterCards = new CounterfeiterCardManager($this);
 	}
 
     /*
@@ -69,7 +74,12 @@ class SplendorDuel extends Table {
         In this method, you must setup the game according to the game rules, so that
         the game is ready to be played.
     */
-    protected function setupNewGame( $players, $options = []) {    
+    protected function setupNewGame( $players, $options = []) {
+        $counterfeiterExpansion = $this->isCounterfeiterExpansion();
+        if ($counterfeiterExpansion) {
+            $this->counterfeiterCards->initDb();
+        }
+
         // Set the colors of the players with HTML color code
         // The default below is red/green/blue/orange/brown
         // The number of colors defined here must correspond to the maximum number of players allowed for the gams
@@ -135,12 +145,16 @@ class SplendorDuel extends Table {
 
         // setup the initial game situation here
         $this->setupCards();
-        $this->setupRoyalCards();
-        $this->setupTokens();
+        $this->setupRoyalCards($counterfeiterExpansion);
+        $this->setupTokens($counterfeiterExpansion);
+        if ($counterfeiterExpansion) {
+            $this->counterfeiterCards->setup();
+        }
 
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
 
+        /************ End of the game initialization *****/
         return \ST_PLAYER_PLAY_ACTION;
     }
 
@@ -192,6 +206,12 @@ class SplendorDuel extends Table {
             $result['cardDeckTop'][$level] = Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'.$level)));
             $result['tableCards'][$level] = $this->getCardsByLocation('table'.$level);
         }
+
+        $counterfeiterExpansion = $this->isCounterfeiterExpansion();
+        $result['expansion'] = $counterfeiterExpansion;
+        if ($counterfeiterExpansion) {
+            $this->counterfeiterCards->fillResult($result);
+        }
   
         return $result;
     }
@@ -229,7 +249,7 @@ class SplendorDuel extends Table {
         you must _never_ use getCurrentPlayerId() or getCurrentPlayerName(), otherwise it will fail with a "Not logged" error message. 
     */
 
-    function zombieTurn( $state, $active_player )
+    function zombieTurn(array $state, mixed $active_player ): void
     {
     	$statename = $state['name'];
     	
@@ -250,7 +270,7 @@ class SplendorDuel extends Table {
             return;
         }
 
-        throw new feException( "Zombie mode not supported at this game state: ".$statename );
+        throw new VisibleSystemException( "Zombie mode not supported at this game state: ".$statename );
     }
     
 ///////////////////////////////////////////////////////////////////////////////////:
@@ -285,6 +305,10 @@ class SplendorDuel extends Table {
                 $sql = "ALTER TABLE `DBPREFIX_player` ADD `player_anti_playing_turns` tinyint unsigned NOT NULL DEFAULT 0";
                 self::applyDbUpgradeToAllDB($sql);
             }            
+        }
+        if ($from_version <= 2512101438) {
+            // ! important ! Use DBPREFIX_<table_name> for all tables
+            self::applyDbUpgradeToAllDB("ALTER TABLE `DBPREFIX_forger_card` RENAME `DBPREFIX_counterfeiter_card`;");            
         }
     }    
 }

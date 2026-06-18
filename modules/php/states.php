@@ -1,5 +1,7 @@
 <?php
 
+use Bga\GameFrameworkPrototype\Helpers\Arrays;
+
 trait StateTrait {
 
 //////////////////////////////////////////////////////////////////////////////
@@ -12,10 +14,13 @@ trait StateTrait {
     */
 
     function stTakeBoardToken() {
-        $color = $this->argTakeBoardToken()['color'];
+        $args = $this->argTakeBoardToken();
+        $color = $args['color'];
         $board = $this->getBoard();
 
-        if (!$this->array_some($board, fn($token) => $token->color == $color)) {
+        $canTakeColors = $color === MULTICOLOR || $args['canTakeAnyColorOrTwoOfColor'] ? [0, 1, 2 ,3 ,4 ,5 ,6] : [$color];
+
+        if (!$this->array_some($board, fn($token) => in_array($token->color, $canTakeColors))) {
             self::notifyAllPlayers('log', clienttranslate('Card ability is skipped, as there is no ${color_name} token on the board'), [
                 'color_name' => $this->getColorName($color), // for logs
             ]);
@@ -42,35 +47,72 @@ trait StateTrait {
         }
     }
 
+    function stTakeRoyalCard() {
+        if (count($this->getRoyalCardsByLocation('deck')) == 0) {
+            $this->gamestate->jumpToState(ST_PLAYER_BEFORE_END_TURN);
+        }
+    }
+
+    function stBeforeEndTurn() {
+        $args = $this->argBeforeEndTurn();
+        if ($args['_no_notify']) {
+            $this->gamestate->nextState('next');
+        }
+    }
+
+    function stDiscardTokens() {
+        $args = $this->argDiscardTokens();
+        if ($args['_no_notify']) {
+            $this->gamestate->nextState('next');
+        }
+    }
+
     function stNextPlayer() {    
         $this->incStat(1, 'roundNumber');
+        $this->globals->delete(ROYAL_CARDS_WITH_COUNTERFEITER_POWER, RESERVE_FROM_DECK, COUNTERFEITER13_USED);
 
         $playerId = intval($this->getActivePlayerId());
 
         $this->refillCards();
+        if ($this->isCounterfeiterExpansion()) {
+            $this->counterfeiterCards->refill();
+        }
 
         $endReasons = $this->getEndReasons($playerId);
 
         if (count($endReasons) > 0) {
             $this->DbQuery("UPDATE player SET `player_score` = 1 WHERE player_id = $playerId");
 
+            $royalCards = $this->getRoyalCardsByLocation('player', $playerId);
+            
+            $goal = null;
             $message = null;
             switch ($endReasons[0]) {
                 case 1:
-                    $message = clienttranslate('${player_name} reached 20 points and wins the game!');
+                    $goal = 20;
+                    $message = clienttranslate('${player_name} reached ${goal} points and wins the game!');
                     break;
                 case 2:
-                    $message = clienttranslate('${player_name} reached 10 crowns and wins the game!');
+                    $goal = 10;
+                    if (Arrays::some($royalCards, fn($royalCard) => in_array(POWER_WIN_9CROWNS, $royalCard->power))) {
+                        $goal = 9;
+                    } 
+                    $message = clienttranslate('${player_name} reached ${goal} crowns and wins the game!');
                     break;
                 case 3:
-                    $message = clienttranslate('${player_name} reached 10 points in a single column and wins the game!');
+                    $goal = 10;
+                    if (Arrays::some($royalCards, fn($royalCard) => in_array(POWER_WIN_9PTS_SAME_COLOR, $royalCard->power))) {
+                        $goal = 9;
+                    }
+                    $message = clienttranslate('${player_name} reached ${goal} points in a single column and wins the game!');
                     break;
             }
                 
             self::notifyAllPlayers('win', $message, [
                 'playerId' => $playerId,
-                'player_name' => $this->getPlayerName($playerId),
+                'player_name' => $this->getPlayerNameById($playerId),
                 'endReasons' => $endReasons,
+                'goal' => $goal, // for logs
             ]);
 
             foreach ($endReasons as $endReason) {
@@ -80,7 +122,7 @@ trait StateTrait {
         } else if (boolval($this->getGameStateValue(PLAY_AGAIN))) {
             self::notifyAllPlayers('log', clienttranslate('${player_name} takes another turn with played card effect'), [
                 'playerId' => $playerId,
-                'player_name' => $this->getPlayerName($playerId),
+                'player_name' => $this->getPlayerNameById($playerId),
             ]);
 
             $this->setGameStateValue(PLAY_AGAIN, 0);

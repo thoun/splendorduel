@@ -1,13 +1,8 @@
+html[data-theme="light"] .player-board {
+    --game-bga-player-panel-background: white;
+}
+
 .player-board {
-  background-color: white;
-
-  &.spectator-mode {
-    color: black;
-    * {
-      background: white !important;
-    }
-  }
-
   .icon {
     margin-right: 5px;
 
@@ -75,6 +70,11 @@
 
     >div {
       flex: 1;
+      white-space: nowrap;
+    }
+
+    .smaller {
+      font-size: 70%;
     }
   }
 
@@ -207,14 +207,14 @@
         background-position-x: 0;
       }
 
-      @for $color from 0 through 5 {
+      @for $color from 0 through 6 {
         &[data-type="2"][data-color="#{$color}"] {
-          background-position-x: #{($color + 1) * 100% / 7};
+          background-position-x: #{($color + 1) * 100% / 8};
         }
       }
 
       &[data-type="2"][data-color="9"] {
-        background-position-x: #{7 * 100% / 7};
+        background-position-x: #{8 * 100% / 8};
       }
     }
   }

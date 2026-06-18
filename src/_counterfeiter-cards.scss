@@ -1,19 +1,25 @@
-.royal-card {
+@use 'sass:math';
+
+.counterfeiter-card {
     display: inline-block;
     position: relative;
-    width: 120px;
-    height: 183px;
+    width: 183px;
+    height: 120px;
     border-radius: 8px;
 
     .card-sides {
         .card-side {
             border-radius: 8px;
-            background-size: auto 100%;
-            background-image: url('img/royal-cards.jpg');
+            background-size: 200% auto;
+            background-image: url('img/counterfeiter-cards.jpg');
 
             &>* {
                 pointer-events: none;
                 user-select: none;
+            }
+
+            &.back {
+                background-position: 100% 100%;
             }
         }
     }    
@@ -28,9 +34,9 @@
         }
     }
 
-    @for $index from 1 through 12 {
-        &[data-index="#{$index}"] .card-side {
-            background-position-x: #{($index - 1) * 100% / 11};
+    @for $index from 1 through 17 {
+        &[data-index="#{$index}"] .card-side.front {
+            background-position: #{(($index - 1) % 2) * 100%} #{math.floor(($index - 1) / 2) * 100% / 8};
         }
     }
 }

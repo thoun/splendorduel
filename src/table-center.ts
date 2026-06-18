@@ -5,14 +5,17 @@ class TableCenter {
 
     public cardsDecks: Deck<Card>[] = [];
     public cards: SlotStock<Card>[] = [];
-    public royalCards: LineStock<RoyalCard>;    
+    public royalCards: LineStock<RoyalCard>;
+    public counterfeiterDeck: Deck<CounterfeiterCard>;   
+    public counterfeiterCards: LineStock<CounterfeiterCard>;   
         
     constructor(private game: SplendorDuelGame, gamedatas: SplendorDuelGamedatas) {
         this.bag = new VoidStock<Token>(game.tokensManager, document.getElementById('bag'));
 
         this.bagCounter = new ebg.counter();
         this.bagCounter.create(`bag-counter`);
-        this.bagCounter.setValue(25 - (gamedatas.board.length + Object.values(gamedatas.players).map(player => player.tokens.length).reduce((a, b) => a + b, 0)));
+        const tokenCount = gamedatas.expansion ? 29 : 25;
+        this.bagCounter.setValue(tokenCount - (gamedatas.board.length + Object.values(gamedatas.players).map(player => player.tokens.length).reduce((a, b) => a + b, 0)));
 
         this.board = new TokenBoard(game, gamedatas.board);
 
@@ -29,7 +32,7 @@ class TableCenter {
                     position: 'center',
                 }
             });
-            this.cardsDecks[level].onCardClick = card => this.game.onTableCardClick(card);
+            this.cardsDecks[level].onCardClick = card => this.game.onTableCardClick(card, this.cardsDecks[level].getSelection().some(c => c.id == card.id));
 
             const slotsIds = [];
             for (let i = 1; i <= 6 - level; i++) {
@@ -41,7 +44,7 @@ class TableCenter {
                 gap: '12px',
                 unselectableCardClass: 'no-disable-class',
             });
-            this.cards[level].onCardClick = card => this.game.onTableCardClick(card);
+            this.cards[level].onCardClick = card => this.game.onTableCardClick(card, this.cardsDecks[level].getSelection().some(c => c.id == card.id));
             this.cards[level].addCards(gamedatas.tableCards[level]);
         }
 
@@ -66,17 +69,48 @@ class TableCenter {
 
         this.game.setTooltip('bag', _("Click to see the tokens in the bag"));
         document.getElementById('bag').addEventListener('click', () => this.showTokensInBag());
+
+        if (gamedatas.expansion) {
+            document.getElementById(`cards-wrapper`).insertAdjacentHTML('afterbegin', `
+                <div id="counterfeiter-cards-wrapper">
+                    <div id="counterfeiter-deck"></div>
+                    <div id="counterfeiter-cards"></div>
+                </div>
+            `);
+
+            this.counterfeiterDeck = new Deck<CounterfeiterCard>(game.counterfeiterCardsManager, document.getElementById(`counterfeiter-deck`), {
+                cardNumber: gamedatas.counterfeiterDeckCount,
+                topCard: gamedatas.counterfeiterDeckTop,
+                counter: {
+                    hideWhenEmpty: true,
+                    position: 'center',
+                }
+            });
+
+            this.counterfeiterCards = new LineStock<CounterfeiterCard>(game.counterfeiterCardsManager, document.getElementById(`counterfeiter-cards`), {
+                center: true,
+                unselectableCardClass: 'no-disable-class',
+            });
+            this.counterfeiterCards.onCardClick = card => this.game.onCounterfeiterCardClick(card);
+            this.counterfeiterCards.addCards(gamedatas.counterfeiterCards);
+        }
     }
     
-    public setCardsSelectable(selectable: boolean, selectableCards: Card[] = [], all: boolean = false) {
+    public setCardsSelectable(selectable: boolean, selectableCards: number[] = [], all: boolean = false, multiple: boolean = false) {
         for (let level = 3; level >= 1; level--) {
-            this.cardsDecks[level].setSelectionMode(selectable && all ? 'single' : 'none');
-            this.cards[level].setSelectionMode(selectable ? 'single' : 'none');
+            this.cardsDecks[level].setSelectionMode(selectable && all ? (multiple ? 'multiple' : 'single') : 'none');
+            this.cards[level].setSelectionMode(selectable ? (multiple ? 'multiple' : 'single') : 'none');
 
             if (selectable && !all) {
-                this.cardsDecks[level].setSelectableCards(selectableCards);
-                this.cards[level].setSelectableCards(selectableCards);
+                this.cardsDecks[level].setSelectableCards([]);
+                this.cards[level].setSelectableCards(this.cards[level].getCards().filter(card => selectableCards.includes(card.id)));
             }
+        }
+    }
+    
+    public setDecksSelectable(selectable: boolean) {
+        for (let level = 3; level >= 1; level--) {
+            this.cardsDecks[level].setSelectionMode(selectable ? 'single' : 'none');
         }
     }
     
@@ -86,14 +120,34 @@ class TableCenter {
         }
     }
     
+    public unselectTableCounterfeiterCard(card: CounterfeiterCard) {
+        if (!this.counterfeiterCards) {
+            return;
+        }
+        
+        this.counterfeiterCards.unselectCard(card);
+    }
+    
+    public setCounterfeiterCardsSelectable(selectable: boolean, selectableCards: number[] = [], all: boolean = false) {
+        if (!this.counterfeiterCards) {
+            return;
+        }
+
+        this.counterfeiterCards.setSelectionMode(selectable ? 'single' : 'none');
+
+        if (selectable && !all) {
+            this.counterfeiterCards.setSelectableCards(this.counterfeiterCards.getCards().filter(card => selectableCards.includes(card.id)));
+        }
+    }
+    
     public async refillBoard(refilledTokens: Token[]): Promise<any> {
         await this.board.refill(refilledTokens, this.bag);        
         this.bagCounter.toValue(0);
     }
     
-    public setBoardSelectable(selectionType: 'privileges' | 'play' | 'effect' | null, canTakeGold: boolean = false, max: number = 3, color: number = null) {
+    public setBoardSelectable(selectionType: 'privileges' | 'play' | 'effect' | null, canTakeGold: boolean = false, max: number = 3, color: number = null, canTakeAnyColorOrTwoOfColor: boolean = false) {
         //document.getElementById(`board`).classList.toggle('selectable', Boolean(selectionType));
-        this.board.setSelectable(selectionType, canTakeGold, max, color);
+        this.board.setSelectable(selectionType, canTakeGold, max, color, canTakeAnyColorOrTwoOfColor);
     }
     
     public reserveCard(args: NotifReserveCardArgs) {
@@ -119,13 +173,13 @@ class TableCenter {
     private showTokensInBag() {
         const tokens = [...this.board.stock.getCards(), ...this.game.getPlayersTokens()];
 
-        const tokensInBagCount = [2, 4, 4, 4, 4, 4];
+        const tokensInBagCount = [2, 4, 4, 4, 4, 4, (this.game as any).gamedatas.expansion ? 4 : 0];
         tokensInBagCount[-1] = 3;
 
         tokens.forEach(token => tokensInBagCount[token.type == 1 ? -1 : token.color]--);
 
         const bagTokens = [];
-        for (let color = -1; color <= 5; color++) {
+        for (let color = -1; color <= 6; color++) {
             for (let i = 0; i < tokensInBagCount[color]; i++) {
                 bagTokens.push({
                     id: 1000 + 100 * color + i,
@@ -159,5 +213,15 @@ class TableCenter {
             stock.removeAll();          
             tokensInBagDialog.destroy();
         });
+    }
+    
+    public async refillCounterfeiterCards(cards: CounterfeiterCard[], counterfeiterDeckCount: number, counterfeiterDeckTop: CounterfeiterCard) {
+        const promise = this.counterfeiterCards.addCards(cards);
+        this.counterfeiterDeck.setCardNumber(counterfeiterDeckCount, counterfeiterDeckTop);
+        await promise;
+    }
+    
+    public async addRoyalCard(card: RoyalCard) {
+        await this.royalCards.addCard(card);
     }
 }

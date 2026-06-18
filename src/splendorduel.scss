@@ -6,6 +6,7 @@ $playerColors: '7c5654', 'd6d6d7', 'b79d86', '1e2c36';
 @import '../node_modules/bga-cards/bga-cards';
 @import 'cards';
 @import 'royal-cards';
+@import 'counterfeiter-cards';
 @import 'tokens';
 @import 'table-center';
 @import 'playerboards';
@@ -22,14 +23,14 @@ $playerColors: '7c5654', 'd6d6d7', 'b79d86', '1e2c36';
 
 @font-face {
     font-family: 'abril-titling';
-    src: url('img/abril-titling.woff2') format('woff2'),
-         url('img/abril-titling.woff') format('woff');
+    src: url('fonts/abril-titling.woff2') format('woff2'),
+         url('fonts/abril-titling.woff') format('woff');
     font-weight: normal;
     font-style: normal;
 
 }
 
-html, .mode_3d #game_play_area_background {
+html {
   background: url('img/background.jpg') #72749a;
   background-size: 100% auto;
   background-repeat: repeat;
@@ -54,6 +55,7 @@ html, .mode_3d #game_play_area_background {
 }
 
 #notice {
+  color: black;
   background: #ffd247;
   border-radius: 15px;
   display: none;
@@ -148,7 +150,7 @@ html, .mode_3d #game_play_area_background {
 }
 
 .dijitTooltipContents {
-  .icon, .color {
+  .icon, .color, .ability-icon {
     width: 20px;
     height: 20px;
   }
@@ -163,14 +165,14 @@ html, .mode_3d #game_play_area_background {
   background-image: url('img/tokens.png');
   vertical-align: middle;
 
-  @for $type from -1 through 5 {
+  @for $type from -1 through 6 {
     &[data-type="#{$type}"] {
-        background-position-x: #{($type + 1) * 100% / 7};
+        background-position-x: #{($type + 1) * 100% / 8};
     }
   }
 
   &[data-type="9"] {
-    background-position-x: #{7 * 100% / 7};
+    background-position-x: #{8 * 100% / 8};
   }
 
   &.fake {

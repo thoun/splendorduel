@@ -1,5 +1,7 @@
 <?php
 
+use Bga\GameFrameworkPrototype\Helpers\Arrays;
+
 trait ArgsTrait {
     
 //////////////////////////////////////////////////////////////////////////////
@@ -17,10 +19,19 @@ trait ArgsTrait {
 
         $privileges = $this->getPlayerPrivileges($playerId);
 
+        $number = $privileges;
+        if ($this->counterfeiterCards->playerHasCounterfeiterCard($playerId, 13) && !$this->globals->get(COUNTERFEITER13_USED, false)) {
+            $number++;
+        }
+
         return [
-            'number' => $privileges, // for title
-            'privileges' => $privileges,
+            'number' => $number, // for title
+            'privileges' => $number,
         ];
+    }
+
+    function getPlayerMaxReserve(int $playerId): int {
+        return $this->counterfeiterCards->playerHasCounterfeiterCard($playerId, 15) ? 5 : 3;
     }
 
     function argPlayAction() {
@@ -37,11 +48,13 @@ trait ArgsTrait {
 
         $canTakeTokens = count($board) > 0;
         $buyableCardsAndCosts = $this->getBuyableCardsAndCosts($playerId);
-        $canReserve = intval($this->cards->countCardInLocation('reserved', $playerId)) < 3;
+        $buyableCounterfeiterCardsAndCosts = $this->getBuyableCounterfeiterCardsAndCosts($playerId);
+        $maxReserve = $this->getPlayerMaxReserve($playerId);
+        $canReserve = intval($this->cards->countCardInLocation('reserved', $playerId)) < $maxReserve;
         if (!$canReserve && $this->array_every($board, fn($token) => $token->type == 1)) {
             $canTakeTokens = false;
         }
-        $canBuyCard = count($buyableCardsAndCosts['buyableCards']) > 0;
+        $canBuyCard = count($buyableCardsAndCosts['buyableCards']) > 0 || count($buyableCounterfeiterCardsAndCosts['buyableCounterfeiterCards']) > 0;
 
         $mustRefill = $canRefill && !$canTakeTokens && !$canBuyCard;
 
@@ -57,7 +70,23 @@ trait ArgsTrait {
             'canBuyCard' => $canBuyCard,
             'playerAntiPlaying' => $playerAntiPlaying,
             'opponentAntiPlaying' => $opponentAntiPlaying,            
-        ] + $buyableCardsAndCosts;
+        ] + $buyableCardsAndCosts + $buyableCounterfeiterCardsAndCosts;
+    }
+
+    function argReserveCard() {
+        $playerId = intval($this->getActivePlayerId());
+
+        $canReserve = 1;
+        if (
+            $this->counterfeiterCards->playerHasCounterfeiterCard($playerId, 15) && // reserve 2 cards
+            intval($this->cards->countCardInLocation('reserved', $playerId)) < ($this->getPlayerMaxReserve($playerId) - 1)
+        ) {
+            $canReserve = 2;
+        }
+
+        return [
+            'canReserve' => $canReserve,
+        ];
     }
 
     function argPlaceJoker() {
@@ -74,12 +103,39 @@ trait ArgsTrait {
 
     function argTakeBoardToken() {
         $id = intval($this->getGameStateValue(PLAYED_CARD));
-        $card = $this->getCardFromDb($this->cards->getCard($id));
+        if ($id > 0) {
+            $playerId = intval($this->getActivePlayerId());
+            $card = $this->getCardFromDb($this->cards->getCard($id));
 
-        return [
-            'color' => $card->color,
-            'color_name' => $this->getColorName($card->color), // for title
-        ];
+            return [
+                'number' => 1,
+                'color' => $card->color,
+                'canTakeAnyColorOrTwoOfColor' => $this->counterfeiterCards->playerHasCounterfeiterCard($playerId, 16),
+                'color_name' => $this->getColorName($card->color), // for title
+            ];
+        } else {
+            $power = -$id;
+
+            if ($power === POWER_TAKE_GOLD_FROM_TABLE) {
+                return [
+                    'number' => 1,
+                    'color' => -1,
+                    'color_name' => $this->getColorName(-1), // for title
+                ];
+            } else if ($power === POWER_TAKE_ALL_GEMS_SAME_COLOR) {
+                return [
+                    'number' => -1,
+                    'color' => MULTICOLOR,
+                    'color_name' => $this->getColorName(MULTICOLOR), // for title
+                ];
+            } else if ($power === POWER_TAKE_3GEMS_FROM_TABLE) {
+                return [
+                    'number' => 3,
+                    'color' => MULTICOLOR,
+                    'color_name' => $this->getColorName(MULTICOLOR), // for title
+                ];
+            }
+        }
     }
 
     function argTakeOpponentToken() {
@@ -91,14 +147,76 @@ trait ArgsTrait {
         ];
     }
 
+    function argBeforeEndTurn() {
+        $possiblePowers = [];
+        $playerRoyalCardCount = 0;
+        
+        if ($this->isCounterfeiterExpansion()) {
+            $playerId = intval($this->getActivePlayerId());
+            $playerTokens = $this->getPlayerTokensByColor($playerId);
+            $glasswareTokens = array_merge($playerTokens[GLASSWARE], $playerTokens[GOLD]);
+
+            $playerRoyalCardCount = count($this->getRoyalCardsByLocation('player', $playerId));
+
+            if (
+                $this->counterfeiterCards->playerHasCounterfeiterCard($playerId, 9) && // pay 1+$playerRoyalCardCount glassware tokens to take a royal card
+                count($glasswareTokens) >= (1 + $playerRoyalCardCount) &&
+                $this->globals->get(ROYAL_CARDS_WITH_COUNTERFEITER_POWER, 0) == 0 && // check it wasn't already used during this turn
+                count($this->getRoyalCardsByLocation('deck')) > 0 // check if there are remaining royal cards
+            ) {
+                $possiblePowers[] = 9;
+            }
+            
+            if (
+                $this->counterfeiterCards->playerHasCounterfeiterCard($playerId, 10) && // pay scroll + glassware token to play again
+                $this->getPlayerPrivileges($playerId) >= 1 && 
+                count($glasswareTokens) >= 1 &&
+                !boolval($this->getGameStateValue(PLAY_AGAIN)) // ignore if there's already a new turn incoming
+            ) {
+                $possiblePowers[] = 10;
+            }
+            
+            if (
+                $this->counterfeiterCards->playerHasCounterfeiterCard($playerId, 17) && // pay 2 glassware tokens to reserve from discard
+                count($glasswareTokens) >= 2 &&
+                count($this->getCardsByLocation('reserved', $playerId)) < $this->getPlayerMaxReserve($playerId) && // player can reserve
+                $this->globals->get(RESERVE_FROM_DECK, 0) == 0 // check it wasn't already used during this turn
+            ) {
+                $possiblePowers[] = 17;
+            }
+        }
+
+        return [
+            'possiblePowers' => $possiblePowers,
+            'playerRoyalCardCount' => $playerRoyalCardCount,
+            '_no_notify' => count($possiblePowers) === 0,
+        ];
+    }
+
     function argDiscardTokens() {
         $playerId = intval($this->getActivePlayerId());
 
-        $tokens = $this->getPlayerTokens($playerId);
-        $number = count($tokens) - 10;
+        $number = max(0, $this->getPlayerTokenCountInLimit($playerId) - 10);
 
         return [
             'number' => $number, // for title
+            '_no_notify' => $number <= 0,
+        ];
+    }
+
+    function argReserveFromDeckChooseCard() {
+        $playerId = intval($this->getActivePlayerId());
+
+        $level = $this->globals->get(RESERVE_FROM_DECK);
+        $cards = $this->getCardsFromDb($this->cards->getCardsOnTop(3, 'deck'.$level));
+
+        return [
+            'level' => $level,
+            '_private' => [
+                $playerId => [
+                    'cards' => $cards,
+                ]
+            ]
         ];
     }
 } 

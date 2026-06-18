@@ -7,6 +7,7 @@ class TokenBoard {
     private selectionType: SelectionType;
     private selectionColor: number;
     private canTakeGold: boolean;
+    private canTakeAnyColorOrTwoOfColor: boolean;
 
     private mouseSelectionInitialCoordinates: number[];
     private mouseSelectionStart: Token | null;
@@ -55,18 +56,19 @@ class TokenBoard {
         if (!this.canTakeGold) {
             possibleSelection = possibleSelection.filter(card => card.type === 2);
         }
-        if (this.selectionColor != null) {
+        if (this.selectionColor != null && !this.canTakeAnyColorOrTwoOfColor) {
             possibleSelection = possibleSelection.filter(card => card.color === this.selectionColor);
         }
         return possibleSelection;
     }
     
-    public setSelectable(selectionType: 'privileges' | 'play' | 'effect' | null, canTakeGold: boolean, max: number = 3, color: number = null) {
+    public setSelectable(selectionType: 'privileges' | 'play' | 'effect' | null, canTakeGold: boolean, max: number = 3, color: number = null, canTakeAnyColorOrTwoOfColor: boolean = false) {
         this.stock.setSelectionMode(selectionType ? 'multiple' : 'none');
         this.maxSelectionToken = max;
         this.selectionType = selectionType;
         this.selectionColor = color;
         this.canTakeGold = canTakeGold;
+        this.canTakeAnyColorOrTwoOfColor = canTakeAnyColorOrTwoOfColor;
 
         this.stock.setSelectableCards(this.getDefaultPossibleSelection());
     }
@@ -77,12 +79,12 @@ class TokenBoard {
         const tokens = this.stock.getCards();
         selection.sort((a, b) => a.row == b.row ? a.column - b.column : a.row - b.row);
 
-        if (selection.length > this.maxSelectionToken) {
+        if (this.maxSelectionToken !== -1 && selection.length > this.maxSelectionToken) {
             valid = false;
         } else if (this.selectionType === 'privileges') {
             valid = this.onPrivilegeTokenSelectionChange(selection, tokens, valid);
         } else if (this.selectionType === 'effect') {
-            valid = this.onEffectTokenSelectionChange(selection, tokens, valid);
+            valid = this.onEffectTokenSelectionChange(selection, tokens, valid, lastChange);
         } else if (this.selectionType === 'play') {
             const { stop, validUpdated } = this.onPlayTokenSelectionChange(selection, tokens, valid, lastChange);
             if (stop) {
@@ -91,7 +93,7 @@ class TokenBoard {
             valid = validUpdated;
         }
 
-        this.game.onTableTokenSelectionChange(selection, valid);
+        this.game.onTableTokenSelectionChange(/*selection  might be changed by onEffectTokenSelectionChange */this.stock.getSelection(), valid, this.selectionType);
     }
 
     private onPlayTokenSelectionChange(selection: Token[], tokens: Token[], valid: boolean, lastChange: Token) {
@@ -197,11 +199,52 @@ class TokenBoard {
         return valid;
     }
 
-    private onEffectTokenSelectionChange(selection: Token[], tokens: Token[], valid: boolean) {
-        this.stock.setSelectableCards(selection.length >= this.maxSelectionToken ? selection : this.getDefaultPossibleSelection());
+    private onEffectTokenSelectionChange(selection: Token[], tokens: Token[], valid: boolean, lastChange: Token) {
+        if (this.maxSelectionToken === -1) {
+            if (selection.length === 0) {
+                this.stock.setSelectableCards(this.getDefaultPossibleSelection());
+                return false;
+            }
+            const color = selection[0].color;
+            const tokensOfColor = this.stock.getCards().filter(token => token.color === color);
+            const select = this.stock.getSelection().includes(lastChange);
+            if (tokensOfColor.length > selection.length) {
+                tokensOfColor.forEach(token => {
+                    if (select) {
+                        if (!selection.includes(token)) {
+                            this.stock.selectCard(token, true);
+                        }
+                    } else {
+                        this.stock.unselectCard(token, true);
+                    }
+                });
+            }
 
-        if (selection.some(card => card.type != 2 || card.color != this.selectionColor)) {
-            valid = false;
+            this.stock.setSelectableCards(select ? tokensOfColor : this.getDefaultPossibleSelection());
+            return !selection.some(card => card.type != 2);
+        }
+
+        if (this.canTakeAnyColorOrTwoOfColor) {
+            this.maxSelectionToken = selection.every(card => card.color == this.selectionColor) ? 2 : 1;
+        }
+        this.stock.setSelectableCards(this.maxSelectionToken !== -1 && selection.length >= this.maxSelectionToken ? selection : this.getDefaultPossibleSelection());
+
+        if (this.selectionColor === -1) {
+            if (selection.some(card => card.type != 1)) {
+                valid = false;
+            }
+        } else if (this.selectionColor === null) {
+            if (selection.some(card => card.type != 2)) {
+                valid = false;
+            }
+        } else {
+            if (selection.some(card => card.type != 2)) {
+                valid = false;
+            }
+            if (valid && selection.some(card => card.color != this.selectionColor)) {
+                valid = selection.length === 1 && this.canTakeAnyColorOrTwoOfColor;
+            }
+
         }
         return valid;
     }

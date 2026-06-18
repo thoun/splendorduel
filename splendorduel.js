@@ -2138,13 +2138,82 @@ var RoyalCardsManager = /** @class */ (function (_super) {
     }
     RoyalCardsManager.prototype.getTooltip = function (card) {
         var _this = this;
-        var message = "\n        <strong>".concat(_("Points:"), "</strong> ").concat(card.points, "\n        ");
-        if (card.power.length) {
-            message += "\n            <br>\n            <strong>".concat(_("Power:"), "</strong> ").concat(card.power.map(function (power) { return _this.game.getPower(power); }).join(', '), "\n            ");
+        var message = [];
+        if (card.points) {
+            message.push("\n            <strong>".concat(_("Points:"), "</strong> ").concat(card.points, "\n            "));
         }
-        return message;
+        if (card.power.length) {
+            message.push("\n            <strong>".concat(_("Power:"), "</strong> ").concat(card.power.map(function (power) { return _this.game.getPower(power); }).join(', '), "\n            "));
+        }
+        return message.join('<br>');
     };
     return RoyalCardsManager;
+}(CardManager));
+var CounterfeiterCardsManager = /** @class */ (function (_super) {
+    __extends(CounterfeiterCardsManager, _super);
+    function CounterfeiterCardsManager(game) {
+        var _this = _super.call(this, game, {
+            getId: function (card) { return "counterfeiter-card-".concat(card.id); },
+            setupDiv: function (card, div) {
+                div.classList.add('counterfeiter-card');
+                div.dataset.index = '' + card.type;
+            },
+            setupFrontDiv: function (card, div) {
+                game.setTooltip(div.id, _this.getTooltip(card));
+            },
+            isCardVisible: function (card) { return Boolean(card.type); },
+            cardWidth: 183,
+            cardHeight: 120,
+        }) || this;
+        _this.game = game;
+        return _this;
+    }
+    CounterfeiterCardsManager.prototype.getTooltip = function (card) {
+        var message = "\n        <strong>".concat(_("Cost:"), "</strong> ").concat(Object.entries(card.cost).map(function (entry) {
+            return "".concat(entry[1], " <div class=\"token-icon\" data-type=\"").concat(entry[0], "\"></div>");
+        }).join(' &nbsp; '));
+        if (card.points) {
+            message += "\n            <br>\n            <strong>".concat(_("Points:"), "</strong> ").concat(card.points, "\n            ");
+        }
+        if (card.crowns) {
+            message += "\n            <br>\n            <strong>".concat(_("Crowns:"), "</strong> ").concat(card.crowns);
+        }
+        message += "\n        <br>\n        <strong>".concat(_("Power:"), "</strong> ").concat(this.getPower(card.type), "\n        ");
+        return message;
+    };
+    CounterfeiterCardsManager.prototype.getPower = function (type) {
+        switch (type) {
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5: return _("During a Purchase 1 Jewel card or Purchase 1 Counterfeiter card action, you may spend up to 2 Glassware tokens to reduce the cost of the color shown by 2 for each Glassware token spent.");
+            case 6: return _("During a Purchase 1 Jewel card or Purchase 1 Counterfeiter card action, you may spend 2 Glassware tokens to reduce the cost of any <strong>single</strong> color by 3.");
+            case 7: return _("During a Purchase 1 Jewel card or Purchase 1 Counterfeiter card action, you may spend 1 Glassware token to reduce the Pearl cost by 1.");
+            case 8: return _("During a Purchase 1 Jewel card or Purchase 1 Counterfeiter card action, you may spend up to 2 Glassware tokens to reduce the cost of any color by 1 for each Glassware token spent. When spending 2 Glassware tokens, each cost reduction can be for the same color or different colors.");
+            case 9: return _("At the end of your turn, before checking the token limit, you may spend Glassware to take 1 of the available Royal cards. The cost to use this ability is 1 Glassware token plus 1 Glassware token for each Royal card you already own. Replace the card with the top card of the Royal card deck.")
+                + '<br><i>' + _("Royal cards taken after acquiring enough Crowns are <strong>not</strong> replaced.") + '</i>';
+            case 10: return _("At the end of your turn, before checking the token limit, spend a Glassware token and return a Privilege to immediately take another turn.");
+            case 11: return _("At the end of your turn, before checking the token limit, spend a Glassware token and return a Privilege to take 1 Gem, Pearl, or Glassware token from your opponent.");
+            case 12: return _("When checking the 10-token limit at the end of your turn, ignore your Glassware tokens; they do not count against this limit.");
+            case 13: return _("When Using a Privilege, take 2 Gem, Pearl, and/or Glassware tokens of your choice from the board instead of 1.")
+                + '<br><i>' + _("Note: Since you may only use this ability once per turn, if you use more than 1 Privilege, only the first one will let you take 2 tokens; any other Privileges will only let you take 1 token as usual.") + '</i>';
+            case 14: return _("When you take this card, you immediately acquire 2 Crowns. This might allow you to take 1 Royal card or fulfill a Victory condition.");
+            case 15: return _("You can have up to 5 reserved cards instead of 3.")
+                + '<br>' + _("Also, when doing the Take 1 Gold token and reserve 1 Jewel card action, you may reserve up to 2 cards instead of 1; each card can be taken from any level or drawn from any of the 3 decks.");
+            case 16: return _("After purchasing a Jewel card that has a <ICON_ABILITY> ability, instead of taking 1 token matching the color of that card from the board, you may either:").replace('<ICON_ABILITY>', "<div class=\"ability-icon\" data-ability=\"3\"></div>")
+                + '<ul>'
+                + '<li>' + _("Take 2 tokens matching the color of the card from the board.") + '</li>'
+                + "<strong>".concat(_('OR'), "</strong>")
+                + '<li>' + _("Take any 1 Gem, Pearl, or Glassware token  from the board.") + '</li>'
+                + '</ul>';
+            case 17:
+                return _("At the end of your turn, before checking the 10-token limit, you may spend 2 Glassware tokens to select one of the 3 decks (●,●●,●●●). Take the top 3 cards of the selected deck and choose 1 to reserve. Put the 2 cards you didn’t choose at the bottom of the corresponding deck in any order.")
+                    + '<br>' + _("As this is not a mandatory action, you can use this ability even when no Gold token is available on the board, and you cannot take a Gold token when using it. You cannot use this ability if you already have the maximum number of reserved cards.");
+                ;
+        }
+    };
+    return CounterfeiterCardsManager;
 }(CardManager));
 var TokensManager = /** @class */ (function (_super) {
     __extends(TokensManager, _super);
@@ -2221,33 +2290,35 @@ var TokenBoard = /** @class */ (function () {
         if (!this.canTakeGold) {
             possibleSelection = possibleSelection.filter(function (card) { return card.type === 2; });
         }
-        if (this.selectionColor != null) {
+        if (this.selectionColor != null && !this.canTakeAnyColorOrTwoOfColor) {
             possibleSelection = possibleSelection.filter(function (card) { return card.color === _this.selectionColor; });
         }
         return possibleSelection;
     };
-    TokenBoard.prototype.setSelectable = function (selectionType, canTakeGold, max, color) {
+    TokenBoard.prototype.setSelectable = function (selectionType, canTakeGold, max, color, canTakeAnyColorOrTwoOfColor) {
         if (max === void 0) { max = 3; }
         if (color === void 0) { color = null; }
+        if (canTakeAnyColorOrTwoOfColor === void 0) { canTakeAnyColorOrTwoOfColor = false; }
         this.stock.setSelectionMode(selectionType ? 'multiple' : 'none');
         this.maxSelectionToken = max;
         this.selectionType = selectionType;
         this.selectionColor = color;
         this.canTakeGold = canTakeGold;
+        this.canTakeAnyColorOrTwoOfColor = canTakeAnyColorOrTwoOfColor;
         this.stock.setSelectableCards(this.getDefaultPossibleSelection());
     };
     TokenBoard.prototype.onTokenSelectionChange = function (selection, lastChange) {
         var valid = selection.length > 0;
         var tokens = this.stock.getCards();
         selection.sort(function (a, b) { return a.row == b.row ? a.column - b.column : a.row - b.row; });
-        if (selection.length > this.maxSelectionToken) {
+        if (this.maxSelectionToken !== -1 && selection.length > this.maxSelectionToken) {
             valid = false;
         }
         else if (this.selectionType === 'privileges') {
             valid = this.onPrivilegeTokenSelectionChange(selection, tokens, valid);
         }
         else if (this.selectionType === 'effect') {
-            valid = this.onEffectTokenSelectionChange(selection, tokens, valid);
+            valid = this.onEffectTokenSelectionChange(selection, tokens, valid, lastChange);
         }
         else if (this.selectionType === 'play') {
             var _a = this.onPlayTokenSelectionChange(selection, tokens, valid, lastChange), stop_1 = _a.stop, validUpdated = _a.validUpdated;
@@ -2256,7 +2327,7 @@ var TokenBoard = /** @class */ (function () {
             }
             valid = validUpdated;
         }
-        this.game.onTableTokenSelectionChange(selection, valid);
+        this.game.onTableTokenSelectionChange(/*selection  might be changed by onEffectTokenSelectionChange */ this.stock.getSelection(), valid, this.selectionType);
     };
     TokenBoard.prototype.onPlayTokenSelectionChange = function (selection, tokens, valid, lastChange) {
         var goldTokens = selection.filter(function (card) { return card.type == 1; });
@@ -2357,11 +2428,52 @@ var TokenBoard = /** @class */ (function () {
         }
         return valid;
     };
-    TokenBoard.prototype.onEffectTokenSelectionChange = function (selection, tokens, valid) {
+    TokenBoard.prototype.onEffectTokenSelectionChange = function (selection, tokens, valid, lastChange) {
         var _this = this;
-        this.stock.setSelectableCards(selection.length >= this.maxSelectionToken ? selection : this.getDefaultPossibleSelection());
-        if (selection.some(function (card) { return card.type != 2 || card.color != _this.selectionColor; })) {
-            valid = false;
+        if (this.maxSelectionToken === -1) {
+            if (selection.length === 0) {
+                this.stock.setSelectableCards(this.getDefaultPossibleSelection());
+                return false;
+            }
+            var color_1 = selection[0].color;
+            var tokensOfColor = this.stock.getCards().filter(function (token) { return token.color === color_1; });
+            var select_1 = this.stock.getSelection().includes(lastChange);
+            if (tokensOfColor.length > selection.length) {
+                tokensOfColor.forEach(function (token) {
+                    if (select_1) {
+                        if (!selection.includes(token)) {
+                            _this.stock.selectCard(token, true);
+                        }
+                    }
+                    else {
+                        _this.stock.unselectCard(token, true);
+                    }
+                });
+            }
+            this.stock.setSelectableCards(select_1 ? tokensOfColor : this.getDefaultPossibleSelection());
+            return !selection.some(function (card) { return card.type != 2; });
+        }
+        if (this.canTakeAnyColorOrTwoOfColor) {
+            this.maxSelectionToken = selection.every(function (card) { return card.color == _this.selectionColor; }) ? 2 : 1;
+        }
+        this.stock.setSelectableCards(this.maxSelectionToken !== -1 && selection.length >= this.maxSelectionToken ? selection : this.getDefaultPossibleSelection());
+        if (this.selectionColor === -1) {
+            if (selection.some(function (card) { return card.type != 1; })) {
+                valid = false;
+            }
+        }
+        else if (this.selectionColor === null) {
+            if (selection.some(function (card) { return card.type != 2; })) {
+                valid = false;
+            }
+        }
+        else {
+            if (selection.some(function (card) { return card.type != 2; })) {
+                valid = false;
+            }
+            if (valid && selection.some(function (card) { return card.color != _this.selectionColor; })) {
+                valid = selection.length === 1 && this.canTakeAnyColorOrTwoOfColor;
+            }
         }
         return valid;
     };
@@ -2515,11 +2627,12 @@ var TableCenter = /** @class */ (function () {
         this.bag = new VoidStock(game.tokensManager, document.getElementById('bag'));
         this.bagCounter = new ebg.counter();
         this.bagCounter.create("bag-counter");
-        this.bagCounter.setValue(25 - (gamedatas.board.length + Object.values(gamedatas.players).map(function (player) { return player.tokens.length; }).reduce(function (a, b) { return a + b; }, 0)));
+        var tokenCount = gamedatas.expansion ? 29 : 25;
+        this.bagCounter.setValue(tokenCount - (gamedatas.board.length + Object.values(gamedatas.players).map(function (player) { return player.tokens.length; }).reduce(function (a, b) { return a + b; }, 0)));
         this.board = new TokenBoard(game, gamedatas.board);
-        for (var level = 3; level >= 1; level--) {
+        var _loop_3 = function (level) {
             document.getElementById('table-cards').insertAdjacentHTML('beforeend', "\n                <div id=\"card-deck-".concat(level, "\"></div>\n                <div id=\"table-cards-").concat(level, "\"></div>\n            "));
-            this.cardsDecks[level] = new Deck(game.cardsManager, document.getElementById("card-deck-".concat(level)), {
+            this_1.cardsDecks[level] = new Deck(game.cardsManager, document.getElementById("card-deck-".concat(level)), {
                 cardNumber: gamedatas.cardDeckCount[level],
                 topCard: gamedatas.cardDeckTop[level],
                 counter: {
@@ -2527,19 +2640,23 @@ var TableCenter = /** @class */ (function () {
                     position: 'center',
                 }
             });
-            this.cardsDecks[level].onCardClick = function (card) { return _this.game.onTableCardClick(card); };
+            this_1.cardsDecks[level].onCardClick = function (card) { return _this.game.onTableCardClick(card, _this.cardsDecks[level].getSelection().some(function (c) { return c.id == card.id; })); };
             var slotsIds = [];
             for (var i = 1; i <= 6 - level; i++) {
                 slotsIds.push(i);
             }
-            this.cards[level] = new SlotStock(game.cardsManager, document.getElementById("table-cards-".concat(level)), {
+            this_1.cards[level] = new SlotStock(game.cardsManager, document.getElementById("table-cards-".concat(level)), {
                 slotsIds: slotsIds,
                 mapCardToSlot: function (card) { return card.locationArg; },
                 gap: '12px',
                 unselectableCardClass: 'no-disable-class',
             });
-            this.cards[level].onCardClick = function (card) { return _this.game.onTableCardClick(card); };
-            this.cards[level].addCards(gamedatas.tableCards[level]);
+            this_1.cards[level].onCardClick = function (card) { return _this.game.onTableCardClick(card, _this.cardsDecks[level].getSelection().some(function (c) { return c.id == card.id; })); };
+            this_1.cards[level].addCards(gamedatas.tableCards[level]);
+        };
+        var this_1 = this;
+        for (var level = 3; level >= 1; level--) {
+            _loop_3(level);
         }
         this.royalCards = new LineStock(game.royalCardsManager, document.getElementById("royal-cards"), {
             center: true,
@@ -2553,22 +2670,62 @@ var TableCenter = /** @class */ (function () {
         }
         this.game.setTooltip('bag', _("Click to see the tokens in the bag"));
         document.getElementById('bag').addEventListener('click', function () { return _this.showTokensInBag(); });
+        if (gamedatas.expansion) {
+            document.getElementById("cards-wrapper").insertAdjacentHTML('afterbegin', "\n                <div id=\"counterfeiter-cards-wrapper\">\n                    <div id=\"counterfeiter-deck\"></div>\n                    <div id=\"counterfeiter-cards\"></div>\n                </div>\n            ");
+            this.counterfeiterDeck = new Deck(game.counterfeiterCardsManager, document.getElementById("counterfeiter-deck"), {
+                cardNumber: gamedatas.counterfeiterDeckCount,
+                topCard: gamedatas.counterfeiterDeckTop,
+                counter: {
+                    hideWhenEmpty: true,
+                    position: 'center',
+                }
+            });
+            this.counterfeiterCards = new LineStock(game.counterfeiterCardsManager, document.getElementById("counterfeiter-cards"), {
+                center: true,
+                unselectableCardClass: 'no-disable-class',
+            });
+            this.counterfeiterCards.onCardClick = function (card) { return _this.game.onCounterfeiterCardClick(card); };
+            this.counterfeiterCards.addCards(gamedatas.counterfeiterCards);
+        }
     }
-    TableCenter.prototype.setCardsSelectable = function (selectable, selectableCards, all) {
+    TableCenter.prototype.setCardsSelectable = function (selectable, selectableCards, all, multiple) {
         if (selectableCards === void 0) { selectableCards = []; }
         if (all === void 0) { all = false; }
+        if (multiple === void 0) { multiple = false; }
         for (var level = 3; level >= 1; level--) {
-            this.cardsDecks[level].setSelectionMode(selectable && all ? 'single' : 'none');
-            this.cards[level].setSelectionMode(selectable ? 'single' : 'none');
+            this.cardsDecks[level].setSelectionMode(selectable && all ? (multiple ? 'multiple' : 'single') : 'none');
+            this.cards[level].setSelectionMode(selectable ? (multiple ? 'multiple' : 'single') : 'none');
             if (selectable && !all) {
-                this.cardsDecks[level].setSelectableCards(selectableCards);
-                this.cards[level].setSelectableCards(selectableCards);
+                this.cardsDecks[level].setSelectableCards([]);
+                this.cards[level].setSelectableCards(this.cards[level].getCards().filter(function (card) { return selectableCards.includes(card.id); }));
             }
+        }
+    };
+    TableCenter.prototype.setDecksSelectable = function (selectable) {
+        for (var level = 3; level >= 1; level--) {
+            this.cardsDecks[level].setSelectionMode(selectable ? 'single' : 'none');
         }
     };
     TableCenter.prototype.unselectTableCard = function (card) {
         for (var level = 3; level >= 1; level--) {
             this.cards[level].unselectCard(card);
+        }
+    };
+    TableCenter.prototype.unselectTableCounterfeiterCard = function (card) {
+        if (!this.counterfeiterCards) {
+            return;
+        }
+        this.counterfeiterCards.unselectCard(card);
+    };
+    TableCenter.prototype.setCounterfeiterCardsSelectable = function (selectable, selectableCards, all) {
+        if (selectableCards === void 0) { selectableCards = []; }
+        if (all === void 0) { all = false; }
+        if (!this.counterfeiterCards) {
+            return;
+        }
+        this.counterfeiterCards.setSelectionMode(selectable ? 'single' : 'none');
+        if (selectable && !all) {
+            this.counterfeiterCards.setSelectableCards(this.counterfeiterCards.getCards().filter(function (card) { return selectableCards.includes(card.id); }));
         }
     };
     TableCenter.prototype.refillBoard = function (refilledTokens) {
@@ -2584,12 +2741,13 @@ var TableCenter = /** @class */ (function () {
             });
         });
     };
-    TableCenter.prototype.setBoardSelectable = function (selectionType, canTakeGold, max, color) {
+    TableCenter.prototype.setBoardSelectable = function (selectionType, canTakeGold, max, color, canTakeAnyColorOrTwoOfColor) {
         if (canTakeGold === void 0) { canTakeGold = false; }
         if (max === void 0) { max = 3; }
         if (color === void 0) { color = null; }
+        if (canTakeAnyColorOrTwoOfColor === void 0) { canTakeAnyColorOrTwoOfColor = false; }
         //document.getElementById(`board`).classList.toggle('selectable', Boolean(selectionType));
-        this.board.setSelectable(selectionType, canTakeGold, max, color);
+        this.board.setSelectable(selectionType, canTakeGold, max, color, canTakeAnyColorOrTwoOfColor);
     };
     TableCenter.prototype.reserveCard = function (args) {
         this.game.cardsManager.removeCard(args.card);
@@ -2617,11 +2775,11 @@ var TableCenter = /** @class */ (function () {
     };
     TableCenter.prototype.showTokensInBag = function () {
         var tokens = __spreadArray(__spreadArray([], this.board.stock.getCards(), true), this.game.getPlayersTokens(), true);
-        var tokensInBagCount = [2, 4, 4, 4, 4, 4];
+        var tokensInBagCount = [2, 4, 4, 4, 4, 4, this.game.gamedatas.expansion ? 4 : 0];
         tokensInBagCount[-1] = 3;
         tokens.forEach(function (token) { return tokensInBagCount[token.type == 1 ? -1 : token.color]--; });
         var bagTokens = [];
-        for (var color = -1; color <= 5; color++) {
+        for (var color = -1; color <= 6; color++) {
             for (var i = 0; i < tokensInBagCount[color]; i++) {
                 bagTokens.push({
                     id: 1000 + 100 * color + i,
@@ -2650,13 +2808,41 @@ var TableCenter = /** @class */ (function () {
             tokensInBagDialog.destroy();
         });
     };
+    TableCenter.prototype.refillCounterfeiterCards = function (cards, counterfeiterDeckCount, counterfeiterDeckTop) {
+        return __awaiter(this, void 0, void 0, function () {
+            var promise;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        promise = this.counterfeiterCards.addCards(cards);
+                        this.counterfeiterDeck.setCardNumber(counterfeiterDeckCount, counterfeiterDeckTop);
+                        return [4 /*yield*/, promise];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    TableCenter.prototype.addRoyalCard = function (card) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.royalCards.addCard(card)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
     return TableCenter;
 }());
 var isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;
 ;
 var log = isDebug ? console.log.bind(window.console) : function () { };
 var PlayerTable = /** @class */ (function () {
-    function PlayerTable(game, player) {
+    function PlayerTable(game, player, expansion) {
         var _this = this;
         this.game = game;
         this.played = [];
@@ -2666,12 +2852,18 @@ var PlayerTable = /** @class */ (function () {
         this.currentPlayer = this.playerId == this.game.getPlayerId();
         var html = "\n        <div id=\"player-table-".concat(this.playerId, "\" class=\"player-table\" style=\"--player-color: #").concat(player.color, ";\">\n            <div id=\"player-table-").concat(this.playerId, "-name\" class=\"name-wrapper\">\n                ").concat(player.name, "\n                <div id=\"player-privileges-").concat(this.playerId, "\" class=\"player-privileges privilege-zone\"></div>\n            </div>\n            <div class=\"columns\">\n        ");
         [2, 1, 3, 5, 4, 0, -1].forEach(function (i) {
-            html += "\n                <div id=\"player-table-".concat(_this.playerId, "-tokens-").concat(i, "\" class=\"tokens\"></div>\n                ");
+            if (i === 0) {
+                html += "\n                        <div class=\"double-token-stock\">\n                            <div id=\"player-table-".concat(_this.playerId, "-tokens-0\" class=\"tokens\"></div>\n                            <div id=\"player-table-").concat(_this.playerId, "-tokens-6\" class=\"tokens\"></div>\n                        </div>\n                    ");
+            }
+            else {
+                html += "\n                    <div id=\"player-table-".concat(_this.playerId, "-tokens-").concat(i, "\" class=\"tokens\"></div>\n                    ");
+            }
         });
         [2, 1, 3, 5, 4, 9].forEach(function (i) {
             html += "\n                <div id=\"player-table-".concat(_this.playerId, "-played-").concat(i, "\" class=\"cards\" data-color=\"").concat(i, "\"></div>\n                ");
         });
-        html += "\n                <div class=\"hand-wrapper\">\n                    <div class=\"block-label\">".concat(_('Reserved cards'), "</div>\n                    <div id=\"player-table-").concat(this.playerId, "-reserved\" class=\"cards\"></div>\n                </div>\n            </div>\n\n            <div id=\"player-table-").concat(this.playerId, "-royal-cards\"></div>\n            \n        </div>\n        ");
+        html += "\n                <div class=\"hand-wrapper\">\n                    <div class=\"block-label\">".concat(_('Reserved cards'), "</div>\n                    <div id=\"player-table-").concat(this.playerId, "-reserved\" class=\"cards\"></div>\n                </div>\n            </div>");
+        html += "\n            <div id=\"player-table-".concat(this.playerId, "-counterfeiter-cards\"></div>  \n            <div id=\"player-table-").concat(this.playerId, "-royal-cards\"></div>          \n        </div>\n        ");
         document.getElementById('tables').insertAdjacentHTML('beforeend', html);
         var reservedDiv = document.getElementById("player-table-".concat(this.playerId, "-reserved"));
         this.reserved = new LineStock(this.game.cardsManager, reservedDiv);
@@ -2694,11 +2886,19 @@ var PlayerTable = /** @class */ (function () {
         });
         this.royalCards = new LineStock(this.game.royalCardsManager, document.getElementById("player-table-".concat(this.playerId, "-royal-cards")));
         this.royalCards.addCards(player.royalCards);
+        if (expansion) {
+            this.counterfeiterCards = new LineStock(this.game.counterfeiterCardsManager, document.getElementById("player-table-".concat(this.playerId, "-counterfeiter-cards")));
+            this.counterfeiterCards.addCards(player.counterfeiterCards);
+        }
         var tokensStockSettings = {
             direction: 'column',
             center: false,
         };
-        [1, 2, 3, 4, 5, 0, -1].forEach(function (i) {
+        var tokenColors = [1, 2, 3, 4, 5, 0, -1];
+        if (expansion) {
+            tokenColors.push(6);
+        }
+        tokenColors.forEach(function (i) {
             var tokenDiv = document.getElementById("player-table-".concat(_this.playerId, "-tokens-").concat(i));
             _this.tokens[i] = new LineStock(_this.game.tokensManager, tokenDiv, tokensStockSettings);
             _this.tokens[i].onSelectionChange = function () { return _this.game.onPlayerTokenSelectionChange(_this.getSelectedTokens()); };
@@ -2718,7 +2918,7 @@ var PlayerTable = /** @class */ (function () {
         if (buyableCards === void 0) { buyableCards = null; }
         this.reserved.setSelectionMode(selectable ? 'single' : 'none');
         if (selectable) {
-            this.reserved.setSelectableCards(buyableCards);
+            this.reserved.setSelectableCards(this.reserved.getCards().filter(function (card) { return buyableCards.includes(card.id); }));
         }
     };
     PlayerTable.prototype.addCard = function (card) {
@@ -2727,9 +2927,12 @@ var PlayerTable = /** @class */ (function () {
     PlayerTable.prototype.addRoyalCard = function (card) {
         return this.royalCards.addCard(card);
     };
-    PlayerTable.prototype.addTokens = function (tokens) {
+    PlayerTable.prototype.addCounterfeiterCard = function (card) {
+        return this.counterfeiterCards.addCard(card);
+    };
+    PlayerTable.prototype.addTokens = function (tokens, fromStock) {
         var _this = this;
-        return Promise.all([1, 2, 3, 4, 5, 0, -1].map(function (i) { return _this.tokens[i].addCards(tokens.filter(function (token) { return token.color == i; })); }));
+        return Promise.all([1, 2, 3, 4, 5, 6, 0, -1].map(function (i) { var _a; return (_a = _this.tokens[i]) === null || _a === void 0 ? void 0 : _a.addCards(tokens.filter(function (token) { return token.color == i; }), { fromStock: fromStock }); }));
     };
     PlayerTable.prototype.addReservedCard = function (card) {
         return this.reserved.addCard(this.currentPlayer ? card : __assign(__assign({}, card), { index: undefined }));
@@ -2742,23 +2945,24 @@ var PlayerTable = /** @class */ (function () {
     };
     PlayerTable.prototype.setTokensSelectable = function (selectable, goldAllowed) {
         var _this = this;
-        (goldAllowed || !selectable ? [1, 2, 3, 4, 5, 0, -1] : [1, 2, 3, 4, 5, 0]).forEach(function (i) { return _this.tokens[i].setSelectionMode(selectable ? 'multiple' : 'none'); });
+        (goldAllowed || !selectable ? [1, 2, 3, 4, 5, 6, 0, -1] : [1, 2, 3, 4, 5, 6, 0]).forEach(function (i) { var _a; return (_a = _this.tokens[i]) === null || _a === void 0 ? void 0 : _a.setSelectionMode(selectable ? 'multiple' : 'none'); });
     };
     PlayerTable.prototype.setTokensSelectableByType = function (allowedTypes, preselection) {
         var _this = this;
-        [1, 2, 3, 4, 5, 0, -1].forEach(function (i) {
-            _this.tokens[i].setSelectionMode(allowedTypes.includes(i) ? 'multiple' : 'none');
-            _this.tokens[i].unselectAll();
-            _this.tokens[i].getCards().filter(function (card) { return preselection.some(function (token) { return token.id == card.id; }); }).forEach(function (token) { return _this.tokens[i].selectCard(token); });
+        [1, 2, 3, 4, 5, 6, 0, -1].forEach(function (i) {
+            var _a, _b, _c;
+            (_a = _this.tokens[i]) === null || _a === void 0 ? void 0 : _a.setSelectionMode(allowedTypes.includes(i) ? 'multiple' : 'none');
+            (_b = _this.tokens[i]) === null || _b === void 0 ? void 0 : _b.unselectAll();
+            (_c = _this.tokens[i]) === null || _c === void 0 ? void 0 : _c.getCards().filter(function (card) { return preselection.some(function (token) { return token.id == card.id; }); }).forEach(function (token) { return _this.tokens[i].selectCard(token); });
         });
     };
     PlayerTable.prototype.getTokens = function () {
         var _this = this;
-        return [1, 2, 3, 4, 5, 0, -1].map(function (i) { return _this.tokens[i].getCards(); }).reduce(function (a, b) { return __spreadArray(__spreadArray([], a, true), b, true); }, []);
+        return [1, 2, 3, 4, 5, 6, 0, -1].map(function (i) { var _a, _b; return (_b = (_a = _this.tokens[i]) === null || _a === void 0 ? void 0 : _a.getCards()) !== null && _b !== void 0 ? _b : []; }).reduce(function (a, b) { return __spreadArray(__spreadArray([], a, true), b, true); }, []);
     };
     PlayerTable.prototype.getSelectedTokens = function () {
         var _this = this;
-        return [1, 2, 3, 4, 5, 0, -1].map(function (i) { return _this.tokens[i].getSelection(); }).reduce(function (a, b) { return __spreadArray(__spreadArray([], a, true), b, true); }, []);
+        return [1, 2, 3, 4, 5, 6, 0, -1].map(function (i) { var _a, _b; return (_b = (_a = _this.tokens[i]) === null || _a === void 0 ? void 0 : _a.getSelection()) !== null && _b !== void 0 ? _b : []; }).reduce(function (a, b) { return __spreadArray(__spreadArray([], a, true), b, true); }, []);
     };
     PlayerTable.prototype.getCrowns = function () {
         var _this = this;
@@ -2772,18 +2976,38 @@ var ANIMATION_MS = 500;
 var ACTION_TIMER_DURATION = 5;
 var LOCAL_STORAGE_ZOOM_KEY = 'SplendorDuel-zoom';
 var LOCAL_STORAGE_JUMP_TO_FOLDED_KEY = 'SplendorDuel-jump-to-folded';
-var SplendorDuel = /** @class */ (function () {
+var POWER_RESERVE_CARD = 6;
+var POWER_WIN_9PTS_SAME_COLOR = 7;
+var POWER_WIN_9CROWNS = 8;
+var POWER_TAKE_ALL_GEMS_SAME_COLOR = 9;
+var POWER_TAKE_COUNTERFEITER_CARD = 10;
+var POWER_TAKE_2GEMS_FROM_BAG = 11;
+var POWER_TAKE_GOLD_FROM_TABLE = 12;
+var POWER_TAKE_3GEMS_FROM_TABLE = 13;
+// @ts-ignore
+GameGui = (function () {
+    function GameGui() { }
+    return GameGui;
+})();
+var SplendorDuel = /** @class */ (function (_super) {
+    __extends(SplendorDuel, _super);
     function SplendorDuel() {
-        this.playersTables = [];
-        this.privilegeCounters = [];
-        this.reservedCounters = [];
-        this.pointsCounters = [];
-        this.crownCounters = [];
-        this.strongestColumnCounters = [];
-        this.tokenCounters = [];
-        this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
-        this.CARD_REGEX = /<card>(.*)<\/card>/;
-        this.cardLogId = 0;
+        var _this = _super.call(this) || this;
+        _this.playersTables = [];
+        _this.privilegeCounters = [];
+        _this.reservedCounters = [];
+        _this.pointsCounters = [];
+        _this.crownCounters = [];
+        _this.strongestColumnCounters = [];
+        _this.tokenCounters = [];
+        _this.tokenExtraCounters = [];
+        _this.crownGoalCounters = [];
+        _this.strongestColumnGoalCounters = [];
+        _this.pickStock = null;
+        _this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
+        _this.CARD_REGEX = /<card>(.*)<\/card>/;
+        _this.cardLogId = 0;
+        return _this;
     }
     /*
         setup:
@@ -2805,6 +3029,7 @@ var SplendorDuel = /** @class */ (function () {
         this.animationManager = new AnimationManager(this);
         this.cardsManager = new CardsManager(this);
         this.royalCardsManager = new RoyalCardsManager(this);
+        this.counterfeiterCardsManager = new CounterfeiterCardsManager(this);
         this.tokensManager = new TokensManager(this);
         new JumpToManager(this, {
             localStorageFoldedKey: LOCAL_STORAGE_JUMP_TO_FOLDED_KEY,
@@ -2868,7 +3093,7 @@ var SplendorDuel = /** @class */ (function () {
                 this.onEnteringPlayAction(args.args);
                 break;
             case 'reserveCard':
-                this.onEnteringReserveCard();
+                this.onEnteringReserveCard(args.args);
                 break;
             case 'placeJoker':
                 this.onEnteringPlaceJoker(args.args);
@@ -2879,11 +3104,20 @@ var SplendorDuel = /** @class */ (function () {
             case 'takeOpponentToken':
                 this.onEnteringTakeOpponentToken(args.args);
                 break;
+            case 'takeCounterfeiterCard':
+                this.onEnteringTakeCounterfeiterCard();
+                break;
             case 'takeRoyalCard':
                 this.onEnteringTakeRoyalCard();
                 break;
             case 'discardTokens':
                 this.onEnteringDiscardTokens();
+                break;
+            case 'reserveFromDeckChooseDeck':
+                this.onEnteringReserveFromDeckChooseDeck();
+                break;
+            case 'reserveFromDeckChooseCard':
+                this.onEnteringReserveFromDeckChooseCard(args.args);
                 break;
         }
     };
@@ -2891,7 +3125,7 @@ var SplendorDuel = /** @class */ (function () {
         if (property === void 0) { property = ''; }
         if (this.isCurrentPlayerActive()) { // we don't want opponent to see the restriction the current player has
             var originalState = this.gamedatas.gamestates[this.gamedatas.gamestate.id];
-            this.bga.statusBar.setTitle(_(originalState['descriptionmyturn' + property]), []);
+            this.statusBar.setTitle(_(originalState['descriptionmyturn' + property]), []);
         }
     };
     SplendorDuel.prototype.onEnteringUsePrivilege = function (args) {
@@ -2926,7 +3160,7 @@ var SplendorDuel = /** @class */ (function () {
         if (showNotice) {
             var notice = "";
             var refillButton = args.canRefill ? "<button type=\"button\" id=\"replenish_button\" class=\"bgabutton bgabutton_blue\">".concat(_("Replenish the board"), "</button>") : null;
-            var usePrivilegeButton = args.privileges ? "<button type=\"button\" id=\"usePrivilege_button\" class=\"bgabutton bgabutton_blue\">".concat(_("Use up to ${number} privilege(s) to take gem(s)").replace('${number}', "".concat(args.privileges)), "</button>") : null;
+            var usePrivilegeButton = args.privileges ? "<button type=\"button\" id=\"usePrivilege_button\" class=\"bgabutton bgabutton_blue\">".concat(_("Use up to ${number} privilege(s) to take gem(s)").replace('${number}', '' + args.privileges), "</button>") : null;
             if (args.canRefill) {
                 if (args.mustRefill) {
                     notice = _('Before you can take your mandatory action, you <strong>must</strong> ${replenish_button} !').replace('${replenish_button}', refillButton);
@@ -2954,7 +3188,7 @@ var SplendorDuel = /** @class */ (function () {
         if (showLimitWarning /* && this.gamedatas.gamestate.args.canBuyCard*/) { // you might not be able to buy a card, but you may be able to use privilege or take a gold instead
             warnings.push(_("You will have more than 10 tokens, and you'll need to discard some of them."));
         }
-        if (showPrivilegeWarning && this.bga.userPreferences.get(201) != 2) {
+        if (showPrivilegeWarning && this.getGameUserPreference(201) != 2) {
             warnings.push("".concat(_("This action will give a privilege to your opponent."), "\n            <br><br>\n            <i>").concat(_("You can disable this warning in the user preferences (top right menu)."), "</i>"));
         }
         if (warnings.length) {
@@ -2965,6 +3199,7 @@ var SplendorDuel = /** @class */ (function () {
         }
     };
     SplendorDuel.prototype.onEnteringPlayAction = function (args) {
+        var _a;
         if (!args.canTakeTokens) {
             this.setGamestateDescription('OnlyBuy');
         }
@@ -2977,15 +3212,22 @@ var SplendorDuel = /** @class */ (function () {
             if (args.canTakeTokens) {
                 this.tableCenter.setBoardSelectable('play', args.canReserve, 3);
             }
-            this.tableCenter.setCardsSelectable(true, args.canBuyCard ? args.buyableCards : []);
+            this.tableCenter.setCardsSelectable(true, args.canBuyCard ? Object.keys(args.buyableCards).map(Number) : []);
+            this.tableCenter.setCounterfeiterCardsSelectable(true, args.canBuyCard ? Object.keys((_a = args.buyableCounterfeiterCards) !== null && _a !== void 0 ? _a : {}).map(Number) : []);
             if (args.canBuyCard) {
-                this.getCurrentPlayerTable().setHandSelectable(true, args.buyableCards);
+                this.getCurrentPlayerTable().setHandSelectable(true, Object.keys(args.buyableCards).map(Number));
             }
         }
     };
-    SplendorDuel.prototype.onEnteringReserveCard = function () {
+    SplendorDuel.prototype.onEnteringReserveCard = function (args) {
+        this.selectedCards = [];
+        if (args.canReserve > 1) {
+            this.statusBar.setTitle(this.isCurrentPlayerActive() ?
+                _('${you} must choose up to 2 cards to reserve') :
+                _('${actplayer} must choose up to 2 cards to reserve'));
+        }
         if (this.isCurrentPlayerActive()) {
-            this.tableCenter.setCardsSelectable(true, [], true);
+            this.tableCenter.setCardsSelectable(true, [], true, args.canReserve > 1);
         }
     };
     SplendorDuel.prototype.onEnteringPlaceJoker = function (args) {
@@ -2994,8 +3236,19 @@ var SplendorDuel = /** @class */ (function () {
         }
     };
     SplendorDuel.prototype.onEnteringTakeBoardToken = function (args) {
+        if (args.canTakeAnyColorOrTwoOfColor) {
+            this.statusBar.setTitle(this.isCurrentPlayerActive() ?
+                _('${you} must take any token or 2 ${color_name} tokens from the board') :
+                _('${actplayer} must take any token or 2 ${color_name} tokens from the board'), args);
+        }
+        if (args.number === -1) {
+            this.statusBar.setTitle(this.isCurrentPlayerActive() ? _('${you} must take all tokens of a color from the board') : _('${actplayer} must take a ${color_name} must take all tokens of a color from the board'));
+        }
+        else if (args.color === 9) {
+            this.statusBar.setTitle(this.isCurrentPlayerActive() ? _('${you} must take 3 tokens of any color from the board') : _('${actplayer} must take 3 tokens of any color from the board'));
+        }
         if (this.isCurrentPlayerActive()) {
-            this.tableCenter.setBoardSelectable('effect', false, 1, args.color);
+            this.tableCenter.setBoardSelectable('effect', args.color === -1, args.number, args.color === 9 ? null : args.color, args.canTakeAnyColorOrTwoOfColor);
         }
     };
     SplendorDuel.prototype.onEnteringTakeOpponentToken = function (args) {
@@ -3008,9 +3261,31 @@ var SplendorDuel = /** @class */ (function () {
             this.tableCenter.setRoyalCardsSelectable(true);
         }
     };
+    SplendorDuel.prototype.onEnteringTakeCounterfeiterCard = function () {
+        if (this.isCurrentPlayerActive()) {
+            this.tableCenter.setCounterfeiterCardsSelectable(true, [], true);
+        }
+    };
     SplendorDuel.prototype.onEnteringDiscardTokens = function () {
         if (this.isCurrentPlayerActive()) {
             this.getCurrentPlayerTable().setTokensSelectable(true, true);
+        }
+    };
+    SplendorDuel.prototype.onEnteringReserveFromDeckChooseDeck = function () {
+        if (this.isCurrentPlayerActive()) {
+            this.tableCenter.setDecksSelectable(true);
+        }
+    };
+    SplendorDuel.prototype.onEnteringReserveFromDeckChooseCard = function (args) {
+        var _this = this;
+        var pickDiv = document.createElement('div');
+        pickDiv.id = 'pick-div';
+        document.getElementById("cards-wrapper").insertAdjacentElement('afterbegin', pickDiv);
+        this.pickStock = new LineStock(this.cardsManager, pickDiv);
+        this.pickStock.addCards(args._private ? args._private.cards : [1, 2, 3].map(function (fakeId) { return ({ id: -fakeId, level: args.level }); }));
+        if (this.isCurrentPlayerActive()) {
+            this.pickStock.setSelectionMode('single');
+            this.pickStock.onCardClick = function (card) { return _this.bgaPerformAction('actReserveFromDeckChooseCard', { id: card.id }); };
         }
     };
     SplendorDuel.prototype.onLeavingState = function (stateName) {
@@ -3030,17 +3305,27 @@ var SplendorDuel = /** @class */ (function () {
             case 'takeOpponentToken':
                 this.onLeavingTakeOpponentToken();
                 break;
+            case 'takeCounterfeiterCard':
+                this.onLeavingTakeCounterfeiterCard();
+                break;
             case 'takeRoyalCard':
                 this.onLeavingTakeRoyalCard();
                 break;
             case 'discardTokens':
                 this.onLeavingDiscardTokens();
                 break;
+            case 'reserveFromDeckChooseDeck':
+                this.onLeavingReserveFromDeckChooseDeck();
+                break;
+            case 'reserveFromDeckChooseCard':
+                this.onLeavingReserveFromDeckChooseCard();
+                break;
         }
     };
     SplendorDuel.prototype.onLeavingPlayAction = function () {
         this.tableCenter.setBoardSelectable(null);
         this.tableCenter.setCardsSelectable(false);
+        this.tableCenter.setCounterfeiterCardsSelectable(false);
         var currentPlayerTable = this.getCurrentPlayerTable();
         if (currentPlayerTable) {
             currentPlayerTable.setHandSelectable(false);
@@ -3068,16 +3353,37 @@ var SplendorDuel = /** @class */ (function () {
         this.tableCenter.setRoyalCardsSelectable(false);
         (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setHandSelectable(false);
     };
+    SplendorDuel.prototype.onLeavingTakeCounterfeiterCard = function () {
+        var _a;
+        this.tableCenter.setCounterfeiterCardsSelectable(false);
+        (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setHandSelectable(false);
+    };
     SplendorDuel.prototype.onLeavingDiscardTokens = function () {
         var _a;
         (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setTokensSelectable(false, true);
     };
+    SplendorDuel.prototype.onLeavingReserveFromDeckChooseDeck = function () {
+        if (this.isCurrentPlayerActive()) {
+            this.tableCenter.setDecksSelectable(false);
+        }
+    };
+    SplendorDuel.prototype.onLeavingReserveFromDeckChooseCard = function () {
+        var _a, _b;
+        (_a = this.pickStock) === null || _a === void 0 ? void 0 : _a.removeAll();
+        this.pickStock = null;
+        (_b = document.getElementById('pick-div')) === null || _b === void 0 ? void 0 : _b.remove();
+    };
     SplendorDuel.prototype.takeSelectedTokensWithWarning = function () {
         var _this = this;
+        var _a;
         var showPrivilegeWarning = this.tokensSelection.filter(function (token) { return token.type == 2 && token.color == 0; }).length >= 2
             || (this.tokensSelection.length == 3 && this.tokensSelection[0].color == this.tokensSelection[1].color && this.tokensSelection[0].color == this.tokensSelection[2].color);
-        var futureTokens = __spreadArray(__spreadArray([], this.tokensSelection, true), this.getCurrentPlayerTable().getTokens(), true);
-        var showLimitWarning = futureTokens.length > 10;
+        var limitTokens = __spreadArray(__spreadArray([], this.tokensSelection, true), this.getCurrentPlayerTable().getTokens(), true);
+        var countCounterfeiterTokens = !((_a = this.getCurrentPlayerTable().counterfeiterCards) === null || _a === void 0 ? void 0 : _a.getCards().some(function (card) { return card.type == 12; }));
+        if (!countCounterfeiterTokens) {
+            limitTokens = limitTokens.filter(function (token) { return token.color != 6; });
+        }
+        var showLimitWarning = limitTokens.length > 10;
         if (showPrivilegeWarning || showLimitWarning) {
             this.confirmActionTakeTokens(function () { return _this.takeSelectedTokens(); }, showPrivilegeWarning, showLimitWarning);
         }
@@ -3101,11 +3407,31 @@ var SplendorDuel = /** @class */ (function () {
                     this.statusBar.addActionButton('', function () { return _this.takeSelectedTokensWithWarning(); }, { id: "takeSelectedTokens_button" });
                     this.onTableTokenSelectionChange([], false);
                     break;
+                case 'reserveCard':
+                    if (args.canReserve > 1) {
+                        this.statusBar.addActionButton(_("Reserve selected cards"), function () { return _this.bgaPerformAction('actReserveCards', {
+                            ids: _this.selectedCards.map(function (card) { return card.id; }).join(',')
+                        }); }, { id: 'reserve-cards-button', disabled: true });
+                    }
+                    break;
                 case 'takeBoardToken':
                     this.statusBar.addActionButton(_("Take selected token"), function () { return _this.takeSelectedTokens(); }, { id: "takeSelectedTokens_button", classes: 'disabled' });
                     break;
                 case 'takeOpponentToken':
                     this.statusBar.addActionButton(_("Take selected token"), function () { return _this.takeOpponentToken(_this.tokensSelection[0].id); }, { id: "takeSelectedTokens_button", classes: 'disabled' });
+                    break;
+                case 'beforeEndTurn':
+                    [
+                        [9, _("Spend ${number} Glassware token(s) to take a Royal card").replace('${number}', 1 + args.playerRoyalCardCount)],
+                        [10, _("Spend a Glassware token and a Privilege to play a new turn")],
+                        [17, _("Spend 2 Glassware tokens to reserve a deck card")],
+                    ].forEach(function (_a) {
+                        var powerId = _a[0], buttonLabel = _a[1];
+                        if (args.possiblePowers.includes(powerId)) {
+                            _this.statusBar.addActionButton(buttonLabel, function () { return _this.bgaPerformAction('actUseCounterfeiterCardPower', { power: powerId }); });
+                        }
+                    });
+                    this.statusBar.addActionButton(_("Pass"), function () { return _this.bgaPerformAction('actPassCounterfeiterCardPower'); });
                     break;
                 case 'discardTokens':
                     this.statusBar.addActionButton(_("Discard selected token(s)"), function () { return _this.discardSelectedTokens(); }, { id: "discardSelectedTokens_button", classes: 'disabled' });
@@ -3154,8 +3480,11 @@ var SplendorDuel = /** @class */ (function () {
     SplendorDuel.prototype.createPlayerPanels = function (gamedatas) {
         var _this = this;
         Object.values(gamedatas.players).forEach(function (player) {
+            var _a, _b, _c;
             var playerId = Number(player.id);
-            var html = "\n            <div class=\"score-tile-playerboard-wrapper\">\n                <div class=\"score-tile-playerboard\">\n                    <div id=\"end-reason-1-wrapper-".concat(player.id, "\" class=\"points-counter\">\n                        <div id=\"points-counter-").concat(player.id, "\"></div>\n                        <div class=\"goal\">/&nbsp;20</div>\n                    </div>\n    \n                    <div id=\"end-reason-2-wrapper-").concat(player.id, "\" class=\"crown-counter\">\n                        <div id=\"crown-counter-").concat(player.id, "\"></div>\n                        <div class=\"goal\">/&nbsp;10</div>\n                    </div>\n    \n                    <div id=\"end-reason-3-wrapper-").concat(player.id, "\" class=\"strongest-column-counter\">\n                        <div id=\"strongest-column-counter-").concat(player.id, "\"></div>\n                        <div class=\"goal\">/&nbsp;10</div>\n                    </div>\n             </div>\n            </div>\n            \n            <div class=\"counters\">\n                <div id=\"privilege-counter-wrapper-").concat(player.id, "\" class=\"privilege-counter\">\n                    <div class=\"privilege icon\"></div>\n                    <span id=\"privilege-counter-").concat(player.id, "\"></span><span class=\"goal\">&nbsp;/&nbsp;3</span>\n                </div>\n\n                <div id=\"reserved-counter-wrapper-").concat(player.id, "\" class=\"reserved-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"reserved-counter-").concat(player.id, "\"></span><span class=\"goal\">&nbsp;/&nbsp;3</span>\n                </div>\n\n                <div id=\"token-counter-wrapper-").concat(player.id, "\" class=\"token-counter\">\n                    <div class=\"token icon\"></div> \n                    <span id=\"token-counter-").concat(player.id, "\"></span><span class=\"goal\">&nbsp;/&nbsp;10</span>\n                </div>\n            </div>");
+            var limitTokens = player.tokens;
+            var countCounterfeiterTokens = !((_a = player.counterfeiterCards) === null || _a === void 0 ? void 0 : _a.some(function (card) { return card.type == 12; }));
+            var html = "\n            <div class=\"score-tile-playerboard-wrapper\">\n                <div class=\"score-tile-playerboard\">\n                    <div id=\"end-reason-1-wrapper-".concat(player.id, "\" class=\"points-counter\">\n                        <div id=\"points-counter-").concat(player.id, "\"></div>\n                        <div class=\"goal\">/&nbsp;20</div>\n                    </div>\n    \n                    <div id=\"end-reason-2-wrapper-").concat(player.id, "\" class=\"crown-counter\">\n                        <div id=\"crown-counter-").concat(player.id, "\"></div>\n                        <div class=\"goal\">/&nbsp;<span id=\"crown-goal-counter-").concat(player.id, "\"></span></div>\n                    </div>\n    \n                    <div id=\"end-reason-3-wrapper-").concat(player.id, "\" class=\"strongest-column-counter\">\n                        <div id=\"strongest-column-counter-").concat(player.id, "\"></div>\n                        <div class=\"goal\">/&nbsp;<span id=\"strongest-column-goal-counter-").concat(player.id, "\"></span></div>\n                    </div>\n             </div>\n            </div>\n            \n            <div class=\"counters\">\n                <div id=\"privilege-counter-wrapper-").concat(player.id, "\" class=\"privilege-counter\">\n                    <div class=\"privilege icon\"></div>\n                    <span id=\"privilege-counter-").concat(player.id, "\"></span><span class=\"goal\">&nbsp;/&nbsp;3</span>\n                </div>\n\n                <div id=\"reserved-counter-wrapper-").concat(player.id, "\" class=\"reserved-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"reserved-counter-").concat(player.id, "\"></span><span class=\"goal\">&nbsp;/&nbsp;3</span>\n                </div>\n\n                <div id=\"token-counter-wrapper-").concat(player.id, "\" class=\"token-counter\">\n                    <div class=\"token icon\"></div> \n                    <span id=\"token-counter-").concat(player.id, "\"></span>").concat(!countCounterfeiterTokens ? "<span class=\"smaller\">(<span id=\"token-extra-counter-".concat(player.id, "\"></span>)</span>") : '', "<span class=\"goal\">&nbsp;/&nbsp;10</span>\n                </div>\n            </div>");
             html += "\n            <div class=\"spl_miniplayerboard\">\n                <div class=\"spl_ressources_container\">";
             [2, 1, 3, 5, 4].forEach(function (color) {
                 html += "            \n                    <div id=\"player-".concat(playerId, "-counters-card-points-").concat(color, "\" class=\"card-points points icon\"></div>");
@@ -3164,7 +3493,7 @@ var SplendorDuel = /** @class */ (function () {
             [2, 1, 3, 5, 4].forEach(function (color) {
                 html += "            \n                <div class=\"spl_ressources\">\n                    <div class=\"spl_minigem\" data-color=\"".concat(color, "\"></div>\n                    <div id=\"player-").concat(playerId, "-counters-card-").concat(color, "\" class=\"spl_cardcount\" data-color=\"").concat(color, "\">\n                    </div>\n                    <div id=\"player-").concat(playerId, "-counters-token-").concat(color, "\" class=\"spl_coinpile\" data-type=\"2\" data-color=\"").concat(color, "\">\n                    </div>\n                </div>");
             });
-            html += "\n                    <div class=\"spl_ressources\">\n                        <div id=\"player-".concat(playerId, "-counters-token--1\" class=\"spl_coinpile\" data-type=\"1\"></div>\n                        <div id=\"player-").concat(playerId, "-counters-token-0\" class=\"spl_coinpile\" data-type=\"2\" data-color=\"0\"></div>\n                    </div>\n                </div>\n            </div>\n            ");
+            html += "\n                    <div class=\"spl_ressources\">\n                        <div id=\"player-".concat(playerId, "-counters-token--1\" class=\"spl_coinpile\" data-type=\"1\"></div>\n                        <div id=\"player-").concat(playerId, "-counters-token-0\" class=\"spl_coinpile\" data-type=\"2\" data-color=\"0\"></div>\n                        ").concat(gamedatas.expansion ? "<div id=\"player-".concat(playerId, "-counters-token-6\" class=\"spl_coinpile\" data-type=\"2\" data-color=\"6\"></div>") : '', "\n                    </div>\n                </div>\n            </div>\n            ");
             dojo.place(html, "player_board_".concat(player.id));
             var points = [1, 2, 3, 4, 5, 9].map(function (color) {
                 // we ignore multicolor in gray column as they will move to another column
@@ -3176,7 +3505,7 @@ var SplendorDuel = /** @class */ (function () {
             _this.pointsCounters[playerId].setValue(points);
             _this.crownCounters[playerId] = new ebg.counter();
             _this.crownCounters[playerId].create("crown-counter-".concat(playerId));
-            _this.crownCounters[playerId].setValue(player.cards.map(function (card) { return card.crowns; }).reduce(function (a, b) { return a + b; }, 0));
+            _this.crownCounters[playerId].setValue(player.cards.map(function (card) { return card.crowns; }).reduce(function (a, b) { return a + b; }, 0) + ((_c = (_b = player.counterfeiterCards) === null || _b === void 0 ? void 0 : _b.map(function (card) { return card.crowns; }).reduce(function (a, b) { return a + b; }, 0)) !== null && _c !== void 0 ? _c : 0));
             var strongestColumnValue = 0;
             [1, 2, 3, 4, 5].forEach(function (color) {
                 // we ignore multicolor in gray column as they will move to another column
@@ -3194,9 +3523,23 @@ var SplendorDuel = /** @class */ (function () {
             _this.privilegeCounters[playerId] = new ebg.counter();
             _this.privilegeCounters[playerId].create("privilege-counter-".concat(playerId));
             _this.privilegeCounters[playerId].setValue(player.privileges);
+            if (!countCounterfeiterTokens) {
+                limitTokens = limitTokens.filter(function (token) { return token.color != 6; });
+            }
             _this.tokenCounters[playerId] = new ebg.counter();
             _this.tokenCounters[playerId].create("token-counter-".concat(playerId));
-            _this.tokenCounters[playerId].setValue(player.tokens.length);
+            _this.tokenCounters[playerId].setValue(limitTokens.length);
+            if (!countCounterfeiterTokens) {
+                _this.tokenExtraCounters[playerId] = new ebg.counter();
+                _this.tokenExtraCounters[playerId].create("token-extra-counter-".concat(playerId));
+                _this.tokenExtraCounters[playerId].setValue(player.tokens.length - limitTokens.length);
+            }
+            _this.crownGoalCounters[playerId] = new ebg.counter();
+            _this.crownGoalCounters[playerId].create("crown-goal-counter-".concat(playerId));
+            _this.crownGoalCounters[playerId].setValue(player.royalCards.some(function (royalCard) { return royalCard.power.includes(POWER_WIN_9CROWNS); }) ? 9 : 10);
+            _this.strongestColumnGoalCounters[playerId] = new ebg.counter();
+            _this.strongestColumnGoalCounters[playerId].create("strongest-column-goal-counter-".concat(playerId));
+            _this.strongestColumnGoalCounters[playerId].setValue(player.royalCards.some(function (royalCard) { return royalCard.power.includes(POWER_WIN_9PTS_SAME_COLOR); }) ? 9 : 10);
             [1, 2, 3, 4, 5].forEach(function (color) {
                 // we ignore multicolor in gray column as they will move to another column
                 var colorPoints = player.cards.filter(function (card) { return card.location === "player".concat(playerId, "-").concat(color) && (color !== 9 || !card.power.includes(2)); }).map(function (card) { return card.points; }).reduce(function (a, b) { return a + b; }, 0);
@@ -3206,7 +3549,11 @@ var SplendorDuel = /** @class */ (function () {
                 var produce = player.cards.filter(function (card) { return card.location === "player".concat(playerId, "-").concat(color); }).map(function (card) { return Object.values(card.provides).reduce(function (a, b) { return a + b; }, 0); }).reduce(function (a, b) { return a + b; }, 0);
                 _this.setCardProduceCounter(playerId, color, produce);
             });
-            [-1, 0, 1, 2, 3, 4, 5].forEach(function (color) {
+            var tokenColors = [-1, 0, 1, 2, 3, 4, 5];
+            if (gamedatas.expansion) {
+                tokenColors.push(6);
+            }
+            tokenColors.forEach(function (color) {
                 var tokens = player.tokens.filter(function (token) { return color == -1 ? token.type == 1 : token.type == 2 && token.color == color; });
                 _this.setTokenCounter(playerId, color, tokens.length);
             });
@@ -3250,11 +3597,20 @@ var SplendorDuel = /** @class */ (function () {
     SplendorDuel.prototype.updateTokenCounters = function (playerId) {
         var _this = this;
         var playerTokens = this.getPlayerTable(playerId).getTokens();
-        [-1, 0, 1, 2, 3, 4, 5].forEach(function (color) {
+        var tokenColors = [-1, 0, 1, 2, 3, 4, 5];
+        if (this.gamedatas.expansion) {
+            tokenColors.push(6);
+        }
+        tokenColors.forEach(function (color) {
             var tokens = playerTokens.filter(function (token) { return color == -1 ? token.type == 1 : token.type == 2 && token.color == color; });
             _this.setTokenCounter(playerId, color, tokens.length);
         });
-        this.tokenCounters[playerId].toValue(playerTokens.length);
+        var limitTokens = playerTokens;
+        if (this.tokenExtraCounters[playerId]) {
+            limitTokens = limitTokens.filter(function (token) { return token.color != 6; });
+            this.tokenExtraCounters[playerId].toValue(playerTokens.length - limitTokens.length);
+        }
+        this.tokenCounters[playerId].toValue(limitTokens.length);
     };
     SplendorDuel.prototype.createPlayerTables = function (gamedatas) {
         var _this = this;
@@ -3264,12 +3620,11 @@ var SplendorDuel = /** @class */ (function () {
         });
     };
     SplendorDuel.prototype.createPlayerTable = function (gamedatas, playerId) {
-        var table = new PlayerTable(this, gamedatas.players[playerId]);
+        var table = new PlayerTable(this, gamedatas.players[playerId], gamedatas.expansion);
         this.playersTables.push(table);
     };
     SplendorDuel.prototype.setScore = function (playerId, inc) {
-        var _a;
-        (_a = this.scoreCtrl[playerId]) === null || _a === void 0 ? void 0 : _a.incValue(inc);
+        this.bga.playerPanels.getScoreCounter(playerId).incValue(inc);
     };
     SplendorDuel.prototype.incScore = function (playerId, inc) {
         this.pointsCounters[playerId].incValue(inc);
@@ -3279,13 +3634,13 @@ var SplendorDuel = /** @class */ (function () {
         var html = [1, 2, 3, 4, 5].map(function (power) { return "\n            <div class=\"help-section\">\n                <div class=\"ability-icon\" data-ability=\"".concat(power, "\"></div>\n                <div class=\"help-label\">").concat(_this.getPower(power), "</div>\n            </div>"); }).join('');
         return html;
     };
-    SplendorDuel.prototype.onTableTokenSelectionChange = function (tokens, valid) {
+    SplendorDuel.prototype.onTableTokenSelectionChange = function (tokens, valid, selectionType) {
         this.tokensSelection = tokens;
         var button = document.getElementById('takeSelectedTokens_button');
         if (button) {
             button.classList.toggle('disabled', !valid);
             var gold = tokens.length && tokens.every(function (token) { return token.type == 1; });
-            button.innerHTML = gold ? _("Take gold token to reserve a card") : _("Take ${number} selected token(s)").replace('${number}', "".concat(tokens.length));
+            button.innerHTML = selectionType == 'play' && gold ? _("Take gold token to reserve a card") : _("Take ${number} selected token(s)").replace('${number}', '' + tokens.length);
         }
     };
     SplendorDuel.prototype.onPlayerTokenSelectionChange = function (tokens) {
@@ -3303,9 +3658,31 @@ var SplendorDuel = /** @class */ (function () {
             }
         }
     };
-    SplendorDuel.prototype.onTableCardClick = function (card) {
+    SplendorDuel.prototype.onTableCardSelectionChange = function (card, selected) {
+        /*if (selected) {
+            this.selectedCards.push(card);
+        } else {
+            this.selectedCards = this.selectedCards.filter(c => c != card);
+        }*/
+        if (this.selectedCards.some(function (c) { return c.id == card.id; })) {
+            this.selectedCards = this.selectedCards.filter(function (c) { return c.id != card.id; });
+        }
+        else {
+            this.selectedCards.push(card);
+        }
+        var button = document.getElementById("reserve-cards-button");
+        if (button) {
+            button.disabled = this.selectedCards.length < 1 || this.selectedCards.length > 2;
+        }
+    };
+    SplendorDuel.prototype.onTableCardClick = function (card, selected) {
         if (this.gamedatas.gamestate.name == 'reserveCard') {
-            this.reserveCard(card.id);
+            if (this.gamedatas.gamestate.args.canReserve > 1) {
+                this.onTableCardSelectionChange(card, selected);
+            }
+            else {
+                this.reserveCard(card.id);
+            }
         }
         else if (this.gamedatas.gamestate.name == 'playAction') {
             if (card == this.selectedCard) {
@@ -3318,51 +3695,54 @@ var SplendorDuel = /** @class */ (function () {
                 this.onBuyCardClick(card);
             }
         }
+        else if (this.gamedatas.gamestate.name == 'reserveFromDeckChooseDeck') {
+            this.bgaPerformAction('actReserveFromDeckChooseDeck', { id: card.id });
+        }
     };
     SplendorDuel.prototype.onBuyCardClick = function (card) {
         var playerId = this.getPlayerId();
-        var table = this.getPlayerTable(playerId);
-        var goldTokens = table.tokens[-1].getCards();
+        var possiblePayments = structuredClone(this.gamedatas.gamestate.args.buyableCards[card.id]);
         var reductedCost = structuredClone(this.gamedatas.gamestate.args.reducedCosts[card.id]);
-        if (!reductedCost) {
+        if (!possiblePayments) {
             return;
         }
         this.selectedCard = card;
+        this.selectedCardPossiblePayments = possiblePayments;
+        this.selectedCardReducedCost = reductedCost;
+        this.onAnyTableCardClick(playerId, reductedCost, possiblePayments);
+    };
+    SplendorDuel.prototype.onBuyCounterfeiterCardClick = function (card) {
+        var playerId = this.getPlayerId();
+        var possiblePayments = structuredClone(this.gamedatas.gamestate.args.buyableCounterfeiterCards[card.id]);
+        var reductedCost = structuredClone(this.gamedatas.gamestate.args.reducedCounterfeiterCosts[card.id]);
+        if (!possiblePayments) {
+            return;
+        }
+        this.selectedCard = card;
+        this.selectedCardPossiblePayments = possiblePayments;
+        this.selectedCardReducedCost = reductedCost;
+        this.onAnyTableCardClick(playerId, reductedCost, possiblePayments);
+    };
+    SplendorDuel.prototype.onAnyTableCardClick = function (playerId, reductedCost, possiblePayments) {
+        var table = this.getPlayerTable(playerId);
         var selectedTokens = [];
-        var remaining = 0;
-        var remainingOfColors = 0;
-        Object.entries(reductedCost).forEach(function (entry) {
-            var color = Number(entry[0]);
-            var number = entry[1];
-            var tokensOfColor = table.tokens[color].getCards();
-            selectedTokens.push.apply(selectedTokens, tokensOfColor.slice(0, Math.min(number, tokensOfColor.length)));
-            if (number > tokensOfColor.length) {
-                remaining += number - tokensOfColor.length;
-            }
-            else if (tokensOfColor.length > number) {
-                remainingOfColors += tokensOfColor.length - number;
-            }
-        });
-        if (remaining > 0) {
-            selectedTokens.push.apply(selectedTokens, goldTokens.slice(0, remaining));
-        }
-        var mustSelectTokens = false;
-        // can use more gold to pay
-        if (goldTokens.length > remaining) {
-            this.tokensSelection = [];
-            if (remaining > 0) {
-                mustSelectTokens = true;
-            }
-        }
-        else {
+        if (possiblePayments.length > 0) {
+            [-1, 0, 1, 2, 3, 4, 5, 6].forEach(function (color) {
+                var _a, _b;
+                var minNumber = Math.min.apply(Math, possiblePayments.map(function (possiblePayment) { var _a; return (_a = possiblePayment[color]) !== null && _a !== void 0 ? _a : 0; }));
+                var tokensOfColor = (_b = (_a = table.tokens[color]) === null || _a === void 0 ? void 0 : _a.getCards()) !== null && _b !== void 0 ? _b : [];
+                selectedTokens.push.apply(selectedTokens, tokensOfColor.slice(0, Math.min(minNumber, tokensOfColor.length)));
+            });
             this.tokensSelection = selectedTokens;
         }
-        var allowedTypes = Object.keys(reductedCost).map(function (type) { return Number(type); });
-        if (!allowedTypes.includes(-1)) {
-            allowedTypes.push(-1);
-        }
-        this.selectedCardReducedCost = reductedCost;
-        this.setActionBarChooseTokenCost();
+        var mustSelectTokens = possiblePayments.length === 1;
+        this.setActionBarChooseTokenCost(reductedCost);
+        var allowedTypes = [];
+        possiblePayments.forEach(function (possiblePayment) { return Object.keys(possiblePayment).map(Number).forEach(function (possibleColor) {
+            if (!allowedTypes.includes(possibleColor)) {
+                allowedTypes.push(possibleColor);
+            }
+        }); });
         this.getCurrentPlayerTable().setTokensSelectableByType(allowedTypes, this.tokensSelection);
         // scroll to tokens, if the play must select them manually
         if (mustSelectTokens) {
@@ -3384,19 +3764,35 @@ var SplendorDuel = /** @class */ (function () {
     SplendorDuel.prototype.setChooseTokenCostButtonLabelAndState = function () {
         var button = document.getElementById("chooseTokenCost-button");
         if (button) {
-            var selection = this.getCurrentPlayerTable().getSelectedTokens();
-            var expectedTileCount = Object.values(this.selectedCardReducedCost).reduce(function (a, b) { return a + b; }, 0);
-            var valid = selection.length == expectedTileCount; // TODO more controls
+            var selection_1 = this.getCurrentPlayerTable().getSelectedTokens();
+            var possiblePayments = this.selectedCardPossiblePayments;
+            var expectedTileCounts = possiblePayments.map(function (possiblePayment) { return Object.values(possiblePayment).reduce(function (a, b) { return a + b; }, 0); });
+            var expectedTileCount = Math.min.apply(Math, expectedTileCounts);
+            var valid = possiblePayments.some(function (possiblePayment) {
+                var selectionPayment = {};
+                selection_1.forEach(function (token) {
+                    var tokenColor = token.type == 1 ? -1 : token.color;
+                    if (!selectionPayment[tokenColor]) {
+                        selectionPayment[tokenColor] = 0;
+                    }
+                    selectionPayment[tokenColor]++;
+                });
+                return Object.keys(possiblePayment).length === Object.keys(selectionPayment).length &&
+                    Object.entries(selectionPayment).every(function (_a) {
+                        var color = _a[0], count = _a[1];
+                        return possiblePayment[Number(color)] === count;
+                    });
+            });
             var label = expectedTileCount > 0 ?
-                _('Pay ${cost}').replace('${cost}', "<div class=\"compressed-token-icons\">".concat(selection.map(function (token) { return "<div class=\"token-icon\" data-type=\"".concat(token.type == 1 ? -1 : token.color, "\"></div>"); }).join('')).concat(new Array(Math.max(0, expectedTileCount - selection.length)).fill(0).map(function () { return "<div class=\"fake token-icon\">?</div>"; }).join(''), "</div>")) :
+                _('Pay ${cost}').replace('${cost}', "<div class=\"compressed-token-icons\">".concat(selection_1.map(function (token) { return "<div class=\"token-icon\" data-type=\"".concat(token.type == 1 ? -1 : token.color, "\"></div>"); }).join('')).concat(new Array(Math.max(0, expectedTileCount - selection_1.length)).fill(0).map(function () { return "<div class=\"fake token-icon\">?</div>"; }).join(''), "</div>")) :
                 _('Take for free');
             button.innerHTML = label;
             button.classList.toggle('disabled', !valid);
         }
     };
-    SplendorDuel.prototype.setActionBarChooseTokenCost = function () {
+    SplendorDuel.prototype.setActionBarChooseTokenCost = function (reductedCost) {
         var _this = this;
-        var question = _("${you} must select the tokens to pay ${cost}").replace('${cost}', "<div class=\"compressed-token-icons\">".concat(Object.entries(this.selectedCardReducedCost).map(function (_a) {
+        var question = _("${you} must select the tokens to pay ${cost}").replace('${cost}', "<div class=\"compressed-token-icons\">".concat(Object.entries(reductedCost).map(function (_a) {
             var color = _a[0], number = _a[1];
             return new Array(number).fill(0).map(function () { return "<div class=\"token-icon\" data-type=\"".concat(color, "\"></div>"); }).join('');
         }).join(''), "</div>"));
@@ -3416,8 +3812,14 @@ var SplendorDuel = /** @class */ (function () {
         var _a, _b;
         var table = this.getCurrentPlayerTable();
         if (this.selectedCard) {
-            this.tableCenter.unselectTableCard(this.selectedCard);
-            table.reserved.unselectCard(this.selectedCard);
+            var isCounterfeiterCard = this.selectedCard.provides === undefined;
+            if (isCounterfeiterCard) {
+                this.tableCenter.unselectTableCounterfeiterCard(this.selectedCard);
+            }
+            else {
+                this.tableCenter.unselectTableCard(this.selectedCard);
+                table.reserved.unselectCard(this.selectedCard);
+            }
         }
         this.setActionBarChooseAction(true);
         this.selectedCard = null;
@@ -3440,8 +3842,22 @@ var SplendorDuel = /** @class */ (function () {
     SplendorDuel.prototype.onRoyalCardClick = function (card) {
         this.takeRoyalCard(card.id);
     };
+    SplendorDuel.prototype.onCounterfeiterCardClick = function (card) {
+        if (this.gamedatas.gamestate.name == 'takeCounterfeiterCard') {
+            this.bgaPerformAction('actTakeCounterfeiterCard', { id: card.id });
+        }
+        else if (this.gamedatas.gamestate.name == 'reserveCard') {
+            //this.reserveCard(card.id);
+        }
+        else if (this.gamedatas.gamestate.name == 'playAction') {
+            if (this.selectedCard) {
+                this.cancelChooseTokenCost();
+            }
+            this.onBuyCounterfeiterCardClick(card);
+        }
+    };
     SplendorDuel.prototype.onReservedCardClick = function (card) {
-        this.onTableCardClick(card);
+        this.onTableCardClick(card, true);
     };
     SplendorDuel.prototype.onColumnClick = function (color) {
         if (this.gamedatas.gamestate.name == 'placeJoker') {
@@ -3469,7 +3885,8 @@ var SplendorDuel = /** @class */ (function () {
     };
     SplendorDuel.prototype.buyCard = function () {
         var tokensIds = this.tokensSelection.map(function (token) { return token.id; }).sort(function (a, b) { return a - b; });
-        this.bgaPerformAction('actBuyCard', {
+        var isCounterfeiterCard = this.selectedCard.provides === undefined;
+        this.bgaPerformAction(isCounterfeiterCard ? 'actBuyCounterfeiterCard' : 'actBuyCard', {
             id: this.selectedCard.id,
             tokensIds: tokensIds.join(','),
         });
@@ -3504,11 +3921,14 @@ var SplendorDuel = /** @class */ (function () {
             ['takeTokens', undefined],
             ['reserveCard', undefined],
             ['buyCard', undefined],
+            ['buyCounterfeiterCard', undefined],
+            ['takeCounterfeiterCard', undefined],
             ['takeRoyalCard', undefined],
             ['discardTokens', undefined],
             ['newTableCard', undefined],
+            ['newTableRoyalCard', undefined],
+            ['refillCounterfeiterCards', undefined],
             ['win', ANIMATION_MS * 3],
-            ['loadBug', 1],
         ];
         notifs.forEach(function (notif) {
             dojo.subscribe(notif[0], _this, function (notifDetails) {
@@ -3554,12 +3974,13 @@ var SplendorDuel = /** @class */ (function () {
     };
     SplendorDuel.prototype.notif_takeTokens = function (args) {
         return __awaiter(this, void 0, void 0, function () {
-            var tokens, playerId;
+            var tokens, playerId, from, fromStock;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        tokens = args.tokens, playerId = args.playerId;
-                        return [4 /*yield*/, this.getPlayerTable(playerId).addTokens(tokens)];
+                        tokens = args.tokens, playerId = args.playerId, from = args.from;
+                        fromStock = from === 'bag' ? this.tableCenter.bag : undefined;
+                        return [4 /*yield*/, this.getPlayerTable(playerId).addTokens(tokens, fromStock)];
                     case 1:
                         _a.sent();
                         this.updateTokenCounters(playerId);
@@ -3614,10 +4035,65 @@ var SplendorDuel = /** @class */ (function () {
             });
         });
     };
+    SplendorDuel.prototype.notif_buyCounterfeiterCard = function (args) {
+        return __awaiter(this, void 0, void 0, function () {
+            var card, playerId, tokens, playerTable;
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        card = args.card, playerId = args.playerId, tokens = args.tokens;
+                        return [4 /*yield*/, this.getPlayerTable(playerId).addCounterfeiterCard(card)];
+                    case 1:
+                        _b.sent();
+                        if (card.type === 12) {
+                            document.getElementById("token-counter-".concat(playerId)).insertAdjacentHTML('afterend', "<span class=\"smaller\">(<span id=\"token-extra-counter-".concat(playerId, "\"></span>)</span>"));
+                            this.tokenExtraCounters[playerId] = new ebg.counter();
+                            this.tokenExtraCounters[playerId].create("token-extra-counter-".concat(playerId));
+                        }
+                        if (!((_a = args.tokens) === null || _a === void 0 ? void 0 : _a.length)) return [3 /*break*/, 3];
+                        return [4 /*yield*/, this.tableCenter.removeTokens(tokens)];
+                    case 2:
+                        _b.sent();
+                        this.updateTokenCounters(playerId);
+                        _b.label = 3;
+                    case 3:
+                        playerTable = this.getPlayerTable(playerId);
+                        this.crownCounters[playerId].toValue(playerTable.getCrowns());
+                        this.incScore(playerId, card.points);
+                        return [2 /*return*/, Promise.resolve(true)];
+                }
+            });
+        });
+    };
+    SplendorDuel.prototype.notif_takeCounterfeiterCard = function (args) {
+        return __awaiter(this, void 0, void 0, function () {
+            var card, playerId, playerTable;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        card = args.card, playerId = args.playerId;
+                        return [4 /*yield*/, this.getPlayerTable(playerId).addCounterfeiterCard(card)];
+                    case 1:
+                        _a.sent();
+                        playerTable = this.getPlayerTable(playerId);
+                        this.crownCounters[playerId].toValue(playerTable.getCrowns());
+                        this.incScore(playerId, card.points);
+                        return [2 /*return*/, Promise.resolve(true)];
+                }
+            });
+        });
+    };
     SplendorDuel.prototype.notif_takeRoyalCard = function (args) {
         var card = args.card, playerId = args.playerId;
         this.incScore(playerId, card.points);
-        return this.getPlayerTable(args.playerId).addRoyalCard(card);
+        if (card.power.includes(POWER_WIN_9CROWNS)) {
+            this.crownGoalCounters[playerId].toValue(9);
+        }
+        if (card.power.includes(POWER_WIN_9PTS_SAME_COLOR)) {
+            this.strongestColumnGoalCounters[playerId].toValue(9);
+        }
+        return this.getPlayerTable(playerId).addRoyalCard(card);
     };
     SplendorDuel.prototype.notif_discardTokens = function (args) {
         return __awaiter(this, void 0, void 0, function () {
@@ -3637,6 +4113,13 @@ var SplendorDuel = /** @class */ (function () {
     };
     SplendorDuel.prototype.notif_newTableCard = function (args) {
         return this.tableCenter.replaceCard(args);
+    };
+    SplendorDuel.prototype.notif_newTableRoyalCard = function (args) {
+        return this.tableCenter.addRoyalCard(args.newCard);
+    };
+    SplendorDuel.prototype.notif_refillCounterfeiterCards = function (args) {
+        var cards = args.cards, counterfeiterDeckCount = args.counterfeiterDeckCount, counterfeiterDeckTop = args.counterfeiterDeckTop;
+        return this.tableCenter.refillCounterfeiterCards(cards, counterfeiterDeckCount, counterfeiterDeckTop);
     };
     SplendorDuel.prototype.notif_win = function (args) {
         this.setScore(args.playerId, 1);
@@ -3661,6 +4144,14 @@ var SplendorDuel = /** @class */ (function () {
             case 3: return _("Take 1 token matching the color of this card from the board. If there are no such tokens left, ignore this effect.");
             case 4: return _("Take 1 Privilege. If none are available, take 1 from your opponent.");
             case 5: return _("Take 1 Gem or Pearl token from your opponent. If your opponent has no such tokens, ignore this effect. You cannot take a Gold token from your opponent.");
+            case 6: return _("Reserve a card from any deck or any level, even if no Gold token is available on the board, replacing it if needed. Do not take a Gold token. If you already have the maximum number of reserved cards, skip this effect.");
+            case 7: return _("If you have 9 or more Prestige points on cards of the same bonus color, <strong>you win</strong>.");
+            case 8: return _("If you have 9 or more Crowns, <strong>you win</strong>.");
+            case 9: return _("Take up to 4 tokens from the board; they must all be of a single color, all Glassware, or all Pearls, but  <strong>not gold </strong>.");
+            case 10: return _("Take 1 face-up Counterfeiter card of your choice (at no cost) and replace it; <strong>or</strong> reveal the top card of the Counterfeiter deck and take it (at no cost).");
+            case 11: return _("Take up to 2 tokens at random from the bag. The tokens can be of any kind (including gold).");
+            case 12: return _("Take a Gold token from the board, if one is available. Do not reserve a card.");
+            case 13: return _("Take up to 3 tokens of your choice from the board, except Gold.");
         }
     };
     /* This enable to inject translatable styled things to logs or action bar */
@@ -3697,7 +4188,7 @@ var SplendorDuel = /** @class */ (function () {
         return this.inherited(arguments);
     };
     return SplendorDuel;
-}());
+}(GameGui));
 define([
     "dojo", "dojo/_base/declare",
     "ebg/core/gamegui",

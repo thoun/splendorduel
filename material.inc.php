@@ -2,7 +2,7 @@
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
- * SplendorDuel implementation : © <Your name here> <Your email address here>
+ * SplendorDuelExpansion implementation : © <Your name here> <Your email address here>
  * 
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
@@ -10,7 +10,7 @@
  *
  * material.inc.php
  *
- * SplendorDuel game material description
+ * SplendorDuelExpansion game material description
  *
  * Here, you can describe the material of your game with PHP variables.
  *   
@@ -119,4 +119,15 @@ $this->ROYAL_CARDS = [
     2 => new RoyalCardType(2, [POWER_PLAY_AGAIN]),
     3 => new RoyalCardType(2, [POWER_TAKE_PRIVILEGE]),
     4 => new RoyalCardType(3),
+];
+
+$this->ROYAL_CARDS_EXPANSION = [ 
+    5 => new RoyalCardType(2, [POWER_RESERVE_CARD]),
+    6 => new RoyalCardType(1, [POWER_WIN_9PTS_SAME_COLOR]),
+    7 => new RoyalCardType(1, [POWER_WIN_9CROWNS]),
+    8 => new RoyalCardType(1, [POWER_TAKE_ALL_GEMS_SAME_COLOR]),
+    9 => new RoyalCardType(1, [POWER_TAKE_COUNTERFEITER_CARD]),
+    10 => new RoyalCardType(1, [POWER_TAKE_2GEMS_FROM_BAG]),
+    11 => new RoyalCardType(1, [POWER_TAKE_GOLD_FROM_TABLE]),
+    12 => new RoyalCardType(0, [POWER_TAKE_3GEMS_FROM_TABLE]),
 ];

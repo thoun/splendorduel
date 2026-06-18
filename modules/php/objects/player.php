@@ -1,6 +1,6 @@
 <?php
 
-class SplendorDuelPlayer {
+class SplendorDuelExpansionPlayer {
     public int $id;
     public string $name;
     public string $color;

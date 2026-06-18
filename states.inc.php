@@ -14,6 +14,9 @@
  *
  */
 
+use Bga\GameFramework\GameStateBuilder;
+use Bga\GameFramework\StateType;
+
 /*
    Game state machine is a tool used to facilitate game developpement by doing common stuff that can be set up
    in a very easy way from this configuration file.
@@ -87,6 +90,7 @@ $playerActionsGameStates = [
             "actRefillBoard",
             "actTakeTokens",
             "actBuyCard",
+            "actBuyCounterfeiterCard",
             "actEndGameAntiPlaying",
         ],
         "transitions" => $playedCardTransitions + [
@@ -102,9 +106,10 @@ $playerActionsGameStates = [
         "description" => clienttranslate('${actplayer} must choose the card to reserve'),
         "descriptionmyturn" => clienttranslate('${you} must choose the card to reserve'),
         "type" => "activeplayer",
-        //"args" => "argReserveCard",
+        "args" => "argReserveCard",
         "possibleactions" => [ 
             "actReserveCard",
+            "actReserveCards",
         ],
         "transitions" => $playedCardTransitions,
     ],
@@ -121,11 +126,23 @@ $playerActionsGameStates = [
         "transitions" => $playedCardTransitions,
     ],
 
+    ST_PLAYER_TAKE_COUNTERFEITER_CARD => [
+        "name" => "takeCounterfeiterCard",
+        "description" => clienttranslate('${actplayer} must take a Counterfeiter card'),
+        "descriptionmyturn" => clienttranslate('${you} must take a Counterfeiter card'),
+        "type" => "activeplayer",
+        "possibleactions" => [ 
+            "actTakeCounterfeiterCard",
+        ],
+        "transitions" => $playedCardTransitions,
+    ],
+
     ST_PLAYER_TAKE_ROYAL_CARD => [
         "name" => "takeRoyalCard",
         "description" => clienttranslate('${actplayer} must take a Royal card'),
         "descriptionmyturn" => clienttranslate('${you} must take a Royal card'),
         "type" => "activeplayer",
+        "action" => "stTakeRoyalCard",
         "possibleactions" => [ 
             "actTakeRoyalCard",
         ],
@@ -158,18 +175,62 @@ $playerActionsGameStates = [
         "transitions" => $playedCardTransitions,
     ],
 
+    ST_PLAYER_BEFORE_END_TURN => GameStateBuilder::create()
+        ->name("beforeEndTurn")
+        ->description(clienttranslate('${actplayer} can activate a Counterfeiter Card power'))
+        ->descriptionmyturn(clienttranslate('${you} can activate a Counterfeiter Card power'))
+        ->type(StateType::ACTIVE_PLAYER)
+        ->args('argBeforeEndTurn')
+        ->action('stBeforeEndTurn')
+        ->possibleActions([ 
+            "actUseCounterfeiterCardPower",
+            "actPassCounterfeiterCardPower",
+        ])
+        ->transitions([
+            "next" => ST_PLAYER_DISCARD_TOKENS,
+        ])
+        ->build(),
+
     ST_PLAYER_DISCARD_TOKENS => [
         "name" => "discardTokens",
         "description" => clienttranslate('${actplayer} must discard ${number} tokens (10 tokens limit)'),
         "descriptionmyturn" => clienttranslate('${you} must discard ${number} tokens (10 tokens limit)'),
         "type" => "activeplayer",
         "args" => "argDiscardTokens",
+        "action" => "stDiscardTokens",
         "possibleactions" => [ 
             "actDiscardTokens",
         ],
         "transitions" => [
             "next" => ST_NEXT_PLAYER,
         ]
+    ],
+
+    ST_PLAYER_RESERVE_FROM_DECK_CHOOSE_DECK => [
+        "name" => "reserveFromDeckChooseDeck",
+        "description" => clienttranslate('${actplayer} must choose the deck to pick from'),
+        "descriptionmyturn" => clienttranslate('${you} must choose the deck to pick from'),
+        "type" => "activeplayer",
+        "possibleactions" => [ 
+            "actReserveFromDeckChooseDeck",
+        ],
+        "transitions" => [
+            "next" => ST_PLAYER_RESERVE_FROM_DECK_CHOOSE_CARD,
+        ],
+    ],
+
+    ST_PLAYER_RESERVE_FROM_DECK_CHOOSE_CARD => [
+        "name" => "reserveFromDeckChooseCard",
+        "description" => clienttranslate('${actplayer} must choose the card to reserve'),
+        "descriptionmyturn" => clienttranslate('${you} must choose the card to reserve'),
+        "type" => "activeplayer",
+        "args" => "argReserveFromDeckChooseCard",
+        "possibleactions" => [ 
+            "actReserveFromDeckChooseCard",
+        ],
+        "transitions" => [
+            "next" => ST_PLAYER_BEFORE_END_TURN,
+        ],
     ],
 ];
 

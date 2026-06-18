@@ -73,14 +73,20 @@
       &[data-color="5"] { --background-color: #eb676533; }
       &[data-color="9"] { --background-color: #babcbe33; }
     }
+  }
 
-    .tokens {
-      align-items: center;
+  .double-token-stock {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
 
-      .token {
-        &:not(:first-child) {
-            margin-top: calc(-1 * var(--card-overlap));
-        }
+  .tokens {
+    align-items: center;
+
+    .token {
+      &:not(:first-child) {
+          margin-top: calc(-1 * var(--card-overlap));
       }
     }
   }

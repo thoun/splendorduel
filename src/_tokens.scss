@@ -48,14 +48,14 @@
         background-position-x: 0;
     }
 
-    @for $color from 0 through 5 {
+    @for $color from 0 through 6 {
         &[data-type="2"][data-color="#{$color}"] .card-side {
-            background-position-x: #{($color + 1) * 100% / 7};
+            background-position-x: #{($color + 1) * 100% / 8};
         }
     }
     
     &[data-type="2"][data-color="9"] .card-side {
-        background-position-x: #{7 * 100% / 7};
+        background-position-x: #{8 * 100% / 8};
     }
 }
 

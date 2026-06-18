@@ -6,6 +6,7 @@
       "lib": ["dom", "esnext"],  
       "sourceMap": false,
       "outFile": "splendorduel.js",
+      "strict": false
     },
     "files": [
         "bga-framework.d.ts",
@@ -31,6 +32,7 @@
         "node_modules/bga-cards/src/card-manager.ts",
         "src/cards.ts",
         "src/royal-cards.ts",
+        "src/counterfeiter-cards.ts",
         "src/tokens.ts",
         "src/token-board.ts",
         "src/table-center.ts",

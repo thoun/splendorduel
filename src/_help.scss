@@ -8,3 +8,17 @@
         gap: 5px;
     }
 }
+
+html[data-theme="light"] {
+    #popin_bgaHelpDialog {
+        color: black;
+        background: white;
+    }
+}
+
+html[data-theme="dark"] {
+    #popin_bgaHelpDialog {
+        color: var(--game-palette-bga-gray-950);
+        background: var(--game-palette-bga-gray-244);
+    }
+}

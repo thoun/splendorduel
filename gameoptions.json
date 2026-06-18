@@ -1,1 +1,17 @@
-{}
+{
+
+    "100": {
+        "name": "The Counterfeiters Expansion",
+        "values": {
+            "0": {
+                "name": "Disabled"
+            },
+            "1": {
+                "name": "Enabled",
+                "tmdisplay": "The Counterfeiters Expansion",
+                "alpha": true
+            }
+        },
+        "default": 0
+    }
+}

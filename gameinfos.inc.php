@@ -65,7 +65,7 @@ $gameinfos = [
 'losers_not_ranked' => false,
 
 // Allow to rank solo games for games where it's the only available mode (ex: Thermopyles). Should be left to false for games where solo mode exists in addition to multiple players mode.
-'solo_mode_ranked' => false,
+'solo_mode_ranked' => false,                   
 
 // Is this game cooperative (all players wins together or loose together)
 'is_coop' => 0,
@@ -97,6 +97,4 @@ $gameinfos = [
     //  minimum possible value: 320 (the lowest value you specify, the better the display is on mobile)
     'min' => 890,
   ],
-
-  'enable_3d' => false,
 ];

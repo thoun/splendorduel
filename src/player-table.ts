@@ -9,10 +9,11 @@ class PlayerTable {
     public tokens: LineStock<Token>[] = [];
     public limitSelection: number | null = null;
     public royalCards: LineStock<RoyalCard>;
+    public counterfeiterCards: LineStock<CounterfeiterCard>;
 
     private currentPlayer: boolean;
 
-    constructor(private game: SplendorDuelGame, player: SplendorDuelPlayer) {
+    constructor(private game: SplendorDuelGame, player: SplendorDuelPlayer, expansion: boolean) {
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.getPlayerId();
 
@@ -25,9 +26,18 @@ class PlayerTable {
             <div class="columns">
         `;
             [2,1,3,5,4,0,-1].forEach(i => {
-                html += `
-                <div id="player-table-${this.playerId}-tokens-${i}" class="tokens"></div>
-                `;
+                if (i === 0) {
+                    html += `
+                        <div class="double-token-stock">
+                            <div id="player-table-${this.playerId}-tokens-0" class="tokens"></div>
+                            <div id="player-table-${this.playerId}-tokens-6" class="tokens"></div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                    <div id="player-table-${this.playerId}-tokens-${i}" class="tokens"></div>
+                    `;
+                }
             });         
             [2,1,3,5,4,9].forEach(i => {
                 html += `
@@ -39,10 +49,11 @@ class PlayerTable {
                     <div class="block-label">${_('Reserved cards')}</div>
                     <div id="player-table-${this.playerId}-reserved" class="cards"></div>
                 </div>
-            </div>
-
-            <div id="player-table-${this.playerId}-royal-cards"></div>
-            
+            </div>`;
+        
+        html += `
+            <div id="player-table-${this.playerId}-counterfeiter-cards"></div>  
+            <div id="player-table-${this.playerId}-royal-cards"></div>          
         </div>
         `;
 
@@ -73,12 +84,21 @@ class PlayerTable {
         
         this.royalCards = new LineStock<RoyalCard>(this.game.royalCardsManager, document.getElementById(`player-table-${this.playerId}-royal-cards`));
         this.royalCards.addCards(player.royalCards);
+
+        if (expansion) {            
+            this.counterfeiterCards = new LineStock<CounterfeiterCard>(this.game.counterfeiterCardsManager, document.getElementById(`player-table-${this.playerId}-counterfeiter-cards`));
+            this.counterfeiterCards.addCards(player.counterfeiterCards);
+        }
         
         const tokensStockSettings: LineStockSettings = {
             direction: 'column',
             center: false,
         };
-        [1,2,3,4,5,0, -1].forEach(i => {
+        const tokenColors = [1,2,3,4,5,0, -1];
+        if (expansion) {
+            tokenColors.push(6);
+        }
+        tokenColors.forEach(i => {
             const tokenDiv = document.getElementById(`player-table-${this.playerId}-tokens-${i}`);
             this.tokens[i] = new LineStock<Token>(this.game.tokensManager, tokenDiv, tokensStockSettings);
             this.tokens[i].onSelectionChange = () => this.game.onPlayerTokenSelectionChange(this.getSelectedTokens());
@@ -98,10 +118,10 @@ class PlayerTable {
         });
     }
 
-    public setHandSelectable(selectable: boolean, buyableCards: Card[] | null = null) {
+    public setHandSelectable(selectable: boolean, buyableCards: number[] | null = null) {
         this.reserved.setSelectionMode(selectable ? 'single' : 'none');
         if (selectable) {
-            this.reserved.setSelectableCards(buyableCards);
+            this.reserved.setSelectableCards(this.reserved.getCards().filter(card => buyableCards.includes(card.id)));
         }
     }    
     
@@ -113,8 +133,12 @@ class PlayerTable {
         return this.royalCards.addCard(card);
     }
 
-    public addTokens(tokens: Token[]): Promise<any> {
-        return Promise.all([1,2,3,4,5,0,-1].map(i => this.tokens[i].addCards(tokens.filter(token => token.color == i))));
+    public addCounterfeiterCard(card: CounterfeiterCard): Promise<any> {
+        return this.counterfeiterCards.addCard(card);
+    }
+
+    public addTokens(tokens: Token[], fromStock?: CardStock<Token>): Promise<any> {
+        return Promise.all([1,2,3,4,5,6,0,-1].map(i => this.tokens[i]?.addCards(tokens.filter(token => token.color == i), { fromStock })));
     }
     
     public addReservedCard(card: Card): Promise<any> {
@@ -128,23 +152,23 @@ class PlayerTable {
     }
     
     public setTokensSelectable(selectable: boolean, goldAllowed: boolean) {
-        (goldAllowed || !selectable ? [1,2,3,4,5,0,-1] : [1,2,3,4,5,0]).forEach(i => this.tokens[i].setSelectionMode(selectable ? 'multiple' : 'none'));
+        (goldAllowed || !selectable ? [1,2,3,4,5,6,0,-1] : [1,2,3,4,5,6,0]).forEach(i => this.tokens[i]?.setSelectionMode(selectable ? 'multiple' : 'none'));
     }
     
     public setTokensSelectableByType(allowedTypes: number[], preselection: Token[]) {
-        [1,2,3,4,5,0,-1].forEach(i => {
-            this.tokens[i].setSelectionMode(allowedTypes.includes(i) ? 'multiple' : 'none');
-            this.tokens[i].unselectAll();
-            this.tokens[i].getCards().filter(card => preselection.some(token => token.id == card.id)).forEach(token => this.tokens[i].selectCard(token));
+        [1,2,3,4,5,6,0,-1].forEach(i => {
+            this.tokens[i]?.setSelectionMode(allowedTypes.includes(i) ? 'multiple' : 'none');
+            this.tokens[i]?.unselectAll();
+            this.tokens[i]?.getCards().filter(card => preselection.some(token => token.id == card.id)).forEach(token => this.tokens[i].selectCard(token));
         });
     }
 
     public getTokens(): Token[] {
-        return [1,2,3,4,5,0,-1].map(i => this.tokens[i].getCards()).reduce((a, b) => [...a, ...b], []);
+        return [1,2,3,4,5,6,0,-1].map(i => this.tokens[i]?.getCards() ?? []).reduce((a, b) => [...a, ...b], []);
     }
 
     public getSelectedTokens(): Token[] {
-        return [1,2,3,4,5,0,-1].map(i => this.tokens[i].getSelection()).reduce((a, b) => [...a, ...b], []);
+        return [1,2,3,4,5,6,0,-1].map(i => this.tokens[i]?.getSelection() ?? []).reduce((a, b) => [...a, ...b], []);
     }
     
     public getCrowns(): number {

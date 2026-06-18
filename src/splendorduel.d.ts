@@ -9,6 +9,7 @@ interface SplendorDuelPlayer extends Player {
     cards: Card[];
     reserved?: Card[];
     royalCards: RoyalCard[];
+    counterfeiterCards: CounterfeiterCard[];
     endReasons: number[];
 }
 
@@ -30,12 +31,17 @@ interface SplendorDuelGamedatas {
     cardDeckTop: { [level: number]: Card };
     tableCards: { [level: number]: Card[] };
     royalCards: RoyalCard[];
+    counterfeiterDeckCount: number;
+    counterfeiterDeckTop: CounterfeiterCard;
+    counterfeiterCards: CounterfeiterCard[];
+    expansion: boolean;
 }
 
 interface SplendorDuelGame extends Game {
     animationManager: AnimationManager;
     cardsManager: CardsManager;
     royalCardsManager: RoyalCardsManager;
+    counterfeiterCardsManager: CounterfeiterCardsManager;
     tokensManager: TokensManager;
 
     getPlayerId(): number;
@@ -47,10 +53,11 @@ interface SplendorDuelGame extends Game {
     getPlayersTokens(): Token[];
 
     setTooltip(id: string, html: string): void;
-    onTableTokenSelectionChange(tokens: Token[], valid: boolean): void;
+    onTableTokenSelectionChange(tokens: Token[], valid: boolean, selectionType?: SelectionType): void;
     onPlayerTokenSelectionChange(tokens: Token[]): void;
-    onTableCardClick(card: Card): void;
+    onTableCardClick(card: Card, selected: boolean): void;
     onRoyalCardClick(card: RoyalCard): void;
+    onCounterfeiterCardClick(card: CounterfeiterCard): void;
     onReservedCardClick(card: Card): void;
     onColumnClick(color: number): void;
 }
@@ -66,10 +73,16 @@ interface EnteringPlayActionArgs {
     canTakeTokens: boolean;
     canReserve: boolean;
     canBuyCard: boolean;
-    buyableCards: Card[];
+    buyableCards: { [card: number]: { [color: number]: number }[] };
+    buyableCounterfeiterCards?: { [card: number]: { [color: number]: number }[] };
     reducedCosts: { [card: number]: { [color: number]: number } };
+    reducedCounterfeiterCosts: { [card: number]: { [color: number]: number } };
     playerAntiPlaying: boolean;
     opponentAntiPlaying: boolean;
+}
+
+interface EnteringReserveCardArgs {
+    canReserve: number;
 }
 
 interface EnteringPlaceJokerArgs {
@@ -78,10 +91,19 @@ interface EnteringPlaceJokerArgs {
 
 interface EnteringTakeBoardTokenArgs {
     color: number;
+    number: number;
+    canTakeAnyColorOrTwoOfColor: boolean;
 }
 
 interface EnteringTakeOpponentTokenArgs {
     opponentId: number;
+}
+
+interface EnteringReserveFromDeckChooseCardArgs {
+    level: number;
+    _private: {
+        cards: Card[];
+    };
 }
 
 // privileges
@@ -101,11 +123,17 @@ interface NotifRefillArgs {
 interface NotifTakeTokensArgs {
     playerId: number;
     tokens: Token[];
+    from?: string;
 }
 
 interface NotifNewPlayerCardArgs {
     playerId: number;
     card: Card;
+}
+
+interface NotifNewPlayerCounterfeiterCardArgs {
+    playerId: number;
+    card: CounterfeiterCard;
 }
 
 // reserveCard
@@ -121,6 +149,11 @@ interface NotifBuyCardArgs extends NotifNewPlayerCardArgs {
     fromReserved: boolean;
     tokens: Token[];
 }   
+
+// buyCounterfeiterCard
+interface NotifBuyCounterfeiterCardArgs extends NotifNewPlayerCounterfeiterCardArgs {
+    tokens: Token[];
+}
 
 // takeRoyalCard
 interface NotifTakeRoyalCardArgs {
@@ -140,6 +173,17 @@ interface NotifNewTableCardArgs {
     cardDeckCount: number;
     cardDeckTop: Card | null;
     level: number;
+}
+
+// newTableRoyalCard
+interface NotifNewTableRoyalCardArgs {
+    newCard: RoyalCard;
+}
+
+interface NotifNewCounterfeiterCardsArgs {
+    cards: CounterfeiterCard[];
+    counterfeiterDeckCount: number;
+    counterfeiterDeckTop: CounterfeiterCard;
 }
 
 // win

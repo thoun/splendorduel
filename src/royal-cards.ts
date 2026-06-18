@@ -25,16 +25,18 @@ class RoyalCardsManager extends CardManager<RoyalCard> {
     }
 
     private getTooltip(card: RoyalCard): string {
-        let message = `
-        <strong>${_("Points:")}</strong> ${card.points}
-        `;
+        let message = [];
+        if (card.points) {
+            message.push(`
+            <strong>${_("Points:")}</strong> ${card.points}
+            `);
+        }
         if (card.power.length) {
-            message += `
-            <br>
+            message.push(`
             <strong>${_("Power:")}</strong> ${card.power.map(power => this.game.getPower(power)).join(', ')}
-            `;
+            `);
         }
  
-        return message;
+        return message.join('<br>');
     }
 }

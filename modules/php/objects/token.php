@@ -34,7 +34,7 @@ class Token {
     public string $location;
     public int $locationArg;
     public int $type; // 1 = gold, 2 = colored
-    public int $color; // 0 = pearl, 1 blue, 2 white, 3 green, 4 black, 5 red
+    public int $color; // 0 = pearl, 1 blue, 2 white, 3 green, 4 black, 5 red, 6 glassware
     public ?int $row;
     public ?int $column;
 

@@ -1,10 +1,6 @@
 <?php
 
-if (!function_exists('str_contains')) {
-    function str_contains($haystack, $needle) {
-        return $needle !== '' && mb_strpos($haystack, $needle) !== false;
-    }
-}
+use Bga\GameFrameworkPrototype\Helpers\Arrays;
 
 trait UtilTrait {
 
@@ -85,12 +81,12 @@ trait UtilTrait {
         $this->DbQuery("DELETE FROM `global_variables` where `name` in (".implode(',', array_map(fn($name) => "'$name'", $names)).")");
     }
 
-    function getPlayersIds() {
-        return array_keys($this->loadPlayersBasicInfos());
+    function isCounterfeiterExpansion(): bool {
+        return $this->tableOptions->get(100) === 1;
     }
 
-    function getPlayerName(int $playerId) {
-        return $this->getUniqueValueFromDB("SELECT player_name FROM player WHERE player_id = $playerId");
+    function getPlayersIds() {
+        return array_keys($this->loadPlayersBasicInfos());
     }
 
     function getPlayerPrivileges(int $playerId) {
@@ -108,7 +104,7 @@ trait UtilTrait {
     function getPlayer(int $id) {
         $sql = "SELECT * FROM player WHERE player_id = $id";
         $dbResults = $this->getCollectionFromDb($sql);
-        return array_map(fn($dbResult) => new SplendorDuelPlayer($dbResult), array_values($dbResults))[0];
+        return array_map(fn($dbResult) => new SplendorDuelExpansionPlayer($dbResult), array_values($dbResults))[0];
     }
 
     function incPlayerScore(int $playerId, int $amount, $message = '', $args = []) {
@@ -118,7 +114,7 @@ trait UtilTrait {
             
         $this->notifyAllPlayers('score', $message, [
             'playerId' => $playerId,
-            'player_name' => $this->getPlayerName($playerId),
+            'player_name' => $this->getPlayerNameById($playerId),
             'newScore' => $this->getPlayer($playerId)->score,
             'incScore' => $amount,
         ] + $args);
@@ -179,7 +175,7 @@ trait UtilTrait {
         if ($dbCard == null) {
             return null;
         }
-        return new RoyalCard($dbCard, $this->ROYAL_CARDS);
+        return new RoyalCard($dbCard, $this->ROYAL_CARDS + $this->ROYAL_CARDS_EXPANSION);
     }
 
     function getRoyalCardsFromDb(array $dbCards) {
@@ -196,14 +192,21 @@ trait UtilTrait {
         return array_map(fn($dbCard) => $this->getRoyalCardFromDb($dbCard), array_values($dbResults));
     }
 
-    function setupRoyalCards() {     
-            $cards = [];
+    function setupRoyalCards(bool $counterfeiterExpansion) {     
+        $cards = [];
 
-            foreach ($this->ROYAL_CARDS as $index => $cardType) {
+        foreach ($this->ROYAL_CARDS as $index => $cardType) {
+            $cards[] = [ 'type' => $index, 'type_arg' => 0, 'nbr' => 1 ];
+        }
+        if ($counterfeiterExpansion) {
+            foreach ($this->ROYAL_CARDS_EXPANSION as $index => $cardType) {
                 $cards[] = [ 'type' => $index, 'type_arg' => 0, 'nbr' => 1 ];
             }
+        }
 
-            $this->royalCards->createCards($cards, 'deck');
+        $this->royalCards->createCards($cards, 'box');
+        $this->royalCards->shuffle('box');
+        $this->royalCards->pickCardsForLocation(4, 'box', 'deck');
     }
 
     function getTokenFromDb(/*array|null*/ $dbCard) {
@@ -246,7 +249,7 @@ trait UtilTrait {
         $tokens = $this->getPlayerTokens($playerId);
 
         $tokensByColor = [];
-        foreach ([-1, 0,1,2,3,4,5] as $color) {
+        foreach ([-1, 0,1,2,3,4,5,6] as $color) {
             $tokensByColor[$color] = array_values(array_filter($tokens, fn($token) => $token->type == 1 ? $color == -1 : $token->color == $color));
         }
         return $tokensByColor;
@@ -257,12 +260,12 @@ trait UtilTrait {
         return count($tokens[-1]) >= 3 && count($tokens[0]) >= 2;
     }
 
-    function setupTokens() {
+    function setupTokens(bool $counterfeiterExpansion) {
         $cards = [
             [ 'type' => 1, 'type_arg' => 0, 'nbr' => 3 ], // gold
             [ 'type' => 2, 'type_arg' => 0, 'nbr' => 2 ], // pearls
         ];
-        for ($i = 1; $i <= 5; $i++) {
+        for ($i = 1; $i <= ($counterfeiterExpansion ? 6 : 5); $i++) {
             $cards[] = [ 'type' => 2, 'type_arg' => $i, 'nbr' => 4 ];
         }
 
@@ -304,6 +307,7 @@ trait UtilTrait {
             case GREEN: return clienttranslate("Green");
             case BLACK: return clienttranslate("Black");
             case RED: return clienttranslate("Red");
+            case GLASSWARE: return clienttranslate("Glassware");
             case GRAY: return clienttranslate("Gray");
         }
     }
@@ -312,8 +316,8 @@ trait UtilTrait {
         return array_map(fn($token) => $this->getColorName($token->type == 1 ? -1 : $token->color), $tokens);
     }
     
-    function checkUsePrivilege(int $playerId, array $tokens)  {
-        if ($this->getPlayerPrivileges($playerId) < count($tokens)) {
+    function checkUsePrivilege(array $tokens, int $number)  {
+        if (count($tokens) > $number) {
             throw new BgaUserException("Not enough privileges");
         }
 
@@ -327,12 +331,13 @@ trait UtilTrait {
         $gems = array_values(array_filter($tokens, fn($token) => $token->type == 2));
 
         if (count($gold) > 0) {
+            $maxReserve = $this->getPlayerMaxReserve($playerId);
             if (count($gold) > 1) {
                 throw new BgaUserException("You can only take 1 gold token");
             } else if (count($gems) > 0) {
                 throw new BgaUserException("You can't take gold and gems at the same time");
-            } else if (intval($this->cards->countCardInLocation('reserved', $playerId)) >= 3) {
-                throw new BgaUserException("You can't reserve more than 3 cards");
+            } else if (intval($this->cards->countCardInLocation('reserved', $playerId)) >= $maxReserve) {
+                throw new BgaUserException("You can't reserve more than $maxReserve cards");
             }
         } else {
             if (count($gems) > 3) {
@@ -369,7 +374,7 @@ trait UtilTrait {
 
         self::notifyAllPlayers('takeTokens', clienttranslate('${player_name} takes token(s) ${new_tokens}'), [
             'playerId' => $playerId,
-            'player_name' => $this->getPlayerName($playerId),
+            'player_name' => $this->getPlayerNameById($playerId),
             'tokens' => $tokens,
             'new_tokens' => $this->getTokensNames($tokens), // for logs
             'preserve' => ['tokens'],
@@ -377,7 +382,7 @@ trait UtilTrait {
         ]);
     }
 
-    function applyPower(int $playerId, int $power, int $cardId = -1) {
+    function applyPower(int $playerId, int $power, int $cardId = -1): bool /* redirected*/ {
         switch ($power) {
             case POWER_PLAY_AGAIN:
                 $this->setGameStateValue(PLAY_AGAIN, 1);
@@ -403,19 +408,57 @@ trait UtilTrait {
                 $this->setGameStateValue(PLAYED_CARD, $cardId);
                 $this->gamestate->jumpToState(ST_PLAYER_TAKE_OPPONENT_TOKEN);
                 return true;
+            case POWER_RESERVE_CARD:
+                $this->gamestate->jumpToState(ST_PLAYER_RESERVE_CARD);
+                return true;
+            case POWER_TAKE_COUNTERFEITER_CARD:
+                $this->gamestate->jumpToState(ST_PLAYER_TAKE_COUNTERFEITER_CARD);
+                return true;
+            case POWER_TAKE_ALL_GEMS_SAME_COLOR:
+            case POWER_TAKE_GOLD_FROM_TABLE:
+            case POWER_TAKE_3GEMS_FROM_TABLE:
+                $this->setGameStateValue(PLAYED_CARD, -$power);
+                $this->gamestate->jumpToState(ST_PLAYER_TAKE_BOARD_TOKEN);
+                return true;
+            case POWER_TAKE_2GEMS_FROM_BAG:
+                $this->tokens->shuffle('bag');
+                $bagCount = intval($this->tokens->countCardInLocation('bag'));
+                $tokens = [];
+                for ($i = 0; $i < min(2, $bagCount); $i++) {
+                    $tokens[] = $this->getTokenFromDb($this->tokens->pickCardForLocation('bag', 'player', $playerId));
+                }
+
+                if ($tokens === 0) {
+                    $this->notify->all('log', clienttranslate("Card ability is skipped, as the bag is empty"));
+                } else {
+                    $this->notifyAllPlayers('takeTokens', clienttranslate('${player_name} takes token(s) ${new_tokens} from the bag'), [
+                        'playerId' => $playerId,
+                        'player_name' => $this->getPlayerNameById($playerId),
+                        'tokens' => $tokens,
+                        'new_tokens' => $this->getTokensNames($tokens), // for logs
+                        'preserve' => ['tokens'],
+                        'i18n' => ['new_tokens'],
+                        'from' => 'bag',
+                    ]);
+                }
+                break;
         }
 
         return false;
     }
 
-    function applyEndTurn(int $playerId, /*?Card | RoyalCard*/ $card = null, bool $ignorePower = false, bool $royalCard = false) {
+    function applyEndTurn(int $playerId, Card|RoyalCard|CounterfeiterCard|null $card = null, bool $ignorePower = false) {
         $takeRoyalCard = false;
 
         if ($card != null) {
             if (property_exists($card, 'crowns') && $card->crowns > 0) {
                 $cards = $this->getCardsByLocation('player'.$playerId.'-%');
+                $counterfeiterCards = $this->isCounterfeiterExpansion() ? $this->counterfeiterCards->getPlayer($playerId) : [];
                 $crownsAfter = 0;
                 foreach($cards as $iCard) {
+                    $crownsAfter += $iCard->crowns;
+                }
+                foreach($counterfeiterCards as $iCard) {
                     $crownsAfter += $iCard->crowns;
                 }
                 $crownsBefore = $crownsAfter - $card->crowns;
@@ -426,10 +469,10 @@ trait UtilTrait {
                 }
             }
 
-            if (!$ignorePower) {
+            if (!$ignorePower && $card !== null && !$card instanceof CounterfeiterCard) {
                 $redirected = false;
                 foreach ($card->power as $power) {
-                    $powerWithRedirection = $this->applyPower($playerId, $power, $royalCard ? -1 : $card->id);
+                    $powerWithRedirection = $this->applyPower($playerId, $power, ($card instanceof RoyalCard) ? -1 : $card->id);
                     if ($powerWithRedirection) {
                         $redirected = true;
                     }
@@ -446,9 +489,15 @@ trait UtilTrait {
             return;
         }
 
-        $mustDiscard = count($this->getTokensByLocation('player', $playerId)) > 10;
+        $this->gamestate->jumpToState(ST_PLAYER_BEFORE_END_TURN);
+    }
 
-        $this->gamestate->jumpToState($mustDiscard ? ST_PLAYER_DISCARD_TOKENS : ST_NEXT_PLAYER);
+    function getPlayerTokenCountInLimit(int $playerId): int {
+        $playerTokens = $this->getTokensByLocation('player', $playerId);
+        if ($this->counterfeiterCards->playerHasCounterfeiterCard($playerId, 12)) {
+            $playerTokens = Arrays::filter($playerTokens, fn($token) => $token->color !== 6);
+        }
+        return count($playerTokens);
     }
     
     function spendPrivileges(int $playerId, int $number) {
@@ -456,7 +505,7 @@ trait UtilTrait {
 
         self::notifyAllPlayers('privileges', clienttranslate('${player_name} uses ${number} privileges to take token(s) from the board'), [
             'playerId' => $playerId,
-            'player_name' => $this->getPlayerName($playerId),
+            'player_name' => $this->getPlayerNameById($playerId),
             'privileges' => [
                 $playerId => $this->getPlayerPrivileges($playerId),
             ],
@@ -472,7 +521,7 @@ trait UtilTrait {
         if ($playerPrivileges >= 3) {
             self::notifyAllPlayers('log', clienttranslate('${player_name} cannot take a privilege because he already have all 3 privileges.'), [
                 'playerId' => $playerId,
-                'player_name' => $this->getPlayerName($playerId),
+                'player_name' => $this->getPlayerNameById($playerId),
             ]);
             return;
         }
@@ -488,9 +537,9 @@ trait UtilTrait {
 
         self::notifyAllPlayers('privileges', $message, [
             'playerId' => $playerId,
-            'player_name' => $this->getPlayerName($playerId),
+            'player_name' => $this->getPlayerNameById($playerId),
             'opponentId' => $opponentId,
-            'player_name2' => $this->getPlayerName($opponentId),
+            'player_name2' => $this->getPlayerNameById($opponentId),
             'privileges' => [
                 $playerId => $this->getPlayerPrivileges($playerId),
                 $opponentId => $this->getPlayerPrivileges($opponentId),
@@ -512,6 +561,7 @@ trait UtilTrait {
         $totalPoints = 0;
         $pointsByColor = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
         $crowns = 0;
+        
         foreach($cards as $card) {
             $totalPoints += $card->points;
             $crowns += $card->crowns;
@@ -524,6 +574,13 @@ trait UtilTrait {
         $royalCards = $this->getRoyalCardsByLocation('player', $playerId);
         foreach($royalCards as $royalCard) {
             $totalPoints += $royalCard->points;
+        }
+        if ($this->isCounterfeiterExpansion()) {
+            $counterfeiterCards = $this->counterfeiterCards->getPlayer($playerId);
+            foreach($counterfeiterCards as $counterfeiterCard) {
+                $totalPoints += $counterfeiterCard->points;
+                $crowns += $counterfeiterCard->crowns;
+            }
         }
 
         return [$totalPoints, $crowns, max($pointsByColor)];
@@ -547,13 +604,25 @@ trait UtilTrait {
         $crowns = $status[1];
         $colorMaxPoints = $status[2];
 
-        if ($totalPoints >= 20) {
+        $totalPointsGoal = 20;
+        $colorMaxPointsGoal = 10;
+        $crownGoal = 10;
+
+        $royalCards = $this->getRoyalCardsByLocation('player', $playerId);
+        if (Arrays::some($royalCards, fn($royalCard) => in_array(POWER_WIN_9PTS_SAME_COLOR, $royalCard->power))) {
+            $colorMaxPointsGoal = 9;
+        }
+        if (Arrays::some($royalCards, fn($royalCard) => in_array(POWER_WIN_9CROWNS, $royalCard->power))) {
+            $crownGoal = 9;
+        }        
+
+        if ($totalPoints >= $totalPointsGoal) {
             $reasons[] = 1;
         }
-        if ($crowns >= 10) {
+        if ($crowns >= $crownGoal) {
             $reasons[] = 2;
         }
-        if ($colorMaxPoints >= 10) {
+        if ($colorMaxPoints >= $colorMaxPointsGoal) {
             $reasons[] = 3;
         }
 
@@ -581,21 +650,99 @@ trait UtilTrait {
         return $cost;
     }
 
-    function canBuyCard(Card &$card, array $playerTokensByColor, array $playerCards) {
-        $gold = count($playerTokensByColor[-1]);
+    function canBuyCard(Card|CounterfeiterCard &$card, array $playerTokensByColor, array $playerCards, array $converters): array {
         $cost = $this->getCardReducedCost($card->cost, $playerCards);
+        $remainingPlayerTokensByColor = Arrays::map($playerTokensByColor, fn($tokens) => count($tokens));
+        $possiblePayments = $this->findPaymentWays($cost, $remainingPlayerTokensByColor, $converters);
+        return $possiblePayments;
+    }
 
-        foreach($cost as $color => $number) {
-            if ($number > count($playerTokensByColor[$color])) {
-                $cost[$color] -= count($playerTokensByColor[$color]);
-            } else {
-                $cost[$color] = 0;
+    function findPaymentWays(array $cost, array $playerTokens, array $converters, array $currentPayment = [], array $allWays = []): array {
+        // Base case: If the cost is fully paid, add the current way to the list
+        if (array_sum($cost) === 0) {
+            $allWays[] = $currentPayment;
+            return array_values(array_unique($allWays, SORT_REGULAR));
+            //return $allWays;
+        }
+
+        // Try to pay with GOLD tokens
+        if (isset($playerTokens[GOLD]) && $playerTokens[GOLD] > 0) {
+            foreach ($cost as $color => $needed) {
+                if ($needed > 0) {
+                    $newCost = $cost;
+                    $newCost[$color]--;
+
+                    $newTokens = $playerTokens;
+                    $newTokens[GOLD]--;
+
+                    $newPayment = $currentPayment;
+                    $newPayment[GOLD] = ($newPayment[GOLD] ?? 0) + 1;
+                    
+                    // Recursive call
+                    $allWays = $this->findPaymentWays($newCost, $newTokens, $converters, $newPayment, $allWays);
+                }
             }
         }
 
-        $remainingTokensCount = array_reduce($cost, fn($a, $b) => $a + $b, 0);
+        // Try to pay with player tokens of matching colors
+        foreach ($cost as $color => $needed) {
+            if ($needed > 0 && isset($playerTokens[$color]) && $playerTokens[$color] > 0) {
+                $newCost = $cost;
+                $newCost[$color]--;
 
-        return $gold >= $remainingTokensCount;
+                $newTokens = $playerTokens;
+                $newTokens[$color]--;
+
+                $newPayment = $currentPayment;
+                $newPayment[$color] = ($newPayment[$color] ?? 0) + 1;
+                
+                // Recursive call
+                $allWays = $this->findPaymentWays($newCost, $newTokens, $converters, $newPayment, $allWays);
+            }
+        }
+
+        // Try to pay using converters
+        foreach ($converters as $index => $converter) {
+            $toColorMulti = array_keys($converter->to)[0];
+            $numberFrom = array_values($converter->from)[0];
+            $numberTo = array_values($converter->to)[0];
+
+            $convertFromColors = [GOLD, array_keys($converter->from)[0]];
+            $convertToPossibleColors = $toColorMulti === MULTICOLOR ?
+                [BLUE, WHITE, GREEN, BLACK, RED] :
+                [$toColorMulti];
+
+            foreach ($convertFromColors as $fromColor) {
+                foreach ($convertToPossibleColors as $toColor) {
+                // Check if we can use this converter with current color
+                    if (
+                        isset($playerTokens[$fromColor]) && $playerTokens[$fromColor] >= $numberFrom && 
+                        $converter->repeat > 0 && 
+                        isset($cost[$toColor]) && $cost[$toColor] > 0
+                    ) {
+                        $newCost = $cost;
+                        $newCost[$toColor] -= min($numberTo, $cost[$toColor]);
+
+                        $newTokens = $playerTokens;
+                        $newTokens[$fromColor] -= $numberFrom;
+
+                        // A 'conversion' payment step
+                        $newPayment = $currentPayment;
+                        $newPayment[$fromColor] = ($newPayment[$fromColor] ?? 0) + $numberFrom;
+                        
+                        // Clone and update converter to track usage
+                        $newConverters = $converters;
+                        $newConverters[$index] = clone $newConverters[$index];
+                        $newConverters[$index]->repeat--;
+
+                        // Recursive call
+                        $allWays = $this->findPaymentWays($newCost, $newTokens, $newConverters, $newPayment, $allWays);
+                    }
+                }
+            }
+        }
+
+        return $allWays;
     }
 
 
@@ -603,6 +750,7 @@ trait UtilTrait {
         $tokens = $this->getPlayerTokensByColor($playerId);
         $cards = $this->getCardsByLocation('player'.$playerId.'-%');
         $hasColoredCards = $this->array_some($cards, fn($card) => in_array($card->color, [BLUE, WHITE, GREEN, BLACK, RED]));
+        $counterfeiterCardConversions = $this->counterfeiterCards->getConversions($playerId);
 
         $possibleCards = array_merge(
             $this->getCardsByLocation('reserved', $playerId),
@@ -611,18 +759,52 @@ trait UtilTrait {
 
         // ignore multi color if we don't have a colored card
         if (!$hasColoredCards) {
-            $possibleCards = array_values(array_filter($possibleCards, fn($card) => !in_array(POWER_MULTICOLOR, $card->power)));
+            $possibleCards = Arrays::filter($possibleCards, fn($card) => !in_array(POWER_MULTICOLOR, $card->power));
         }
 
-        $buyableCards = array_values(array_filter($possibleCards, fn($card) => $this->canBuyCard($card, $tokens, $cards)));
+        $buyableCards = [];
         $reducedCosts = [];
-        foreach($buyableCards as $card) {
-            $reducedCosts[$card->id] = $this->getCardReducedCost($card->cost, $cards);
+        foreach ($possibleCards as $card) {
+            $paymentWays = $this->canBuyCard($card, $tokens, $cards, $counterfeiterCardConversions);
+            if (count($paymentWays) > 0) {
+                $buyableCards[$card->id] = $paymentWays;
+                $reducedCosts[$card->id] = $this->getCardReducedCost($card->cost, $cards);
+            }
         }
 
         return [
             'buyableCards' => $buyableCards,
             'reducedCosts' => $reducedCosts,
+        ];
+    }
+
+
+    function getBuyableCounterfeiterCardsAndCosts(int $playerId) {
+        if (!$this->isCounterfeiterExpansion()) {
+            return [
+            'buyableCounterfeiterCards' => [],
+            'reducedCounterfeiterCosts' => [],
+        ];
+        }
+        $tokens = $this->getPlayerTokensByColor($playerId);
+        $cards = $this->getCardsByLocation('player'.$playerId.'-%');
+        $counterfeiterCardConversions = $this->counterfeiterCards->getConversions($playerId);
+
+        $possibleCards = $this->counterfeiterCards->getItemsInLocation('table');
+
+        $buyableCards = [];
+        $reducedCosts = [];
+        foreach ($possibleCards as $card) {
+            $paymentWays = $this->canBuyCard($card, $tokens, $cards, $counterfeiterCardConversions);
+            if (count($paymentWays) > 0) {
+                $buyableCards[$card->id] = $paymentWays;
+                $reducedCosts[$card->id] = $this->getCardReducedCost($card->cost, $cards);
+            }
+        }
+
+        return [
+            'buyableCounterfeiterCards' => $buyableCards,
+            'reducedCounterfeiterCosts' => $reducedCosts,
         ];
     }
 
