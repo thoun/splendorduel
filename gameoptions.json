@@ -9,7 +9,7 @@
             "1": {
                 "name": "Enabled",
                 "tmdisplay": "The Counterfeiters Expansion",
-                "alpha": true
+                "nobeginner": true
             }
         },
         "default": 0
