@@ -711,7 +711,7 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
             </div>
             `;
 
-            dojo.place(html, `player_board_${player.id}`);
+            this.bga.playerPanels.getElement(playerId).insertAdjacentHTML('beforeend', html);
 
             const points = [1,2,3,4,5,9].map(color => {
                 // we ignore multicolor in gray column as they will move to another column

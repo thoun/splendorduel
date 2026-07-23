@@ -18,6 +18,13 @@ class CounterfeiterCardsManager extends CardManager<CounterfeiterCard> {
                 div.dataset.index = ''+card.type;
             },
             setupFrontDiv: (card: CounterfeiterCard, div: HTMLElement) => { 
+                // Set the sprite position on the face itself.  The card can be
+                // created while the river is being animated, before the CSS
+                // attribute selector on the parent has been applied/repainted.
+                // Without this, every face temporarily uses the sprite's first
+                // image and can remain there until a full page repaint.
+                const index = card.type - 1;
+                div.style.backgroundPosition = `${(index % 2) * 100}% ${Math.floor(index / 2) * 100 / 8}%`;
                 game.setTooltip(div.id, this.getTooltip(card));
             },
             isCardVisible: card => Boolean(card.type),

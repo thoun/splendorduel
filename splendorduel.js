@@ -2159,6 +2159,13 @@ var CounterfeiterCardsManager = /** @class */ (function (_super) {
                 div.dataset.index = '' + card.type;
             },
             setupFrontDiv: function (card, div) {
+                // Set the sprite position on the face itself.  The card can be
+                // created while the river is being animated, before the CSS
+                // attribute selector on the parent has been applied/repainted.
+                // Without this, every face temporarily uses the sprite's first
+                // image and can remain there until a full page repaint.
+                var index = card.type - 1;
+                div.style.backgroundPosition = "".concat((index % 2) * 100, "% ").concat(Math.floor(index / 2) * 100 / 8, "%");
                 game.setTooltip(div.id, _this.getTooltip(card));
             },
             isCardVisible: function (card) { return Boolean(card.type); },
@@ -3494,7 +3501,7 @@ var SplendorDuel = /** @class */ (function (_super) {
                 html += "            \n                <div class=\"spl_ressources\">\n                    <div class=\"spl_minigem\" data-color=\"".concat(color, "\"></div>\n                    <div id=\"player-").concat(playerId, "-counters-card-").concat(color, "\" class=\"spl_cardcount\" data-color=\"").concat(color, "\">\n                    </div>\n                    <div id=\"player-").concat(playerId, "-counters-token-").concat(color, "\" class=\"spl_coinpile\" data-type=\"2\" data-color=\"").concat(color, "\">\n                    </div>\n                </div>");
             });
             html += "\n                    <div class=\"spl_ressources\">\n                        <div id=\"player-".concat(playerId, "-counters-token--1\" class=\"spl_coinpile\" data-type=\"1\"></div>\n                        <div id=\"player-").concat(playerId, "-counters-token-0\" class=\"spl_coinpile\" data-type=\"2\" data-color=\"0\"></div>\n                        ").concat(gamedatas.expansion ? "<div id=\"player-".concat(playerId, "-counters-token-6\" class=\"spl_coinpile\" data-type=\"2\" data-color=\"6\"></div>") : '', "\n                    </div>\n                </div>\n            </div>\n            ");
-            dojo.place(html, "player_board_".concat(player.id));
+            _this.bga.playerPanels.getElement(playerId).insertAdjacentHTML('beforeend', html);
             var points = [1, 2, 3, 4, 5, 9].map(function (color) {
                 // we ignore multicolor in gray column as they will move to another column
                 return player.cards.filter(function (card) { return card.location === "player".concat(playerId, "-").concat(color) && (color !== 9 || !card.power.includes(2)); }).map(function (card) { return card.points; }).reduce(function (a, b) { return a + b; }, 0);
