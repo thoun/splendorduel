@@ -174,6 +174,7 @@ class PlayerTable {
     public getCrowns(): number {
         let crowns = 0;
         [1,2,3,4,5,9].forEach(i => this.played[i].getCards().forEach(card => crowns += card.crowns));
+        this.counterfeiterCards?.getCards().forEach(card => crowns += card.crowns);
         return crowns;
     }
 }

@@ -2973,8 +2973,10 @@ var PlayerTable = /** @class */ (function () {
     };
     PlayerTable.prototype.getCrowns = function () {
         var _this = this;
+        var _a;
         var crowns = 0;
         [1, 2, 3, 4, 5, 9].forEach(function (i) { return _this.played[i].getCards().forEach(function (card) { return crowns += card.crowns; }); });
+        (_a = this.counterfeiterCards) === null || _a === void 0 ? void 0 : _a.getCards().forEach(function (card) { return crowns += card.crowns; });
         return crowns;
     };
     return PlayerTable;
