@@ -1,4 +1,7 @@
 <?php
+declare(strict_types=1);
+
+namespace Bga\Games\SplendorDuel;
 
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
 
@@ -18,9 +21,9 @@ trait StateTrait {
         $color = $args['color'];
         $board = $this->getBoard();
 
-        $canTakeColors = $color === MULTICOLOR || $args['canTakeAnyColorOrTwoOfColor'] ? [0, 1, 2 ,3 ,4 ,5 ,6] : [$color];
+        $canTakeColors = $color === MULTICOLOR || ($args['canTakeAnyColorOrTwoOfColor'] ?? false) ? [0, 1, 2 ,3 ,4 ,5 ,6] : [$color];
 
-        if (!$this->array_some($board, fn($token) => in_array($token->color, $canTakeColors))) {
+        if (!array_any($board, fn($token) => in_array($token->color, $canTakeColors))) {
             $this->bga->notify->all('log', clienttranslate('Card ability is skipped, as there is no ${color_name} token on the board'), [
                 'color_name' => $this->getColorName($color), // for logs
             ]);
@@ -36,7 +39,7 @@ trait StateTrait {
         $opponentId = $this->argTakeOpponentToken()['opponentId'];
         $tokens = $this->getPlayerTokens($opponentId);
 
-        if (!$this->array_some($tokens, fn($token) => $token->type == 2)) {
+        if (!array_any($tokens, fn($token) => $token->type == 2)) {
             $this->bga->notify->all('log', clienttranslate("Card ability is skipped, as your opponent doesn't have any Gem or Pearl"), [
             ]);
 
@@ -140,7 +143,7 @@ trait StateTrait {
             }
 
             $this->activeNextPlayer();
-            $playerId = $this->getActivePlayerId();
+            $playerId = (int)$this->getActivePlayerId();
 
             if ($this->playerHasAllGoldAndPearls($playerId)) {
                 // if the player has all 3 golds and 2 pearls at the beginning of his turn

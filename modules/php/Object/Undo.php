@@ -1,4 +1,7 @@
 <?php
+declare(strict_types=1);
+
+namespace Bga\Games\SplendorDuel\Object;
 
 class Undo {
     public array $cardsIds;

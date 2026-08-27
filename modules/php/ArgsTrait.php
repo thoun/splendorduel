@@ -1,6 +1,7 @@
 <?php
+declare(strict_types=1);
 
-use Bga\GameFrameworkPrototype\Helpers\Arrays;
+namespace Bga\Games\SplendorDuel;
 
 trait ArgsTrait {
     
@@ -51,7 +52,7 @@ trait ArgsTrait {
         $buyableCounterfeiterCardsAndCosts = $this->getBuyableCounterfeiterCardsAndCosts($playerId);
         $maxReserve = $this->getPlayerMaxReserve($playerId);
         $canReserve = intval($this->cards->countCardInLocation('reserved', $playerId)) < $maxReserve;
-        if (!$canReserve && $this->array_every($board, fn($token) => $token->type == 1)) {
+        if (!$canReserve && array_all($board, fn($token) => $token->type == 1)) {
             $canTakeTokens = false;
         }
         $canBuyCard = count($buyableCardsAndCosts['buyableCards']) > 0 || count($buyableCounterfeiterCardsAndCosts['buyableCounterfeiterCards']) > 0;
@@ -94,7 +95,7 @@ trait ArgsTrait {
 
         $cards = $this->getCardsByLocation('player'.$playerId.'-%');
 
-        $colors = array_values(array_filter([1,2,3,4,5], fn($color) => $this->array_some($cards, fn($card) => $card->color == $color)));
+        $colors = array_values(array_filter([1,2,3,4,5], fn($color) => array_any($cards, fn($card) => $card->color == $color)));
 
         return [
             'colors' => $colors,

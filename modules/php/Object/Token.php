@@ -1,4 +1,7 @@
 <?php
+declare(strict_types=1);
+
+namespace Bga\Games\SplendorDuel\Object;
 
 const BOARD_COORDINATES = [
     1 => [3, 3],

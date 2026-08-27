@@ -1,8 +1,13 @@
 <?php
+declare(strict_types=1);
+
+namespace Bga\Games\SplendorDuel;
 
 use Bga\GameFramework\Actions\Types\IntArrayParam;
 use Bga\GameFramework\UserException;
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
+use Bga\Games\SplendorDuel\Object\Card;
+use Bga\Games\SplendorDuel\Object\CounterfeiterCard;
 
 trait ActionTrait {
 
@@ -61,7 +66,7 @@ trait ActionTrait {
                 
                 $this->incStat(1, 'givenPrivileges2pearls');
                 $this->incStat(1, 'givenPrivileges2pearls', $playerId);
-            } else if ($this->array_some($tokensByColor, fn($colorTokens) => count($colorTokens) >= 3)) {
+            } else if (array_any($tokensByColor, fn($colorTokens) => count($colorTokens) >= 3)) {
                 $message = clienttranslate('${player_name2} took 3 gems of the same color and allow ${player_name} to get a privilege.');
                 $this->takePrivilege($this->getOpponentId($playerId), $message);
                 
@@ -193,7 +198,7 @@ trait ActionTrait {
         }
 
         $tokens = $this->getTokensFromDb($this->tokens->getCards($tokensIds));
-        if ($this->array_some($tokens, fn($token) => $token->location != 'player' && $token->locationArg != $playerId)) {
+        if (array_any($tokens, fn($token) => $token->location != 'player' && $token->locationArg != $playerId)) {
             throw new UserException("You must use your own tokens to purchase the card");
         }
 
@@ -262,7 +267,7 @@ trait ActionTrait {
         }
 
         $tokens = $this->getTokensFromDb($this->tokens->getCards($tokensIds));
-        if ($this->array_some($tokens, fn($token) => $token->location != 'player' && $token->locationArg != $playerId)) {
+        if (array_any($tokens, fn($token) => $token->location != 'player' && $token->locationArg != $playerId)) {
             throw new UserException("You must use your own tokens to purchase the card");
         }
 
@@ -501,7 +506,7 @@ trait ActionTrait {
         $opponentId = $this->getOpponentId($playerId);
 
         $playerTokens = $this->getPlayerTokens($opponentId);
-        $token = $this->array_find($playerTokens, fn($token) => $token->id == $id);
+        $token = array_find($playerTokens, fn($token) => $token->id == $id);
         if ($token == null) {
             throw new UserException("You must take a token from your opponent");
         }

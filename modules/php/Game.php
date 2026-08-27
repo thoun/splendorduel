@@ -1,59 +1,352 @@
 <?php
+declare(strict_types=1);
 
+namespace Bga\Games\SplendorDuel;
+ /**
+  *------
+  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
+  * SplendorDuel implementation : © <Your name here> <Your email address here>
+  * 
+  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
+  * See http://en.boardgamearena.com/#!doc/Studio for more information.
+  * -----
+  * 
+  * Game.php
+  *
+  * This is the main file for your game logic.
+  *
+  * In this PHP file, you are going to defines the rules of the game.
+  *
+  */
+
+use Bga\GameFramework\Components\Deck;
+use Bga\GameFramework\UserException;
+use Bga\GameFramework\VisibleSystemException;
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
+use Bga\Games\SplendorDuel\Object\Card;
+use Bga\Games\SplendorDuel\Object\CardType;
+use Bga\Games\SplendorDuel\Object\CounterfeiterCard;
+use Bga\Games\SplendorDuel\Object\RoyalCard;
+use Bga\Games\SplendorDuel\Object\RoyalCardType;
+use Bga\Games\SplendorDuel\Object\SplendorDuelExpansionPlayer;
+use Bga\Games\SplendorDuel\Object\Token;
 
-trait UtilTrait {
+require_once(__DIR__.'/framework-prototype/Helpers/Arrays.php');
+require_once(__DIR__.'/constants.inc.php');
+
+class Game extends \Bga\GameFramework\Table {
+    use ActionTrait;
+    use StateTrait;
+    use ArgsTrait;
+    use DebugUtilTrait;
+
+    public Deck $cards;
+    public Deck $royalCards;
+    public Deck $tokens;
+    public CounterfeiterCardManager $counterfeiterCards;
+
+    public array $CARDS;
+    public array $ROYAL_CARDS;
+    public array $ROYAL_CARDS_EXPANSION;
+
+	function __construct() {
+        // Your global variables labels:
+        //  Here, you can assign labels to global variables you are using for this game.
+        //  You can use any number of global variables with IDs between 10 and 99.
+        //  If your game has options (variants), you also have to associate here a label to
+        //  the corresponding ID in gameoptions.inc.php.
+        // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
+        parent::__construct();
+        
+        $this->initGameStateLabels([
+            PLAY_AGAIN => PLAY_AGAIN,
+            PLAYED_CARD => PLAYED_CARD,
+            TAKE_ROYAL_CARD => TAKE_ROYAL_CARD,
+            PLAYER_REFILLED => PLAYER_REFILLED,
+        ]);   
+		
+        $this->cards = $this->bga->deckFactory->createDeck("card");		
+        $this->royalCards = $this->bga->deckFactory->createDeck("royal_card");		
+        $this->tokens = $this->bga->deckFactory->createDeck("token");
+
+        $this->counterfeiterCards = new CounterfeiterCardManager($this);
+
+        $this->CARDS = [
+            1 => [ // level 1 cards
+                1 => new CardType(WHITE, [BLUE => 1, GREEN => 1, RED => 1, BLACK => 1], [WHITE => 1]),
+                2 => new CardType(WHITE, [BLUE => 3], [WHITE => 1], 0, 1),
+                3 => new CardType(WHITE, [BLUE => 2, GREEN => 2, PEARL => 1], [WHITE => 1], 0, 0, [POWER_PLAY_AGAIN]),
+                4 => new CardType(WHITE, [RED => 2, BLACK => 2], [WHITE => 1], 0, 0, [POWER_TAKE_GEM_FROM_TABLE]),
+                5 => new CardType(WHITE, [GREEN => 2, RED => 3], [WHITE => 1], 1),
+
+                6 => new CardType(BLUE, [WHITE => 1, GREEN => 1, RED => 1, BLACK => 1], [BLUE => 1]),
+                7 => new CardType(BLUE, [GREEN => 3], [BLUE => 1], 0, 1),
+                8 => new CardType(BLUE, [GREEN => 2, RED => 2, PEARL => 1], [BLUE => 1], 0, 0, [POWER_PLAY_AGAIN]),
+                9 => new CardType(BLUE, [WHITE => 2, BLACK => 2], [BLUE => 1], 0, 0, [POWER_TAKE_GEM_FROM_TABLE]),
+                10 => new CardType(BLUE, [RED => 2, BLACK => 3], [BLUE => 1], 1),
+
+                11 => new CardType(GREEN, [WHITE => 1, BLUE => 1, RED => 1, BLACK => 1], [GREEN => 1]),
+                12 => new CardType(GREEN, [RED => 3], [GREEN => 1], 0, 1),
+                13 => new CardType(GREEN, [RED => 2, BLACK => 2, PEARL => 1], [GREEN => 1], 0, 0, [POWER_PLAY_AGAIN]),
+                14 => new CardType(GREEN, [WHITE => 2, BLUE => 2], [GREEN => 1], 0, 0, [POWER_TAKE_GEM_FROM_TABLE]),
+                15 => new CardType(GREEN, [WHITE => 3, BLACK => 2], [GREEN => 1], 1),
+
+                16 => new CardType(BLACK, [WHITE => 1, BLUE => 1, GREEN => 1, RED => 1], [BLACK => 1]),
+                17 => new CardType(BLACK, [WHITE => 3], [BLACK => 1], 0, 1),
+                18 => new CardType(BLACK, [WHITE => 2, BLUE => 2, PEARL => 1], [BLACK => 1], 0, 0, [POWER_PLAY_AGAIN]),
+                19 => new CardType(BLACK, [GREEN => 2, RED => 2], [BLACK => 1], 0, 0, [POWER_TAKE_GEM_FROM_TABLE]),
+                20 => new CardType(BLACK, [BLUE => 2, GREEN => 3], [BLACK => 1], 1),
+
+                21 => new CardType(RED, [WHITE => 1, BLUE => 1, GREEN => 1, BLACK => 1], [RED => 1]),
+                22 => new CardType(RED, [BLACK => 3], [RED => 1], 0, 1),
+                23 => new CardType(RED, [WHITE => 2, BLACK => 2, PEARL => 1], [RED => 1], 0, 0, [POWER_PLAY_AGAIN]),
+                24 => new CardType(RED, [BLUE => 2, GREEN => 2], [RED => 1], 0, 0, [POWER_TAKE_GEM_FROM_TABLE]),
+                25 => new CardType(RED, [WHITE => 2, BLUE => 3], [RED => 1], 1),
+
+                26 => new CardType(GRAY, [BLACK => 4, PEARL => 1], [MULTICOLOR => 1], 1, 0, [POWER_MULTICOLOR]),
+                27 => new CardType(GRAY, [WHITE => 4, PEARL => 1], [MULTICOLOR => 1], 0, 1, [POWER_MULTICOLOR]),
+                28 => new CardType(GRAY, [RED => 4, PEARL => 1], [], 3),
+                29 => new CardType(GRAY, [BLUE => 2, RED => 2, BLACK => 1, PEARL => 1], [MULTICOLOR => 1], 1, 0, [POWER_MULTICOLOR]),
+                30 => new CardType(GRAY, [WHITE => 2, GREEN => 2, BLACK => 1, PEARL => 1], [MULTICOLOR => 1], 1, 0, [POWER_MULTICOLOR]),
+            ],    
+            2 => [ // level 2 cards
+                1 => new CardType(WHITE, [GREEN => 2, RED => 2, BLACK => 2, PEARL => 1], [WHITE => 1], 2, 1),
+                2 => new CardType(WHITE, [BLUE => 4, RED => 3], [WHITE => 1], 1, 0, [POWER_TAKE_GEM_FROM_OPPONENT]),
+                3 => new CardType(WHITE, [WHITE => 4, BLACK => 2, PEARL => 1], [WHITE => 1], 2, 0, [POWER_TAKE_PRIVILEGE]),
+                4 => new CardType(WHITE, [BLUE => 5, GREEN => 2], [WHITE => 2], 1),
+
+                5 => new CardType(BLUE, [WHITE => 2, RED => 2, BLACK => 2, PEARL => 1], [BLUE => 1], 2, 1),
+                6 => new CardType(BLUE, [GREEN => 4, BLACK => 3], [BLUE => 1], 1, 0, [POWER_TAKE_GEM_FROM_OPPONENT]),
+                7 => new CardType(BLUE, [WHITE => 2, BLUE => 4, PEARL => 1], [BLUE => 1], 2, 0, [POWER_TAKE_PRIVILEGE]),
+                8 => new CardType(BLUE, [GREEN => 5, RED => 2], [BLUE => 2], 1),
+
+                9 => new CardType(GREEN, [WHITE => 2, BLUE => 2, BLACK => 2, PEARL => 1], [GREEN => 1], 2, 1),
+                10 => new CardType(GREEN, [WHITE => 3, RED => 4], [GREEN => 1], 1, 0, [POWER_TAKE_GEM_FROM_OPPONENT]),
+                11 => new CardType(GREEN, [BLUE => 2, GREEN => 4, PEARL => 1], [GREEN => 1], 2, 0, [POWER_TAKE_PRIVILEGE]),
+                12 => new CardType(GREEN, [RED => 5, BLACK => 2], [GREEN => 2], 1),
+
+                13 => new CardType(BLACK, [BLUE => 2, GREEN => 2, RED => 2, PEARL => 1], [BLACK => 1], 2, 1),
+                14 => new CardType(BLACK, [WHITE => 4, GREEN => 3], [BLACK => 1], 1, 0, [POWER_TAKE_GEM_FROM_OPPONENT]),
+                15 => new CardType(BLACK, [RED => 2, BLACK => 4, PEARL => 1], [BLACK => 1], 2, 0, [POWER_TAKE_PRIVILEGE]),
+                16 => new CardType(BLACK, [WHITE => 5, BLUE => 2], [BLACK => 2], 1),
+
+                17 => new CardType(RED, [WHITE => 2, BLUE => 2, GREEN => 2, PEARL => 1], [RED => 1], 2, 1),
+                18 => new CardType(RED, [BLUE => 3, BLACK => 4], [RED => 1], 1, 0, [POWER_TAKE_GEM_FROM_OPPONENT]),
+                19 => new CardType(RED, [GREEN => 2, RED => 4, PEARL => 1], [RED => 1], 2, 0, [POWER_TAKE_PRIVILEGE]),
+                20 => new CardType(RED, [WHITE => 2, BLACK => 5], [RED => 2], 1),
+
+                21 => new CardType(GRAY, [GREEN => 6, PEARL => 1], [MULTICOLOR => 1], 2, 0, [POWER_MULTICOLOR]),
+                22 => new CardType(GRAY, [GREEN => 6, PEARL => 1], [MULTICOLOR => 1], 0, 2, [POWER_MULTICOLOR]),
+                23 => new CardType(GRAY, [BLUE => 6, PEARL => 1], [MULTICOLOR => 1], 0, 2, [POWER_MULTICOLOR]),
+                24 => new CardType(GRAY, [BLUE => 6, PEARL => 1], [], 5),
+            ],    
+            3 => [ // level 3 cards
+                1 => new CardType(WHITE, [BLUE => 3, RED => 5, BLACK => 3, PEARL => 1], [WHITE => 1], 3, 2),
+                2 => new CardType(WHITE, [WHITE => 6, BLUE => 2, BLACK => 2], [WHITE => 1], 4),
+
+                3 => new CardType(BLUE, [WHITE => 3, GREEN => 3, BLACK => 5, PEARL => 1], [BLUE => 1], 3, 2),
+                4 => new CardType(BLUE, [WHITE => 2, BLUE => 6, GREEN => 2], [BLUE => 1], 4),
+
+                5 => new CardType(GREEN, [WHITE => 5, BLUE => 3, RED => 3, PEARL => 1], [GREEN => 1], 3, 2),
+                6 => new CardType(GREEN, [BLUE => 2, GREEN => 6, RED => 2], [GREEN => 1], 4),
+
+                7 => new CardType(BLACK, [WHITE => 3, GREEN => 5, RED => 3, PEARL => 1], [BLACK => 1], 3, 2),
+                8 => new CardType(BLACK, [WHITE => 2, RED => 2, BLACK => 6], [BLACK => 1], 4),
+
+                9 => new CardType(RED, [BLUE => 5, GREEN => 3, BLACK => 3, PEARL => 1], [RED => 1], 3, 2),
+                10 => new CardType(RED, [GREEN => 2, RED => 6, BLACK => 2], [RED => 1], 4),
+
+                11 => new CardType(GRAY, [RED => 8], [MULTICOLOR => 1], 3, 0, [POWER_MULTICOLOR, POWER_PLAY_AGAIN]),
+                12 => new CardType(GRAY, [BLACK => 8], [MULTICOLOR => 1], 0, 3, [POWER_MULTICOLOR]),
+                13 => new CardType(GRAY, [WHITE => 8], [], 6),
+            ],
+        ];
+
+        $this->ROYAL_CARDS = [
+            1 => new RoyalCardType(2, [POWER_TAKE_GEM_FROM_OPPONENT]),
+            2 => new RoyalCardType(2, [POWER_PLAY_AGAIN]),
+            3 => new RoyalCardType(2, [POWER_TAKE_PRIVILEGE]),
+            4 => new RoyalCardType(3),
+        ];
+
+        $this->ROYAL_CARDS_EXPANSION = [ 
+            5 => new RoyalCardType(2, [POWER_RESERVE_CARD]),
+            6 => new RoyalCardType(1, [POWER_WIN_9PTS_SAME_COLOR]),
+            7 => new RoyalCardType(1, [POWER_WIN_9CROWNS]),
+            8 => new RoyalCardType(1, [POWER_TAKE_ALL_GEMS_SAME_COLOR]),
+            9 => new RoyalCardType(1, [POWER_TAKE_COUNTERFEITER_CARD]),
+            10 => new RoyalCardType(1, [POWER_TAKE_2GEMS_FROM_BAG]),
+            11 => new RoyalCardType(1, [POWER_TAKE_GOLD_FROM_TABLE]),
+            12 => new RoyalCardType(0, [POWER_TAKE_3GEMS_FROM_TABLE]),
+        ];
+	}
+
+    /*
+        setupNewGame:
+        
+        This method is called only once, when a new game is launched.
+        In this method, you must setup the game according to the game rules, so that
+        the game is ready to be played.
+    */
+    protected function setupNewGame( $players, $options = []) {
+        $counterfeiterExpansion = $this->isCounterfeiterExpansion();
+        if ($counterfeiterExpansion) {
+            $this->counterfeiterCards->initDb();
+        }
+
+        // Set the colors of the players with HTML color code
+        // The default below is red/green/blue/orange/brown
+        // The number of colors defined here must correspond to the maximum number of players allowed for the gams
+        $gameinfos = $this->getGameinfos();
+        $default_colors = $gameinfos['player_colors'];
+ 
+        // Create players
+        // Note: if you added some extra field on "player" table in the database (dbmodel.sql), you can initialize it there.
+        $sql = "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar, player_privileges) VALUES ";
+        $values = [];
+
+        $firstPlayer = true;
+        foreach( $players as $player_id => $player ) {
+            $color = array_shift( $default_colors );
+
+            $privileges = $firstPlayer ? 0 : 1;
+
+            $values[] = "('".$player_id."','$color','".$player['player_canal']."','".addslashes( $player['player_name'] )."','".addslashes( $player['player_avatar'] )."', $privileges)";
+
+            if ($firstPlayer) {
+                $firstPlayer = false;
+            }
+        }
+        $sql .= implode(',', $values);
+        $this->DbQuery( $sql );
+        $this->reattributeColorsBasedOnPreferences( $players, $gameinfos['player_colors'] );
+        $this->reloadPlayersBasicInfos();
+        
+        /************ Start the game initialization *****/
+
+        // Init global values with their initial values
+        $this->setGameStateInitialValue((string)PLAY_AGAIN, 0);
+        $this->setGameStateInitialValue((string)PLAYED_CARD, 0);
+        $this->setGameStateInitialValue((string)TAKE_ROYAL_CARD, 0);
+        $this->setGameStateInitialValue((string)PLAYER_REFILLED, 0);
+
+        // Init game statistics
+        // (note: statistics used in this file must be defined in your stats.inc.php file)
+        $this->initStat('table', 'roundNumber', 0);
+        // cards
+        $this->initStat('player', 'crowns', 0);
+        $this->initStat('player', 'royalCards', 0);
+        foreach(['table', 'player'] as $type) {
+            foreach([
+                // win
+                "endReason1", "endReason2", "endReason3", 
+                // optional actions
+                "tokensWithPrivileges", "replenish", "givenPrivileges3equal", "givenPrivileges2pearls", 
+                "privileges", "privilegesFromTable", "privilegesFromOpponent", 
+                // tokens actions
+                "takeTokens1", "takeTokens2", "takeTokens3",
+                "reserveCard1", "reserveCard2", "reserveCard3",
+                // cards
+                "purchaseCard1", "purchaseCard2", "purchaseCard3",
+                //	abilities
+                "ability1", "ability2", "ability3", "ability4", "ability5",
+                // other 
+                "discardedTokens"
+            ] as $name) {
+                $this->initStat($type, $name, 0);
+            }
+        }
+
+        // setup the initial game situation here
+        $this->setupCards();
+        $this->setupRoyalCards($counterfeiterExpansion);
+        $this->setupTokens($counterfeiterExpansion);
+        if ($counterfeiterExpansion) {
+            $this->counterfeiterCards->setup();
+        }
+
+        // Activate first player (which is in general a good idea :) )
+        $this->activeNextPlayer();
+
+        /************ End of the game initialization *****/
+        return \ST_PLAYER_PLAY_ACTION;
+    }
+
+    /*
+        getAllDatas: 
+        
+        Gather all informations about current game situation (visible by the current player).
+        
+        The method is called each time the game interface is displayed to a player, ie:
+        _ when the game starts
+        _ when a player refreshes the game page (F5)
+    */
+    protected function getAllDatas(?int $currentPlayerId): array {
+        $result = [];
+    
+        // Get information about players
+        // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
+        $sql = "SELECT player_id id, player_score score, player_no playerNo, player_privileges privileges FROM player ";
+        $result['players'] = $this->getCollectionFromDb( $sql );
+  
+        // Gather all information about current game situation (visible by player $current_player_id).
+        
+        foreach($result['players'] as $playerId => &$player) {
+            $player['score'] = intval($player['score']);
+            $player['playerNo'] = intval($player['playerNo']);
+            $player['tokens'] = $this->getPlayerTokens($playerId);
+            $player['privileges'] = intval($player['privileges']);
+
+            $reserved = $this->getCardsByLocation('reserved', $playerId);
+            $player['reserved'] = $currentPlayerId == $playerId ? $reserved : Card::onlyIds($reserved);
+
+            $player['cards'] = $this->getCardsByLocation('player'.$playerId.'-%');
+            $player['royalCards'] = $this->getRoyalCardsByLocation('player', $playerId);
+
+            $player['endReasons'] = $this->getEndReasons($playerId);
+        }
+
+        $result['board'] = $this->getBoard();
+
+        $result['royalCards'] = $this->getRoyalCardsByLocation('deck');
+        $result['cardDeckCount'] = [];
+        $result['cardDeckTop'] = [];
+        $result['tableCards'] = [];
+
+        foreach ([1,2,3] as $level) {
+            $result['cardDeckCount'][$level] = intval($this->cards->countCardInLocation('deck'.$level));
+            $result['cardDeckTop'][$level] = Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'.$level)));
+            $result['tableCards'][$level] = $this->getCardsByLocation('table'.$level);
+        }
+
+        $counterfeiterExpansion = $this->isCounterfeiterExpansion();
+        $result['expansion'] = $counterfeiterExpansion;
+        if ($counterfeiterExpansion) {
+            $this->counterfeiterCards->fillResult($result);
+        }
+  
+        return $result;
+    }
+
+    /*
+        getGameProgression:
+        
+        Compute and return the current game progression.
+        The number returned must be an integer beween 0 (=the game just started) and
+        100 (= the game is finished or almost finished).
+    
+        This method is called each time we are in a game state with the "updateGameProgression" property set to true 
+        (see states.inc.php)
+    */
+    function getGameProgression() {
+        $playersIds = $this->getPlayersIds();
+
+        return max(array_map(fn($playerId) => $this->getPlayerProgress($playerId), $playersIds));
+    }
 
     //////////////////////////////////////////////////////////////////////////////
     //////////// Utility functions
     ////////////
-
-    function array_find(array $array, callable $fn) {
-        foreach ($array as $value) {
-            if($fn($value)) {
-                return $value;
-            }
-        }
-        return null;
-    }
-
-    function array_findIndex(array $array, callable $fn) {
-        $index = 0;
-        foreach ($array as $value) {
-            if($fn($value)) {
-                return $index;
-            }
-            $index++;
-        }
-        return null;
-    }
-
-    function array_find_key(array $array, callable $fn) {
-        foreach ($array as $key => $value) {
-            if($fn($value)) {
-                return $key;
-            }
-        }
-        return null;
-    }
-
-    function array_some(array $array, callable $fn) {
-        foreach ($array as $value) {
-            if($fn($value)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    function array_every(array $array, callable $fn) {
-        foreach ($array as $value) {
-            if(!$fn($value)) {
-                return false;
-            }
-        }
-        return true;
-    }
 
     function setGlobalVariable(string $name, /*object|array*/ $obj) {
         /*if ($obj == null) {
@@ -283,7 +576,7 @@ trait UtilTrait {
         $refilledTokens = [];
 
         for ($i = 1; $i <= 25; $i++) {
-            if ($bagCount > 0 && !$this->array_some($board, fn($token) => $token->locationArg == $i)) {
+            if ($bagCount > 0 && !array_any($board, fn($token) => $token->locationArg == $i)) {
                 $refilledTokens[] = $this->getTokenFromDb($this->tokens->pickCardForLocation('bag', 'board', $i));
 
                 $bagCount--;
@@ -318,11 +611,11 @@ trait UtilTrait {
     
     function checkUsePrivilege(array $tokens, int $number)  {
         if (count($tokens) > $number) {
-            throw new BgaUserException("Not enough privileges");
+            throw new UserException("Not enough privileges");
         }
 
-        if ($this->array_some($tokens, fn($token) => $token->type == 1)) {
-            throw new BgaUserException("You can't take gold tokens this way");
+        if (array_any($tokens, fn($token) => $token->type == 1)) {
+            throw new UserException("You can't take gold tokens this way");
         }
     }
 
@@ -333,15 +626,15 @@ trait UtilTrait {
         if (count($gold) > 0) {
             $maxReserve = $this->getPlayerMaxReserve($playerId);
             if (count($gold) > 1) {
-                throw new BgaUserException("You can only take 1 gold token");
+                throw new UserException("You can only take 1 gold token");
             } else if (count($gems) > 0) {
-                throw new BgaUserException("You can't take gold and gems at the same time");
+                throw new UserException("You can't take gold and gems at the same time");
             } else if (intval($this->cards->countCardInLocation('reserved', $playerId)) >= $maxReserve) {
-                throw new BgaUserException("You can't reserve more than $maxReserve cards");
+                throw new UserException("You can't reserve more than $maxReserve cards");
             }
         } else {
             if (count($gems) > 3) {
-                throw new BgaUserException("You can only take up to 3 tokens");
+                throw new UserException("You can only take up to 3 tokens");
             }
 
             usort($gems, fn($a, $b) => $a->row == $b->row ? $a->column - $b->column : $a->row - $b->row);
@@ -364,7 +657,7 @@ trait UtilTrait {
             }
 
             if ($invalid) {
-                throw new BgaUserException("You can only take tokens in straight line");
+                throw new UserException("You can only take tokens in straight line");
             }
         }
     }
@@ -385,14 +678,14 @@ trait UtilTrait {
     function applyPower(int $playerId, int $power, int $cardId = -1): bool /* redirected*/ {
         switch ($power) {
             case POWER_PLAY_AGAIN:
-                $this->setGameStateValue(PLAY_AGAIN, 1);
+                $this->setGameStateValue((string)PLAY_AGAIN, 1);
                 break;
             case POWER_MULTICOLOR:
-                $this->setGameStateValue(PLAYED_CARD, $cardId);
+                $this->setGameStateValue((string)PLAYED_CARD, $cardId);
                 $this->gamestate->jumpToState(ST_PLAYER_PLACE_JOKER);
                 return true;
             case POWER_TAKE_GEM_FROM_TABLE:
-                $this->setGameStateValue(PLAYED_CARD, $cardId);
+                $this->setGameStateValue((string)PLAYED_CARD, $cardId);
                 $this->gamestate->jumpToState(ST_PLAYER_TAKE_BOARD_TOKEN);
                 return true;
             case POWER_TAKE_PRIVILEGE:
@@ -405,7 +698,7 @@ trait UtilTrait {
                 $this->incStat(1, 'ability4', $playerId);
                 break;
             case POWER_TAKE_GEM_FROM_OPPONENT:
-                $this->setGameStateValue(PLAYED_CARD, $cardId);
+                $this->setGameStateValue((string)PLAYED_CARD, $cardId);
                 $this->gamestate->jumpToState(ST_PLAYER_TAKE_OPPONENT_TOKEN);
                 return true;
             case POWER_RESERVE_CARD:
@@ -417,7 +710,7 @@ trait UtilTrait {
             case POWER_TAKE_ALL_GEMS_SAME_COLOR:
             case POWER_TAKE_GOLD_FROM_TABLE:
             case POWER_TAKE_3GEMS_FROM_TABLE:
-                $this->setGameStateValue(PLAYED_CARD, -$power);
+                $this->setGameStateValue((string)PLAYED_CARD, -$power);
                 $this->gamestate->jumpToState(ST_PLAYER_TAKE_BOARD_TOKEN);
                 return true;
             case POWER_TAKE_2GEMS_FROM_BAG:
@@ -465,7 +758,7 @@ trait UtilTrait {
 
                 if (($crownsAfter >= 3 && $crownsBefore < 3) || ($crownsAfter >= 6 && $crownsBefore < 6)) {
                     $takeRoyalCard = true;
-                    $this->setGameStateValue(TAKE_ROYAL_CARD, 1);
+                    $this->setGameStateValue((string)TAKE_ROYAL_CARD, 1);
                 }
             }
 
@@ -749,7 +1042,7 @@ trait UtilTrait {
     function getBuyableCardsAndCosts(int $playerId) {
         $tokens = $this->getPlayerTokensByColor($playerId);
         $cards = $this->getCardsByLocation('player'.$playerId.'-%');
-        $hasColoredCards = $this->array_some($cards, fn($card) => in_array($card->color, [BLUE, WHITE, GREEN, BLACK, RED]));
+        $hasColoredCards = array_any($cards, fn($card) => in_array($card->color, [BLUE, WHITE, GREEN, BLACK, RED]));
         $counterfeiterCardConversions = $this->counterfeiterCards->getConversions($playerId);
 
         $possibleCards = array_merge(
@@ -824,4 +1117,84 @@ trait UtilTrait {
             }
         }
     }
+
+//////////////////////////////////////////////////////////////////////////////
+//////////// Zombie
+////////////
+
+    /*
+        zombieTurn:
+        
+        This method is called each time it is the turn of a player who has quit the game (= "zombie" player).
+        You can do whatever you want in order to make sure the turn of this player ends appropriately
+        (ex: pass).
+        
+        Important: your zombie code will be called when the player leaves the game. This action is triggered
+        from the main site and propagated to the gameserver from a server, not from a browser.
+        As a consequence, there is no current player associated to this action. In your zombieTurn function,
+        you must _never_ use getCurrentPlayerId() or getCurrentPlayerName(), otherwise it will fail with a "Not logged" error message. 
+    */
+
+    function zombieTurn(array $state, mixed $active_player ): void
+    {
+    	$statename = $state['name'];
+    	
+        if ($state['type'] === "activeplayer") {
+            switch ($statename) {
+                default:
+                    $this->gamestate->jumpToState(ST_NEXT_PLAYER);
+                    break;
+            }
+
+            return;
+        }
+
+        if ($state['type'] === "multipleactiveplayer") {
+            // Make sure player is in a non blocking status for role turn
+            $this->gamestate->setPlayerNonMultiactive( $active_player, 'next');
+            
+            return;
+        }
+
+        throw new VisibleSystemException( "Zombie mode not supported at this game state: ".$statename );
+    }
+    
+///////////////////////////////////////////////////////////////////////////////////:
+////////// DB upgrade
+//////////
+
+    /*
+        upgradeTableDb:
+        
+        You don't have to care about this until your game has been published on BGA.
+        Once your game is on BGA, this method is called everytime the system detects a game running with your old
+        Database scheme.
+        In this case, if you change your Database scheme, you just have to apply the needed changes in order to
+        update the game database and allow the game to continue to run with your new version.
+    
+    */
+    
+    function upgradeTableDb($from_version) {
+        // $from_version is the current version of this game database, in numerical form.
+        // For example, if the game was running with a release of your game named "140430-1345",
+        // $from_version is equal to 1404301345
+
+        if ($from_version <= 2403081617) {
+            // ! important ! Use DBPREFIX_<table_name> for all tables
+            $sql = "ALTER TABLE `DBPREFIX_player` ADD `player_anti_playing_turns` tinyint UNSIGNED NOT NULL DEFAULT 0";
+            $this->applyDbUpgradeToAllDB($sql);            
+        }
+
+        if ($from_version <= 2404061313) {
+            $result = $this->getUniqueValueFromDB("SHOW COLUMNS FROM `player` LIKE 'player_anti_playing_turns'");
+            if (is_null($result)) {
+                $sql = "ALTER TABLE `DBPREFIX_player` ADD `player_anti_playing_turns` tinyint unsigned NOT NULL DEFAULT 0";
+                $this->applyDbUpgradeToAllDB($sql);
+            }            
+        }
+        if ($from_version <= 2512101438) {
+            // ! important ! Use DBPREFIX_<table_name> for all tables
+            $this->applyDbUpgradeToAllDB("ALTER TABLE `DBPREFIX_forger_card` RENAME `DBPREFIX_counterfeiter_card`;");            
+        }
+    }    
 }

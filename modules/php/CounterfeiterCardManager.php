@@ -1,10 +1,12 @@
 <?php
 declare(strict_types=1);
 
+namespace Bga\Games\SplendorDuel;
+
 require_once(__DIR__.'/framework-prototype/item/item-location.php');
 require_once(__DIR__.'/framework-prototype/item/item-manager.php');
-require_once(__DIR__.'/objects/counterfeiter-card.php');
 
+use Bga\Games\SplendorDuel\Object\CounterfeiterCard;
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
 use \Bga\GameFrameworkPrototype\Item\ItemManager;
 use \Bga\GameFrameworkPrototype\Item\ItemLocation;

@@ -1,6 +1,9 @@
 <?php
 declare(strict_types=1);
 
+namespace Bga\Games\SplendorDuel\Object;
+
+require_once(__DIR__.'/../constants.inc.php');
 require_once(__DIR__.'/../framework-prototype/item/item.php');
 require_once(__DIR__.'/../framework-prototype/item/item-field.php');
 

@@ -1,4 +1,7 @@
 <?php
+declare(strict_types=1);
+
+namespace Bga\Games\SplendorDuel;
 
 use Bga\GameFramework\Components\Deck;
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
@@ -11,10 +14,10 @@ function debug(...$debugData) {
 
 trait DebugUtilTrait {
 
-    public Deck $cards;
+    /*public Deck $cards;
     public Deck $royalCards;
     public Deck $tokens;
-    public CounterfeiterCardManager $counterfeiterCards;
+    public CounterfeiterCardManager $counterfeiterCards;*/
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Utility functions
