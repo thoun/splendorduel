@@ -2,7 +2,12 @@
  * Your game interfaces
  */
 
-interface SplendorDuelPlayer extends Player {
+import type { Card } from './cards';
+import type { CounterfeiterCard } from './counterfeiter-cards';
+import type { RoyalCard } from './royal-cards';
+import type { Token } from './tokens';
+
+export interface SplendorDuelPlayer extends Player {
     playerNo: number;
     tokens: Token[];
     privileges: number;
@@ -13,18 +18,7 @@ interface SplendorDuelPlayer extends Player {
     endReasons: number[];
 }
 
-interface SplendorDuelGamedatas {
-    current_player_id: string;
-    decision: {decision_type: string};
-    game_result_neutralized: string;
-    gamestate: Gamestate;
-    gamestates: { [gamestateId: number]: Gamestate };
-    neutralized_player_id: string;
-    notifications: {last_packet_id: string, move_nbr: string}
-    playerorder: (string | number)[];
-    players: { [playerId: number]: SplendorDuelPlayer };
-    tablespeed: string;
-
+export interface SplendorDuelGamedatas extends Gamedatas<SplendorDuelPlayer> {
     // Add here variables you set up in getAllDatas
     board: Token[];
     cardDeckCount: { [level: number]: number };
@@ -37,36 +31,11 @@ interface SplendorDuelGamedatas {
     expansion: boolean;
 }
 
-interface SplendorDuelGame extends Game {
-    animationManager: AnimationManager;
-    cardsManager: CardsManager;
-    royalCardsManager: RoyalCardsManager;
-    counterfeiterCardsManager: CounterfeiterCardsManager;
-    tokensManager: TokensManager;
-
-    getPlayerId(): number;
-    getPlayer(playerId: number): SplendorDuelPlayer;
-    getColor(color: number): string;
-    getPower(power: number): string;
-    getGameStateName(): string;
-    getCurrentPlayerTable(): PlayerTable | null;
-    getPlayersTokens(): Token[];
-
-    setTooltip(id: string, html: string): void;
-    onTableTokenSelectionChange(tokens: Token[], valid: boolean, selectionType?: SelectionType): void;
-    onPlayerTokenSelectionChange(tokens: Token[]): void;
-    onTableCardClick(card: Card, selected: boolean): void;
-    onRoyalCardClick(card: RoyalCard): void;
-    onCounterfeiterCardClick(card: CounterfeiterCard): void;
-    onReservedCardClick(card: Card): void;
-    onColumnClick(color: number): void;
-}
-
-interface EnteringUsePrivilegeArgs {
+export interface EnteringUsePrivilegeArgs {
     privileges: number;
 }
 
-interface EnteringPlayActionArgs {
+export interface EnteringPlayActionArgs {
     privileges: number;
     canRefill: boolean;
     mustRefill: boolean;
@@ -81,25 +50,25 @@ interface EnteringPlayActionArgs {
     opponentAntiPlaying: boolean;
 }
 
-interface EnteringReserveCardArgs {
+export interface EnteringReserveCardArgs {
     canReserve: number;
 }
 
-interface EnteringPlaceJokerArgs {
+export interface EnteringPlaceJokerArgs {
     colors: number[];
 }
 
-interface EnteringTakeBoardTokenArgs {
+export interface EnteringTakeBoardTokenArgs {
     color: number;
     number: number;
     canTakeAnyColorOrTwoOfColor: boolean;
 }
 
-interface EnteringTakeOpponentTokenArgs {
+export interface EnteringTakeOpponentTokenArgs {
     opponentId: number;
 }
 
-interface EnteringReserveFromDeckChooseCardArgs {
+export interface EnteringReserveFromDeckChooseCardArgs {
     level: number;
     _private: {
         cards: Card[];
@@ -107,7 +76,7 @@ interface EnteringReserveFromDeckChooseCardArgs {
 }
 
 // privileges
-interface NotifPrivilegesArgs {
+export interface NotifPrivilegesArgs {
     privileges: { [playerId: number]: number };
     from: number;
     to: number;
@@ -115,29 +84,29 @@ interface NotifPrivilegesArgs {
 }
 
 // refill
-interface NotifRefillArgs {
+export interface NotifRefillArgs {
     refilledTokens: Token[];
 }
 
 // takeTokens
-interface NotifTakeTokensArgs {
+export interface NotifTakeTokensArgs {
     playerId: number;
     tokens: Token[];
     from?: string;
 }
 
-interface NotifNewPlayerCardArgs {
+export interface NotifNewPlayerCardArgs {
     playerId: number;
     card: Card;
 }
 
-interface NotifNewPlayerCounterfeiterCardArgs {
+export interface NotifNewPlayerCounterfeiterCardArgs {
     playerId: number;
     card: CounterfeiterCard;
 }
 
 // reserveCard
-interface NotifReserveCardArgs extends NotifNewPlayerCardArgs {
+export interface NotifReserveCardArgs extends NotifNewPlayerCardArgs {
     fromDeck: boolean;
     level: number;
     cardDeckCount: number;
@@ -145,37 +114,37 @@ interface NotifReserveCardArgs extends NotifNewPlayerCardArgs {
 }
 
 // buyCard
-interface NotifBuyCardArgs extends NotifNewPlayerCardArgs {
+export interface NotifBuyCardArgs extends NotifNewPlayerCardArgs {
     fromReserved: boolean;
     tokens: Token[];
 }   
 
 // buyCounterfeiterCard
-interface NotifBuyCounterfeiterCardArgs extends NotifNewPlayerCounterfeiterCardArgs {
+export interface NotifBuyCounterfeiterCardArgs extends NotifNewPlayerCounterfeiterCardArgs {
     tokens: Token[];
 }
 
 // takeCounterfeiterCard
-interface NotifTakeCounterfeiterCardArgs extends NotifNewPlayerCounterfeiterCardArgs {
+export interface NotifTakeCounterfeiterCardArgs extends NotifNewPlayerCounterfeiterCardArgs {
     fromDeck: boolean;
     counterfeiterDeckCount: number;
     counterfeiterDeckTop: CounterfeiterCard | null;
 }
 
 // takeRoyalCard
-interface NotifTakeRoyalCardArgs {
+export interface NotifTakeRoyalCardArgs {
     playerId: number;
     card: RoyalCard;
 }
 
 // discardTokens
-interface NotifDiscardTokensArgs {
+export interface NotifDiscardTokensArgs {
     playerId: number;
     tokens: Token[];
 }
 
 // newTableCard
-interface NotifNewTableCardArgs {
+export interface NotifNewTableCardArgs {
     newCard: Card;
     cardDeckCount: number;
     cardDeckTop: Card | null;
@@ -183,18 +152,18 @@ interface NotifNewTableCardArgs {
 }
 
 // newTableRoyalCard
-interface NotifNewTableRoyalCardArgs {
+export interface NotifNewTableRoyalCardArgs {
     newCard: RoyalCard;
 }
 
-interface NotifNewCounterfeiterCardsArgs {
+export interface NotifNewCounterfeiterCardsArgs {
     cards: CounterfeiterCard[];
     counterfeiterDeckCount: number;
     counterfeiterDeckTop: CounterfeiterCard;
 }
 
 // win
-interface NotifWinArgs {
+export interface NotifWinArgs {
     playerId: number;
     endReasons: number[];
 }         

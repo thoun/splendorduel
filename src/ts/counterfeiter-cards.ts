@@ -1,4 +1,7 @@
-interface CounterfeiterCard {
+import { Game } from './Game';
+import { BgaCards } from './libs';
+
+export interface CounterfeiterCard {
     id: number;
     location: string;
     locationArg: number;
@@ -9,8 +12,8 @@ interface CounterfeiterCard {
     powers: number[];
 }
 
-class CounterfeiterCardsManager extends CardManager<CounterfeiterCard> {
-    constructor (public game: SplendorDuelGame) {
+export class CounterfeiterCardsManager extends BgaCards.CardManager<CounterfeiterCard> {
+    constructor (public game: Game) {
         super(game, {
             getId: (card) => `counterfeiter-card-${card.id}`,
             setupDiv: (card: CounterfeiterCard, div: HTMLElement) => {
@@ -18,6 +21,9 @@ class CounterfeiterCardsManager extends CardManager<CounterfeiterCard> {
                 div.dataset.index = ''+card.type;
             },
             setupFrontDiv: (card: CounterfeiterCard, div: HTMLElement) => { 
+                if (!card.type) {
+                    return;
+                }
                 // Set the sprite position on the face itself.  The card can be
                 // created while the river is being animated, before the CSS
                 // attribute selector on the parent has been applied/repainted.

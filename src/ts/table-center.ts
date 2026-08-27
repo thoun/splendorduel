@@ -1,16 +1,25 @@
-class TableCenter {
-    public bag: VoidStock<Token>;
+import type { NotifNewTableCardArgs, NotifReserveCardArgs, SplendorDuelGamedatas } from './types';
+import type { Card } from './cards';
+import type { CounterfeiterCard } from './counterfeiter-cards';
+import type { RoyalCard } from './royal-cards';
+import type { Token } from './tokens';
+import { TokenBoard } from './token-board';
+import { BgaCards } from './libs';
+import { Game } from './Game';
+
+export class TableCenter {
+    public bag: any;
     private bagCounter: Counter;
     private board: TokenBoard;
 
-    public cardsDecks: Deck<Card>[] = [];
-    public cards: SlotStock<Card>[] = [];
-    public royalCards: LineStock<RoyalCard>;
-    public counterfeiterDeck: Deck<CounterfeiterCard>;   
-    public counterfeiterCards: LineStock<CounterfeiterCard>;   
+    public cardsDecks: any[] = [];
+    public cards: any[] = [];
+    public royalCards: any;
+    public counterfeiterDeck: any;
+    public counterfeiterCards: any;
         
-    constructor(private game: SplendorDuelGame, gamedatas: SplendorDuelGamedatas) {
-        this.bag = new VoidStock<Token>(game.tokensManager, document.getElementById('bag'));
+    constructor(private game: Game, gamedatas: SplendorDuelGamedatas) {
+        this.bag = new BgaCards.VoidStock(game.tokensManager, document.getElementById('bag'));
 
         this.bagCounter = new ebg.counter();
         this.bagCounter.create(`bag-counter`);
@@ -24,7 +33,7 @@ class TableCenter {
                 <div id="card-deck-${level}"></div>
                 <div id="table-cards-${level}"></div>
             `);
-            this.cardsDecks[level] = new Deck<Card>(game.cardsManager, document.getElementById(`card-deck-${level}`), {
+            this.cardsDecks[level] = new BgaCards.Deck(game.cardsManager, document.getElementById(`card-deck-${level}`), {
                 cardNumber: gamedatas.cardDeckCount[level],
                 topCard: gamedatas.cardDeckTop[level],
                 counter: {
@@ -38,7 +47,7 @@ class TableCenter {
             for (let i = 1; i <= 6 - level; i++) {
                 slotsIds.push(i);
             }
-            this.cards[level] = new SlotStock<Card>(game.cardsManager, document.getElementById(`table-cards-${level}`), {
+            this.cards[level] = new BgaCards.SlotStock(game.cardsManager, document.getElementById(`table-cards-${level}`), {
                 slotsIds,
                 mapCardToSlot: card => card.locationArg,
                 gap: '12px',
@@ -48,7 +57,7 @@ class TableCenter {
             this.cards[level].addCards(gamedatas.tableCards[level]);
         }
 
-        this.royalCards = new LineStock<RoyalCard>(game.royalCardsManager, document.getElementById(`royal-cards`), {
+        this.royalCards = new BgaCards.LineStock(game.royalCardsManager, document.getElementById(`royal-cards`), {
             center: true,
         });
         this.royalCards.onCardClick = card => this.game.onRoyalCardClick(card);
@@ -78,7 +87,7 @@ class TableCenter {
                 </div>
             `);
 
-            this.counterfeiterDeck = new Deck<CounterfeiterCard>(game.counterfeiterCardsManager, document.getElementById(`counterfeiter-deck`), {
+            this.counterfeiterDeck = new BgaCards.Deck(game.counterfeiterCardsManager, document.getElementById(`counterfeiter-deck`), {
                 cardNumber: gamedatas.counterfeiterDeckCount,
                 topCard: gamedatas.counterfeiterDeckTop,
                 counter: {
@@ -88,7 +97,7 @@ class TableCenter {
             });
             this.counterfeiterDeck.onCardClick = card => this.game.onCounterfeiterCardClick(card);
 
-            this.counterfeiterCards = new LineStock<CounterfeiterCard>(game.counterfeiterCardsManager, document.getElementById(`counterfeiter-cards`), {
+            this.counterfeiterCards = new BgaCards.LineStock(game.counterfeiterCardsManager, document.getElementById(`counterfeiter-cards`), {
                 center: true,
                 unselectableCardClass: 'no-disable-class',
             });
@@ -203,7 +212,7 @@ class TableCenter {
         tokensInBagDialog.setContent(html);
         tokensInBagDialog.show();
 
-        const stock = new LineStock<Token>(this.game.tokensManager, document.getElementById('bag-tokens'), {
+        const stock = new BgaCards.LineStock(this.game.tokensManager, document.getElementById('bag-tokens'), {
             wrap: 'wrap'
         });
         stock.addCards(bagTokens);

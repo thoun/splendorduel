@@ -1,19 +1,27 @@
+import type { SplendorDuelPlayer } from './types';
+import type { Card } from './cards';
+import type { CounterfeiterCard } from './counterfeiter-cards';
+import type { RoyalCard } from './royal-cards';
+import type { Token } from './tokens';
+import { BgaCards } from './libs';
+import { Game } from './Game';
+
 const isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;;
 const log = isDebug ? console.log.bind(window.console) : function () { };
 
-class PlayerTable {
+export class PlayerTable {
     public playerId: number;
-    public voidStock: VoidStock<Card>;
-    public reserved: LineStock<Card>;
-    public played: LineStock<Card>[] = [];
-    public tokens: LineStock<Token>[] = [];
+    public voidStock: any;
+    public reserved: any;
+    public played: any[] = [];
+    public tokens: any[] = [];
     public limitSelection: number | null = null;
-    public royalCards: LineStock<RoyalCard>;
-    public counterfeiterCards: LineStock<CounterfeiterCard>;
+    public royalCards: any;
+    public counterfeiterCards: any;
 
     private currentPlayer: boolean;
 
-    constructor(private game: SplendorDuelGame, player: SplendorDuelPlayer, expansion: boolean) {
+    constructor(private game: Game, player: SplendorDuelPlayer, expansion: boolean) {
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.getPlayerId();
 
@@ -60,16 +68,16 @@ class PlayerTable {
         document.getElementById('tables').insertAdjacentHTML('beforeend', html);
 
         const reservedDiv = document.getElementById(`player-table-${this.playerId}-reserved`);
-        this.reserved = new LineStock<Card>(this.game.cardsManager, reservedDiv);
+        this.reserved = new BgaCards.LineStock(this.game.cardsManager, reservedDiv);
         this.reserved.onCardClick = (card: Card) => this.game.onReservedCardClick(card);
         
         this.reserved.addCards(player.reserved);
 
-        this.voidStock = new VoidStock<Card>(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-name`));
+        this.voidStock = new BgaCards.VoidStock(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-name`));
 
         [1,2,3,4,5,9].forEach(i => {
             const playedDiv = document.getElementById(`player-table-${this.playerId}-played-${i}`);
-            this.played[i] = new LineStock<Card>(this.game.cardsManager, playedDiv, {
+            this.played[i] = new BgaCards.LineStock(this.game.cardsManager, playedDiv, {
                 direction: 'column',
                 center: false,
             });
@@ -82,15 +90,15 @@ class PlayerTable {
             playedDiv.style.setProperty('--card-overlap', '135px');
         });
         
-        this.royalCards = new LineStock<RoyalCard>(this.game.royalCardsManager, document.getElementById(`player-table-${this.playerId}-royal-cards`));
+        this.royalCards = new BgaCards.LineStock(this.game.royalCardsManager, document.getElementById(`player-table-${this.playerId}-royal-cards`));
         this.royalCards.addCards(player.royalCards);
 
         if (expansion) {            
-            this.counterfeiterCards = new LineStock<CounterfeiterCard>(this.game.counterfeiterCardsManager, document.getElementById(`player-table-${this.playerId}-counterfeiter-cards`));
+            this.counterfeiterCards = new BgaCards.LineStock(this.game.counterfeiterCardsManager, document.getElementById(`player-table-${this.playerId}-counterfeiter-cards`));
             this.counterfeiterCards.addCards(player.counterfeiterCards);
         }
         
-        const tokensStockSettings: LineStockSettings = {
+        const tokensStockSettings = {
             direction: 'column',
             center: false,
         };
@@ -100,7 +108,7 @@ class PlayerTable {
         }
         tokenColors.forEach(i => {
             const tokenDiv = document.getElementById(`player-table-${this.playerId}-tokens-${i}`);
-            this.tokens[i] = new LineStock<Token>(this.game.tokensManager, tokenDiv, tokensStockSettings);
+            this.tokens[i] = new BgaCards.LineStock(this.game.tokensManager, tokenDiv, tokensStockSettings);
             this.tokens[i].onSelectionChange = () => this.game.onPlayerTokenSelectionChange(this.getSelectedTokens());
             tokenDiv.style.setProperty('--card-overlap', '50px');
         });
@@ -137,7 +145,7 @@ class PlayerTable {
         return this.counterfeiterCards.addCard(card);
     }
 
-    public addTokens(tokens: Token[], fromStock?: CardStock<Token>): Promise<any> {
+    public addTokens(tokens: Token[], fromStock?: any): Promise<any> {
         return Promise.all([1,2,3,4,5,6,0,-1].map(i => this.tokens[i]?.addCards(tokens.filter(token => token.color == i), { fromStock })));
     }
     

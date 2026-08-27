@@ -1,7 +1,11 @@
-type SelectionType = 'privileges' | 'play' | 'effect' | null;
+import type { Token } from './tokens';
+import { Game } from './Game';
+import { BgaCards } from './libs';
 
-class TokenBoard {
-    public stock: SlotStock<Token>;
+export type SelectionType = 'privileges' | 'play' | 'effect' | null;
+
+export class TokenBoard {
+    public stock: any;
 
     private maxSelectionToken: number;
     private selectionType: SelectionType;
@@ -13,7 +17,7 @@ class TokenBoard {
     private mouseSelectionStart: Token | null;
     private mouseSelection: HTMLDivElement;
         
-    constructor(private game: SplendorDuelGame, board: Token[]) {
+    constructor(private game: Game, board: Token[]) {
         const slotsIds = [];
         for (let row = 1; row <= 5; row++) {
             for (let column = 1; column <= 5; column++) {
@@ -21,7 +25,7 @@ class TokenBoard {
             }
         }
         const boardDiv = document.getElementById(`board`);
-        this.stock = new SlotStock<Token>(game.tokensManager, boardDiv, {
+        this.stock = new BgaCards.SlotStock(game.tokensManager, boardDiv, {
             slotsIds,
             mapCardToSlot: card => JSON.stringify([card.row, card.column]),
             gap: '0',
@@ -258,7 +262,7 @@ class TokenBoard {
         return valid;
     }
     
-    public refill(refilledTokens: Token[], fromStock: CardStock<Token>): Promise<any> {
+    public refill(refilledTokens: Token[], fromStock: any): Promise<any> {
         return this.stock.addCards(refilledTokens, { fromStock }, undefined, 350);
     }
 

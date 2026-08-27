@@ -1,4 +1,7 @@
-interface RoyalCard {
+import { Game } from './Game';
+import { BgaCards } from './libs';
+
+export interface RoyalCard {
     id: number;
     location: string;
     locationArg: number;
@@ -7,8 +10,8 @@ interface RoyalCard {
     power: number[];
 }
 
-class RoyalCardsManager extends CardManager<RoyalCard> {
-    constructor (public game: SplendorDuelGame) {
+export class RoyalCardsManager extends BgaCards.CardManager<RoyalCard> {
+    constructor (public game: Game) {
         super(game, {
             getId: (card) => `royal-card-${card.id}`,
             setupDiv: (card: RoyalCard, div: HTMLElement) => {

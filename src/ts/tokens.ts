@@ -1,4 +1,7 @@
-interface Token {
+import { Game } from './Game';
+import { BgaCards } from './libs';
+
+export interface Token {
     id: number;
     location: string;
     locationArg: number;
@@ -8,8 +11,8 @@ interface Token {
     column?: number;
 }
 
-class TokensManager extends CardManager<Token> {
-    constructor (public game: SplendorDuelGame) {
+export class TokensManager extends BgaCards.CardManager<Token> {
+    constructor (public game: Game) {
         super(game, {
             getId: (card) => `token-${card.id}`,
             setupDiv: (card: Token, div: HTMLElement) => {

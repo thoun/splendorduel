@@ -1,5 +1,20 @@
+/// <reference path="../../bga-framework.d.ts" />
+
+import { CardsManager, Card } from './cards';
+import { CounterfeiterCard, CounterfeiterCardsManager } from './counterfeiter-cards';
+import { PlayerTable } from './player-table';
+import { RoyalCard, RoyalCardsManager } from './royal-cards';
+import { TableCenter } from './table-center';
+import { TokenBoard, SelectionType } from './token-board';
+import { Token, TokensManager } from './tokens';
+import type { EnteringPlaceJokerArgs, EnteringPlayActionArgs, EnteringReserveCardArgs, EnteringReserveFromDeckChooseCardArgs, EnteringTakeBoardTokenArgs, EnteringTakeOpponentTokenArgs, EnteringUsePrivilegeArgs, NotifBuyCardArgs, NotifBuyCounterfeiterCardArgs, NotifDiscardTokensArgs, NotifNewCounterfeiterCardsArgs, NotifNewPlayerCardArgs, NotifNewPlayerCounterfeiterCardArgs, NotifNewTableCardArgs, NotifNewTableRoyalCardArgs, NotifPrivilegesArgs, NotifRefillArgs, NotifReserveCardArgs, NotifTakeCounterfeiterCardArgs, NotifTakeRoyalCardArgs, NotifTakeTokensArgs, NotifWinArgs, SplendorDuelGamedatas, SplendorDuelPlayer } from './types';
+import { BgaAnimations, BgaCards, BgaHelp, BgaJumpTo, BgaZoom } from './libs';
+
+const { AnimationManager, BgaSlideAnimation } = BgaAnimations;
+const { LineStock } = BgaCards;
+const isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.includes('debug');
+
 const ANIMATION_MS = 500;
-const ACTION_TIMER_DURATION = 5;
 
 const LOCAL_STORAGE_ZOOM_KEY = 'SplendorDuel-zoom';
 const LOCAL_STORAGE_JUMP_TO_FOLDED_KEY = 'SplendorDuel-jump-to-folded';
@@ -13,20 +28,14 @@ const POWER_TAKE_2GEMS_FROM_BAG = 11;
 const POWER_TAKE_GOLD_FROM_TABLE = 12;
 const POWER_TAKE_3GEMS_FROM_TABLE = 13;
 
-// @ts-ignore
-GameGui = (function () { // this hack required so we fake extend GameGui
-  function GameGui() {}
-  return GameGui;
-})();
-
-class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> implements SplendorDuelGame {
-    public animationManager: AnimationManager;
+export class Game {
+    public animationManager: any;
     public cardsManager: CardsManager;
     public royalCardsManager: RoyalCardsManager;
     public counterfeiterCardsManager: CounterfeiterCardsManager;
     public tokensManager: TokensManager;
 
-    private zoomManager: ZoomManager;
+    private zoomManager: InstanceType<typeof BgaZoom.Manager>;
     public gamedatas: SplendorDuelGamedatas;
     private tableCenter: TableCenter;
     private playersTables: PlayerTable[] = [];
@@ -46,12 +55,14 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
     private selectedCardPossiblePayments: { [color: number]: number }[];
     private originalTextChooseAction: string;
     private selectedCards: Card[];
-    private pickStock: LineStock<Card> | null = null;
+    private pickStock: any = null;
     
     private TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
 
-    constructor() {
-        super();
+    public bga: Bga<SplendorDuelPlayer, SplendorDuelGamedatas>;
+
+    constructor(bga: Bga<SplendorDuelPlayer, SplendorDuelGamedatas>) {
+        this.bga = bga;
     }
     
     /*
@@ -68,7 +79,7 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
     */
 
     public setup(gamedatas: SplendorDuelGamedatas) {
-        log( "Starting game setup" );
+        console.log( "Starting game setup" );
         this.bga.gameArea.getElement().insertAdjacentHTML('beforeend', `
             <div id="anti-playing-notice"></div>
             <div id="notice"></div>
@@ -95,20 +106,23 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
         
         this.gamedatas = gamedatas;
 
-        log('gamedatas', gamedatas);
+        console.log('gamedatas', gamedatas);
 
         this.animationManager = new AnimationManager(this);
         this.cardsManager = new CardsManager(this);
         this.royalCardsManager = new RoyalCardsManager(this);
         this.counterfeiterCardsManager = new CounterfeiterCardsManager(this);
         this.tokensManager = new TokensManager(this);        
-        new JumpToManager(this, {
+        new BgaJumpTo.Manager({
             localStorageFoldedKey: LOCAL_STORAGE_JUMP_TO_FOLDED_KEY,
-            topEntries: [
-                new JumpToEntry(_('Main board'), 'board', { 'color': '#83594f' }),
-                new JumpToEntry(_('Cards pyramid'), 'table-cards', { 'color': '#678e67' }),
+            entries: [
+                new BgaJumpTo.Entry(_('Main board'), 'board', { color: '#83594f', backgroundImage: `url('${this.bga.images.getImgUrl('board.jpg')}')` }),
+                new BgaJumpTo.Entry(_('Cards pyramid'), 'table-cards', { color: '#678e67', backgroundImage: `url('${this.bga.images.getImgUrl('cards1.jpg')}')`, backgroundSize: 'auto 150%', backgroundPosition: '0% 25%', }),
+                ...BgaJumpTo.BgaPlayerEntries(this.bga, {
+                    playerOrder: this.getOrderedPlayers(gamedatas).map(player => player.id),
+                    entrySettings: (playerId) => ({ id: `bga-jump-to_player-table-${playerId}` }),
+                }),
             ],
-            entryClasses: 'round-point',
             defaultFolded: true,
         });
 
@@ -116,7 +130,7 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
         this.createPlayerPanels(gamedatas);
         this.createPlayerTables(gamedatas);
         
-        this.zoomManager = new ZoomManager({
+        this.zoomManager = new BgaZoom.Manager({
             element: document.getElementById('table'),
             smooth: false,
             zoomControls: {
@@ -125,9 +139,9 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
             localStorageZoomKey: LOCAL_STORAGE_ZOOM_KEY,
         });
 
-        new HelpManager(this, { 
+        new BgaHelp.HelpManager(this, { 
             buttons: [
-                new BgaHelpPopinButton({
+                new BgaHelp.BgaHelpPopinButton({
                     title: _("Card abilities").toUpperCase(),
                     html: this.getHelpHtml(),
                     buttonBackground: '#692c91', // ability color
@@ -136,7 +150,7 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
         });
         this.setupNotifications();
 
-        if ((this as any).bgaInternal.flags['ingame_player_panels']) {
+        if ((this.bga.gameui as any).bgaInternal.flags['ingame_player_panels']) {
             setTimeout(() => {
                 Object.keys(gamedatas.players).forEach(playerId => {
                     const playerPanel = document.getElementById(`overall_player_board_${playerId}`)
@@ -152,7 +166,7 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
             });
         }
 
-        log( "Ending game setup" );
+        console.log( "Ending game setup" );
     }
 
     ///////////////////////////////////////////////////
@@ -162,7 +176,7 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
     //                  You can use this method to perform some user interface changes at this moment.
     //
     public onEnteringState(stateName: string, args: any) {
-        log('Entering state: ' + stateName, args.args);
+        console.log('Entering state: ' + stateName, args.args);
 
         switch (stateName) {
             case 'usePrivilege':
@@ -202,14 +216,14 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
     }
     
     private setGamestateDescription(property: string = '') {
-        if (this.isCurrentPlayerActive()) { // we don't want opponent to see the restriction the current player has
+        if (this.bga.players.isCurrentPlayerActive()) { // we don't want opponent to see the restriction the current player has
             const originalState = this.gamedatas.gamestates[this.gamedatas.gamestate.id];
-            this.statusBar.setTitle(_(originalState['descriptionmyturn'  + property]), []);
+            this.bga.statusBar.setTitle(_(originalState['descriptionmyturn'  + property]), []);
         }
     }
 
     private onEnteringUsePrivilege(args: EnteringUsePrivilegeArgs) {
-        if (this.isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             this.tableCenter.setBoardSelectable('privileges', false, args.privileges);
         }
     }
@@ -229,7 +243,7 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
 
             noticeDiv.innerHTML = notice;
 
-            document.getElementById('end_the_game_button')?.addEventListener('click', () => this.bgaPerformAction('actEndGameAntiPlaying'));
+            document.getElementById('end_the_game_button')?.addEventListener('click', () => this.bga.actions.performAction('actEndGameAntiPlaying'));
         }
         noticeDiv.classList.toggle('visible', showNotice);
     }
@@ -257,27 +271,27 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
 
             noticeDiv.innerHTML = notice;
 
-            document.getElementById('replenish_button')?.addEventListener('click', () => this.confirmActionTakeTokens(() => this.bgaPerformAction('actRefillBoard'), true, false));
-            document.getElementById('usePrivilege_button')?.addEventListener('click', () => this.bgaPerformAction('actUsePrivilege'));
+            document.getElementById('replenish_button')?.addEventListener('click', () => this.confirmActionTakeTokens(() => this.bga.actions.performAction('actRefillBoard'), true, false));
+            document.getElementById('usePrivilege_button')?.addEventListener('click', () => this.bga.actions.performAction('actUsePrivilege'));
         }
         noticeDiv.classList.toggle('visible', showNotice);
     }
 
-    private confirmActionTakeTokens(finalAction: Function, showPrivilegeWarning: boolean, showLimitWarning: boolean) {
+    private confirmActionTakeTokens(finalAction: () => void, showPrivilegeWarning: boolean, showLimitWarning: boolean) {
         const warnings = [];
 
         if (showLimitWarning/* && this.gamedatas.gamestate.args.canBuyCard*/) { // you might not be able to buy a card, but you may be able to use privilege or take a gold instead
             warnings.push(_("You will have more than 10 tokens, and you'll need to discard some of them."));
         }
 
-        if (showPrivilegeWarning && this.getGameUserPreference(201) != 2) {
+        if (showPrivilegeWarning && this.bga.userPreferences.get(201) != 2) {
             warnings.push(`${_("This action will give a privilege to your opponent.")}
             <br><br>
             <i>${_("You can disable this warning in the user preferences (top right menu).")}</i>`)
         }
 
         if (warnings.length) {
-            this.confirmationDialog(warnings.join('<br><br>'), finalAction);
+            this.bga.gameui.confirmationDialog(warnings.join('<br><br>'), finalAction);
         } else {
             finalAction();
         }
@@ -291,7 +305,7 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
             this.setGamestateDescription('OnlyTokens');
         }
 
-        if (this.isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             this.setAntiPlayingNotice(args);
             this.setNotice(args);
 
@@ -310,27 +324,27 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
         this.selectedCards = [];
 
         if (args.canReserve > 1) {
-            this.statusBar.setTitle(this.isCurrentPlayerActive() ?
+            this.bga.statusBar.setTitle(this.bga.players.isCurrentPlayerActive() ?
                 _('${you} must choose up to 2 cards to reserve') :
                 _('${actplayer} must choose up to 2 cards to reserve')
             );
         }
         
-        if (this.isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             this.tableCenter.setCardsSelectable(true, [], true, args.canReserve > 1);
         }
     }
 
     private onEnteringPlaceJoker(args: EnteringPlaceJokerArgs) {
-        if (this.isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             this.getCurrentPlayerTable().setColumnsSelectable(args.colors);
         }
     }
 
     private onEnteringTakeBoardToken(args: EnteringTakeBoardTokenArgs) {
         if (args.canTakeAnyColorOrTwoOfColor) {
-            this.statusBar.setTitle(
-                this.isCurrentPlayerActive() ? 
+            this.bga.statusBar.setTitle(
+                this.bga.players.isCurrentPlayerActive() ? 
                     _('${you} must take any token or 2 ${color_name} tokens from the board') : 
                     _('${actplayer} must take any token or 2 ${color_name} tokens from the board'),
                 args
@@ -338,42 +352,42 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
         }
         
         if (args.number === -1) {
-            this.statusBar.setTitle(this.isCurrentPlayerActive() ? _('${you} must take all tokens of a color from the board') : _('${actplayer} must take a ${color_name} must take all tokens of a color from the board'));
+            this.bga.statusBar.setTitle(this.bga.players.isCurrentPlayerActive() ? _('${you} must take all tokens of a color from the board') : _('${actplayer} must take a ${color_name} must take all tokens of a color from the board'));
         } else if (args.color === 9) {
-            this.statusBar.setTitle(this.isCurrentPlayerActive() ? _('${you} must take 3 tokens of any color from the board') : _('${actplayer} must take 3 tokens of any color from the board'));
+            this.bga.statusBar.setTitle(this.bga.players.isCurrentPlayerActive() ? _('${you} must take 3 tokens of any color from the board') : _('${actplayer} must take 3 tokens of any color from the board'));
         }
 
-        if (this.isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             this.tableCenter.setBoardSelectable('effect', args.color === -1, args.number, args.color === 9 ? null : args.color, args.canTakeAnyColorOrTwoOfColor);
         }
     }
 
     private onEnteringTakeOpponentToken(args: EnteringTakeOpponentTokenArgs) {
-        if (this.isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             this.getPlayerTable(args.opponentId).setTokensSelectable(true, false);
         }
     }
 
     private onEnteringTakeRoyalCard() {
-        if (this.isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             this.tableCenter.setRoyalCardsSelectable(true);
         }
     }
 
     private onEnteringTakeCounterfeiterCard() {
-        if (this.isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             this.tableCenter.setCounterfeiterCardsSelectable(true, [], true, true);
         }
     }
 
     private onEnteringDiscardTokens() {
-        if (this.isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             this.getCurrentPlayerTable().setTokensSelectable(true, true);
         }
     }
 
     private onEnteringReserveFromDeckChooseDeck() {
-        if (this.isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             this.tableCenter.setDecksSelectable(true);
         }
     }
@@ -383,17 +397,17 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
         pickDiv.id = 'pick-div';
         document.getElementById(`cards-wrapper`).insertAdjacentElement('afterbegin', pickDiv);
 
-        this.pickStock = new LineStock<Card>(this.cardsManager, pickDiv);
+        this.pickStock = new LineStock(this.cardsManager, pickDiv);
         this.pickStock.addCards(args._private ? args._private.cards : [1, 2, 3].map(fakeId => ({ id: -fakeId, level: args.level} as Card)));
 
-        if (this.isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             this.pickStock.setSelectionMode('single');
-            this.pickStock.onCardClick = card => this.bgaPerformAction('actReserveFromDeckChooseCard', { id: card.id });
+            this.pickStock.onCardClick = card => this.bga.actions.performAction('actReserveFromDeckChooseCard', { id: card.id });
         }
     }
 
     public onLeavingState(stateName: string) {
-        log( 'Leaving state: '+stateName );
+        console.log( 'Leaving state: '+stateName );
 
         switch (stateName) {
             case 'usePrivilege':
@@ -473,7 +487,7 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
     }
 
     private onLeavingReserveFromDeckChooseDeck() {
-        if (this.isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             this.tableCenter.setDecksSelectable(false);
         }
     }
@@ -508,23 +522,23 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
     //
     public onUpdateActionButtons(stateName: string, args: any) {
         
-        if (this.isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'usePrivilege':
-                    this.statusBar.addActionButton(
+                    this.bga.statusBar.addActionButton(
                         '', 
                         () => this.takeSelectedTokens(), 
                         { id: `takeSelectedTokens_button` }
                     );
                     this.onTableTokenSelectionChange([], false);
-                    this.statusBar.addActionButton(
+                    this.bga.statusBar.addActionButton(
                         _("Cancel"), 
-                        () => this.bgaPerformAction('actCancelUsePrivilege'), 
+                        () => this.bga.actions.performAction('actCancelUsePrivilege'), 
                         { color: 'secondary' }
                     );
                     break;
                 case 'playAction':
-                    this.statusBar.addActionButton(
+                    this.bga.statusBar.addActionButton(
                         '', 
                         () => this.takeSelectedTokensWithWarning(),
                         { id: `takeSelectedTokens_button` }
@@ -533,9 +547,9 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
                     break;
                 case 'reserveCard':
                     if (args.canReserve > 1) {
-                        this.statusBar.addActionButton(
+                        this.bga.statusBar.addActionButton(
                             _("Reserve selected cards"), 
-                            () => this.bgaPerformAction('actReserveCards', {
+                            () => this.bga.actions.performAction('actReserveCards', {
                                 ids: this.selectedCards.map(card => card.id).join(',')
                             }), 
                             { id: 'reserve-cards-button', disabled: true }
@@ -543,14 +557,14 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
                     }
                     break;
                 case 'takeBoardToken':
-                    this.statusBar.addActionButton(
+                    this.bga.statusBar.addActionButton(
                         _("Take selected token"), 
                         () => this.takeSelectedTokens(),
                         { id: `takeSelectedTokens_button`, classes: 'disabled' }
                     );
                     break;
                 case 'takeOpponentToken':
-                    this.statusBar.addActionButton(
+                    this.bga.statusBar.addActionButton(
                         _("Take selected token"), 
                         () => this.takeOpponentToken(this.tokensSelection[0].id),                    
                         { id: `takeSelectedTokens_button`, classes: 'disabled' }
@@ -563,19 +577,19 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
                         [17, _("Spend 2 Glassware tokens to reserve a deck card")],
                     ].forEach(([powerId, buttonLabel]) => {
                         if (args.possiblePowers.includes(powerId)) {
-                            this.statusBar.addActionButton(
+                            this.bga.statusBar.addActionButton(
                                 buttonLabel as string, 
-                                () => this.bgaPerformAction('actUseCounterfeiterCardPower', { power: powerId })
+                                () => this.bga.actions.performAction('actUseCounterfeiterCardPower', { power: powerId })
                             );
                         }
                     });
-                    this.statusBar.addActionButton(
+                    this.bga.statusBar.addActionButton(
                         _("Pass"), 
-                        () => this.bgaPerformAction('actPassCounterfeiterCardPower')
+                        () => this.bga.actions.performAction('actPassCounterfeiterCardPower')
                     );
                     break;
                 case 'discardTokens':
-                    this.statusBar.addActionButton(
+                    this.bga.statusBar.addActionButton(
                         _("Discard selected token(s)"), 
                         () => this.discardSelectedTokens(),                  
                         { id: `discardSelectedTokens_button`, classes: 'disabled' });
@@ -592,14 +606,14 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
     ///////////////////////////////////////////////////
 
     public setTooltip(id: string, html: string) {
-        this.addTooltipHtml(id, html, this.TOOLTIP_DELAY);
+        this.bga.gameui.addTooltipHtml(id, html, this.TOOLTIP_DELAY);
     }
     public setTooltipToClass(className: string, html: string) {
-        this.addTooltipHtmlToClass(className, html, this.TOOLTIP_DELAY);
+        this.bga.gameui.addTooltipHtmlToClass(className, html, this.TOOLTIP_DELAY);
     }
 
     public getPlayerId(): number {
-        return Number(this.player_id);
+        return this.bga.players.getCurrentPlayerId();
     }
 
     public getPlayer(playerId: number): SplendorDuelPlayer {
@@ -624,7 +638,7 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
 
     private getOrderedPlayers(gamedatas: SplendorDuelGamedatas) {
         const players = Object.values(gamedatas.players).sort((a, b) => a.playerNo - b.playerNo);
-        const playerIndex = players.findIndex(player => Number(player.id) === Number(this.player_id));
+        const playerIndex = players.findIndex(player => Number(player.id) === this.bga.players.getCurrentPlayerId());
         const orderedPlayers = playerIndex > 0 ? [...players.slice(playerIndex), ...players.slice(0, playerIndex)] : players;
         return orderedPlayers;
     }
@@ -941,7 +955,7 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
                 this.onBuyCardClick(card);
             }
         } else if (this.gamedatas.gamestate.name == 'reserveFromDeckChooseDeck') {
-            this.bgaPerformAction('actReserveFromDeckChooseDeck', { id: card.id });
+            this.bga.actions.performAction('actReserveFromDeckChooseDeck', { id: card.id });
         }
     }
 
@@ -1064,13 +1078,13 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
         this.setChooseActionGamestateDescription(question);
 
         document.getElementById(`generalactions`).innerHTML = '';
-        this.statusBar.addActionButton(
+        this.bga.statusBar.addActionButton(
             ``, 
             () => this.buyCard(), 
             { id: `chooseTokenCost-button` }
         );
         this.setChooseTokenCostButtonLabelAndState();
-        this.statusBar.addActionButton(
+        this.bga.statusBar.addActionButton(
             _("Cancel"), 
             () => this.cancelChooseTokenCost(), 
             { color: 'secondary', id: `cancelChooseTokenCost-button` }
@@ -1082,7 +1096,7 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
             this.originalTextChooseAction = document.getElementById('pagemaintitletext').innerHTML;
         }
 
-        this.statusBar.setTitle(newText ?? this.originalTextChooseAction);
+        this.bga.statusBar.setTitle(newText ?? this.originalTextChooseAction);
     }
 
     public cancelChooseTokenCost() {
@@ -1127,7 +1141,7 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
 
     public onCounterfeiterCardClick(card: CounterfeiterCard): void {
         if (this.gamedatas.gamestate.name == 'takeCounterfeiterCard') {
-            this.bgaPerformAction('actTakeCounterfeiterCard', { id: card.id });
+            this.bga.actions.performAction('actTakeCounterfeiterCard', { id: card.id });
         } else 
         if (this.gamedatas.gamestate.name == 'reserveCard') {
             //this.reserveCard(card.id);
@@ -1145,7 +1159,7 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
 
     public onColumnClick(color: number): void {
         if (this.gamedatas.gamestate.name == 'placeJoker') {
-            this.bgaPerformAction('actPlaceJoker', {
+            this.bga.actions.performAction('actPlaceJoker', {
                 color
             });
         }
@@ -1154,7 +1168,7 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
     public takeSelectedTokens() {
         const tokensIds = this.tokensSelection.map(token => token.id).sort((a, b) => a - b);
 
-        this.bgaPerformAction('actTakeTokens', {
+        this.bga.actions.performAction('actTakeTokens', {
             ids: tokensIds.join(','), 
         });
     }
@@ -1162,13 +1176,13 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
     public discardSelectedTokens() {
         const tokensIds = this.tokensSelection.map(token => token.id).sort((a, b) => a - b);
 
-        this.bgaPerformAction('actDiscardTokens', {
+        this.bga.actions.performAction('actDiscardTokens', {
             ids: tokensIds.join(','), 
         });
     }
   	
     public reserveCard(id: number) {
-        this.bgaPerformAction('actReserveCard', {
+        this.bga.actions.performAction('actReserveCard', {
             id
         });
     }
@@ -1177,20 +1191,20 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
         const tokensIds = this.tokensSelection.map(token => token.id).sort((a, b) => a - b);
 
         const isCounterfeiterCard = (this.selectedCard as Card).provides === undefined;
-        this.bgaPerformAction(isCounterfeiterCard ? 'actBuyCounterfeiterCard' : 'actBuyCard', {
+        this.bga.actions.performAction(isCounterfeiterCard ? 'actBuyCounterfeiterCard' : 'actBuyCard', {
             id: this.selectedCard.id,
             tokensIds: tokensIds.join(','), 
         });
     }
   	
     public takeRoyalCard(id: number) {
-        this.bgaPerformAction('actTakeRoyalCard', {
+        this.bga.actions.performAction('actTakeRoyalCard', {
             id
         });
     }
   	
     public takeOpponentToken(id: number) {
-        this.bgaPerformAction('actTakeOpponentToken', {
+        this.bga.actions.performAction('actTakeOpponentToken', {
             id
         });
     }
@@ -1228,14 +1242,14 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
     
         notifs.forEach((notif) => {
             dojo.subscribe(notif[0], this, (notifDetails: Notif<any>) => {
-                log(`notif_${notif[0]}`, notifDetails.args);
+                console.log(`notif_${notif[0]}`, notifDetails.args);
 
                 const promise = this[`notif_${notif[0]}`](notifDetails.args);
 
                 // tell the UI notification ends, if the function returned a promise
-                promise?.then(() => (this as any).notifqueue.onSynchronousNotificationEnd());
+                promise?.then(() => (this.bga.gameui as any).notifqueue.onSynchronousNotificationEnd());
             });
-            (this as any).notifqueue.setSynchronous(notif[0], notif[1]);
+            (this.bga.gameui as any).notifqueue.setSynchronous(notif[0], notif[1]);
         });
 
         if (isDebug) {
@@ -1245,7 +1259,7 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
                 }
             });
 
-            Object.getOwnPropertyNames(SplendorDuel.prototype).filter(item => item.startsWith('notif_')).map(item => item.slice(6)).forEach(item => {
+            Object.getOwnPropertyNames(Game.prototype).filter(item => item.startsWith('notif_')).map(item => item.slice(6)).forEach(item => {
                 if (!notifs.some(notif => notif[0] == item)) {
                     console.warn(`notif_${item} function is declared, but not listed in setupNotifications`);
                 }
@@ -1430,7 +1444,7 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
     private cardLogId = 0;
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */
-    public format_string_recursive(log: string, args: any) {
+    public bgaFormatText(log: string, args: any) {
         try {
             if (log && args && !args.processed) {
                 
@@ -1457,12 +1471,12 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
 
                     const cardForLog = this.cardsManager.createCardElement({ ...args['card'], id: `card-for-log-${cardLogId}` } );
 
-                    setTimeout(() => this.addTooltipHtml(`card-log-${cardLogId}`, cardForLog.outerHTML, 500));
+                    setTimeout(() => this.bga.gameui.addTooltipHtml(`card-log-${cardLogId}`, cardForLog.outerHTML, 500));
                 }
             }
         } catch (e) {
             console.error(log,args,"Exception thrown", e.stack);
         }
-        return (this as any).inherited(arguments);
+        return { log, args };
     }
 }
