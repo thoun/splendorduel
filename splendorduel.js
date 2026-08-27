@@ -2687,6 +2687,7 @@ var TableCenter = /** @class */ (function () {
                     position: 'center',
                 }
             });
+            this.counterfeiterDeck.onCardClick = function (card) { return _this.game.onCounterfeiterCardClick(card); };
             this.counterfeiterCards = new LineStock(game.counterfeiterCardsManager, document.getElementById("counterfeiter-cards"), {
                 center: true,
                 unselectableCardClass: 'no-disable-class',
@@ -2724,12 +2725,14 @@ var TableCenter = /** @class */ (function () {
         }
         this.counterfeiterCards.unselectCard(card);
     };
-    TableCenter.prototype.setCounterfeiterCardsSelectable = function (selectable, selectableCards, all) {
+    TableCenter.prototype.setCounterfeiterCardsSelectable = function (selectable, selectableCards, all, deckSelectable) {
         if (selectableCards === void 0) { selectableCards = []; }
         if (all === void 0) { all = false; }
+        if (deckSelectable === void 0) { deckSelectable = false; }
         if (!this.counterfeiterCards) {
             return;
         }
+        this.counterfeiterDeck.setSelectionMode(selectable && deckSelectable ? 'single' : 'none');
         this.counterfeiterCards.setSelectionMode(selectable ? 'single' : 'none');
         if (selectable && !all) {
             this.counterfeiterCards.setSelectableCards(this.counterfeiterCards.getCards().filter(function (card) { return selectableCards.includes(card.id); }));
@@ -3272,7 +3275,7 @@ var SplendorDuel = /** @class */ (function (_super) {
     };
     SplendorDuel.prototype.onEnteringTakeCounterfeiterCard = function () {
         if (this.isCurrentPlayerActive()) {
-            this.tableCenter.setCounterfeiterCardsSelectable(true, [], true);
+            this.tableCenter.setCounterfeiterCardsSelectable(true, [], true, true);
         }
     };
     SplendorDuel.prototype.onEnteringDiscardTokens = function () {
@@ -4077,14 +4080,17 @@ var SplendorDuel = /** @class */ (function (_super) {
     };
     SplendorDuel.prototype.notif_takeCounterfeiterCard = function (args) {
         return __awaiter(this, void 0, void 0, function () {
-            var card, playerId, playerTable;
+            var card, playerId, fromDeck, counterfeiterDeckCount, counterfeiterDeckTop, playerTable;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        card = args.card, playerId = args.playerId;
+                        card = args.card, playerId = args.playerId, fromDeck = args.fromDeck, counterfeiterDeckCount = args.counterfeiterDeckCount, counterfeiterDeckTop = args.counterfeiterDeckTop;
                         return [4 /*yield*/, this.getPlayerTable(playerId).addCounterfeiterCard(card)];
                     case 1:
                         _a.sent();
+                        if (fromDeck) {
+                            this.tableCenter.counterfeiterDeck.setCardNumber(counterfeiterDeckCount, counterfeiterDeckTop);
+                        }
                         playerTable = this.getPlayerTable(playerId);
                         this.crownCounters[playerId].toValue(playerTable.getCrowns());
                         this.incScore(playerId, card.points);

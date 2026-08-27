@@ -86,6 +86,7 @@ class TableCenter {
                     position: 'center',
                 }
             });
+            this.counterfeiterDeck.onCardClick = card => this.game.onCounterfeiterCardClick(card);
 
             this.counterfeiterCards = new LineStock<CounterfeiterCard>(game.counterfeiterCardsManager, document.getElementById(`counterfeiter-cards`), {
                 center: true,
@@ -128,11 +129,12 @@ class TableCenter {
         this.counterfeiterCards.unselectCard(card);
     }
     
-    public setCounterfeiterCardsSelectable(selectable: boolean, selectableCards: number[] = [], all: boolean = false) {
+    public setCounterfeiterCardsSelectable(selectable: boolean, selectableCards: number[] = [], all: boolean = false, deckSelectable: boolean = false) {
         if (!this.counterfeiterCards) {
             return;
         }
 
+        this.counterfeiterDeck.setSelectionMode(selectable && deckSelectable ? 'single' : 'none');
         this.counterfeiterCards.setSelectionMode(selectable ? 'single' : 'none');
 
         if (selectable && !all) {

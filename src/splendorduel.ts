@@ -362,7 +362,7 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
 
     private onEnteringTakeCounterfeiterCard() {
         if (this.isCurrentPlayerActive()) {
-            this.tableCenter.setCounterfeiterCardsSelectable(true, [], true);
+            this.tableCenter.setCounterfeiterCardsSelectable(true, [], true, true);
         }
     }
 
@@ -1340,9 +1340,13 @@ class SplendorDuel extends GameGui<SplendorDuelPlayer, SplendorDuelGamedatas> im
         return Promise.resolve(true);
     }
 
-    async notif_takeCounterfeiterCard(args: NotifBuyCounterfeiterCardArgs) {
-        const { card, playerId } = args;
+    async notif_takeCounterfeiterCard(args: NotifTakeCounterfeiterCardArgs) {
+        const { card, playerId, fromDeck, counterfeiterDeckCount, counterfeiterDeckTop } = args;
         await this.getPlayerTable(playerId).addCounterfeiterCard(card);
+
+        if (fromDeck) {
+            this.tableCenter.counterfeiterDeck.setCardNumber(counterfeiterDeckCount, counterfeiterDeckTop);
+        }
 
         const playerTable = this.getPlayerTable(playerId);
         this.crownCounters[playerId].toValue(playerTable.getCrowns());

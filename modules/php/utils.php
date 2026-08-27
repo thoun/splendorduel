@@ -293,7 +293,7 @@ trait UtilTrait {
             }
         }
 
-        self::notifyAllPlayers('refill', '', [
+        $this->bga->notify->all('refill', '', [
             'refilledTokens' => $refilledTokens,
         ]);
     }
@@ -372,7 +372,7 @@ trait UtilTrait {
     function applyTakeTokens(int $playerId, array $tokens) {
         $this->tokens->moveCards(array_map(fn($token) => $token->id, $tokens), 'player', $playerId);
 
-        self::notifyAllPlayers('takeTokens', clienttranslate('${player_name} takes token(s) ${new_tokens}'), [
+        $this->bga->notify->all('takeTokens', clienttranslate('${player_name} takes token(s) ${new_tokens}'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerNameById($playerId),
             'tokens' => $tokens,
@@ -503,7 +503,7 @@ trait UtilTrait {
     function spendPrivileges(int $playerId, int $number) {
         $this->DbQuery("UPDATE player SET `player_privileges` = `player_privileges` - $number WHERE player_id = $playerId");
 
-        self::notifyAllPlayers('privileges', clienttranslate('${player_name} uses ${number} privileges to take token(s) from the board'), [
+        $this->bga->notify->all('privileges', clienttranslate('${player_name} uses ${number} privileges to take token(s) from the board'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerNameById($playerId),
             'privileges' => [
@@ -519,7 +519,7 @@ trait UtilTrait {
     function takePrivilege(int $playerId, string $message) {
         $playerPrivileges = $this->getPlayerPrivileges($playerId);
         if ($playerPrivileges >= 3) {
-            self::notifyAllPlayers('log', clienttranslate('${player_name} cannot take a privilege because he already have all 3 privileges.'), [
+            $this->bga->notify->all('log', clienttranslate('${player_name} cannot take a privilege because he already have all 3 privileges.'), [
                 'playerId' => $playerId,
                 'player_name' => $this->getPlayerNameById($playerId),
             ]);
@@ -535,7 +535,7 @@ trait UtilTrait {
 
         $this->DbQuery("UPDATE player SET `player_privileges` = `player_privileges` + 1 WHERE player_id = $playerId");
 
-        self::notifyAllPlayers('privileges', $message, [
+        $this->bga->notify->all('privileges', $message, [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerNameById($playerId),
             'opponentId' => $opponentId,
@@ -814,7 +814,7 @@ trait UtilTrait {
                 if (count($this->getCardsByLocation('table'.$level, $i)) == 0 && count($this->getCardsByLocation('deck'.$level)) > 0) {
                     $newCard = $this->getCardFromDb($this->cards->pickCardForLocation('deck'.$level, 'table'.$level, $i));
         
-                    self::notifyAllPlayers('newTableCard', '', [
+                    $this->bga->notify->all('newTableCard', '', [
                         'newCard' => $newCard,
                         'cardDeckCount' => intval($this->cards->countCardInLocation('deck'.$level)),
                         'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'.$level))),

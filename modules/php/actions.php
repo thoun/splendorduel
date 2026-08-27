@@ -97,7 +97,7 @@ trait ActionTrait {
 
         $this->DbQuery("UPDATE player SET `player_score` = 1 WHERE player_id = $playerId");
         
-        self::notifyAllPlayers('log', clienttranslate('${player_name} wins by ending the game immediatly due to opponent anti-playing'), [
+        $this->bga->notify->all('log', clienttranslate('${player_name} wins by ending the game immediatly due to opponent anti-playing'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerNameById($playerId),
         ]);
@@ -167,7 +167,7 @@ trait ActionTrait {
 
         $this->cards->moveCard($card->id, 'reserved', $playerId);
         
-        self::notifyAllPlayers('reserveCard', $message, [
+        $this->bga->notify->all('reserveCard', $message, [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerNameById($playerId),
             'card' => $card,
@@ -231,7 +231,7 @@ trait ActionTrait {
 
         $this->DbQuery("UPDATE player SET player_anti_playing_turns = 0 WHERE player_id = $playerId");
         
-        self::notifyAllPlayers('buyCard', $message, [
+        $this->bga->notify->all('buyCard', $message, [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerNameById($playerId),
             'card' => $card,
@@ -290,7 +290,7 @@ trait ActionTrait {
 
         $this->DbQuery("UPDATE player SET player_anti_playing_turns = 0 WHERE player_id = $playerId");
         
-        self::notifyAllPlayers('buyCounterfeiterCard', $message, [
+        $this->bga->notify->all('buyCounterfeiterCard', $message, [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerNameById($playerId),
             'card' => $card,
@@ -314,9 +314,10 @@ trait ActionTrait {
         $playerId = intval($this->getActivePlayerId());
 
         $card = $this->counterfeiterCards->getItemById($id);
-        if ($card->location != 'table') {
-            throw new UserException("You must take a royal card from the table");
+        if ($card->location !== 'table' && ($card->location !== 'deck' || $card->id !== $this->counterfeiterCards->getItemOnTop('deck')?->id)) {
+            throw new UserException("You must take a counterfeiter card from the table or the top of the deck");
         }
+        $fromDeck = $card->location === 'deck';
 
         $location = 'player';
         $locationArg = $playerId;
@@ -324,10 +325,13 @@ trait ActionTrait {
         $card->locationArg = $locationArg;
         $this->counterfeiterCards->moveItem($card, $location, $locationArg);
         
-        self::notifyAllPlayers('takeCounterfeiterCard', clienttranslate('${player_name} takes a Counterfeiter card'), [
+        $this->bga->notify->all('takeCounterfeiterCard', clienttranslate('${player_name} takes a Counterfeiter card'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerNameById($playerId),
             'card' => $card,
+            'fromDeck' => $fromDeck,
+            'counterfeiterDeckCount' => $this->counterfeiterCards->countItemsInLocation('deck'),
+            'counterfeiterDeckTop' => CounterfeiterCard::onlyId($this->counterfeiterCards->getItemOnTop('deck')),
         ]);
 
         if ($card->crowns > 0) {
@@ -350,7 +354,7 @@ trait ActionTrait {
 
         $fromCounterfeiterPower = $this->globals->get(ROYAL_CARDS_WITH_COUNTERFEITER_POWER, 0) > 0;
         
-        self::notifyAllPlayers('takeRoyalCard', clienttranslate('${player_name} takes a royal card'), [
+        $this->bga->notify->all('takeRoyalCard', clienttranslate('${player_name} takes a royal card'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerNameById($playerId),
             'card' => $card,
@@ -361,7 +365,7 @@ trait ActionTrait {
         if ($fromCounterfeiterPower) {
             $newCard = $this->getRoyalCardFromDb($this->royalCards->pickCardForLocation('box', 'deck'));
         
-            self::notifyAllPlayers('newTableRoyalCard', '', [
+            $this->bga->notify->all('newTableRoyalCard', '', [
                 'newCard' => $newCard,
             ]);
         }
@@ -386,7 +390,7 @@ trait ActionTrait {
         $card->location = $location;
         $card->locationArg = $locationArg;
         
-        self::notifyAllPlayers('buyCard', clienttranslate('${player_name} places the <ICON_MULTI> card on ${color_name} column'), [
+        $this->bga->notify->all('buyCard', clienttranslate('${player_name} places the <ICON_MULTI> card on ${color_name} column'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerNameById($playerId),
             'card' => $card,
@@ -412,7 +416,7 @@ trait ActionTrait {
 
                 $tokens = array_slice($glasswareTokens, 0, $tokenCost);
                 $this->tokens->moveCards(Arrays::map($tokens, fn($token) => $token->id), 'bag');
-                self::notifyAllPlayers('discardTokens', clienttranslate('${player_name} spends ${spent_tokens} to take a Royal card'), [
+                $this->bga->notify->all('discardTokens', clienttranslate('${player_name} spends ${spent_tokens} to take a Royal card'), [
                     'playerId' => $playerId,
                     'player_name' => $this->getPlayerNameById($playerId),
                     'number' => $tokenCost,
@@ -428,7 +432,7 @@ trait ActionTrait {
                 $this->spendPrivileges($playerId, 1);
                 $tokens = array_slice($glasswareTokens, 0, 1);
                 $this->tokens->moveCards(Arrays::map($tokens, fn($token) => $token->id), 'bag');
-                self::notifyAllPlayers('discardTokens', clienttranslate('${player_name} spends ${spent_tokens} and a Privilege to play a new turn'), [
+                $this->bga->notify->all('discardTokens', clienttranslate('${player_name} spends ${spent_tokens} and a Privilege to play a new turn'), [
                     'playerId' => $playerId,
                     'player_name' => $this->getPlayerNameById($playerId),
                     'tokens' => $tokens,
@@ -441,7 +445,7 @@ trait ActionTrait {
             case 17:
                 $tokens = array_slice($glasswareTokens, 0, 2);
                 $this->tokens->moveCards(Arrays::map($tokens, fn($token) => $token->id), 'bag');
-                self::notifyAllPlayers('discardTokens', clienttranslate('${player_name} spends ${spent_tokens} to reserve a card from the deck'), [
+                $this->bga->notify->all('discardTokens', clienttranslate('${player_name} spends ${spent_tokens} to reserve a card from the deck'), [
                     'playerId' => $playerId,
                     'player_name' => $this->getPlayerNameById($playerId),
                     'tokens' => $tokens,
@@ -477,7 +481,7 @@ trait ActionTrait {
 
         $this->tokens->moveCards($ids, 'bag');
         
-        self::notifyAllPlayers('discardTokens', clienttranslate('${player_name} discards ${discarded_tokens} (10 tokens limit)'), [
+        $this->bga->notify->all('discardTokens', clienttranslate('${player_name} discards ${discarded_tokens} (10 tokens limit)'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerNameById($playerId),
             'tokens' => $tokens,

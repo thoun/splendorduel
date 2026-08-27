@@ -1,6 +1,7 @@
 <?php
 
 use Bga\GameFramework\Components\Deck;
+use Bga\GameFrameworkPrototype\Helpers\Arrays;
 
 function debug(...$debugData) {
     if (\Bga\GameFramework\Table::getBgaEnvironment() != 'studio') { 
@@ -34,6 +35,12 @@ trait DebugUtilTrait {
         //$this->cards->pickCardsForLocation(13, 'deck', 'void');
         
         //$this->debugLastTurn();
+    }
+
+    function debug_Gold() {
+        $playerId = intval($this->getActivePlayerId());
+        $tokens = $this->getTokensFromDb($this->tokens->getCardsOfType(1));
+        $this->tokens->moveCards(Arrays::map($tokens, fn($token) => $token->id), 'player', $playerId);
     }
 
     function debug_Tokens() {

@@ -155,6 +155,13 @@ interface NotifBuyCounterfeiterCardArgs extends NotifNewPlayerCounterfeiterCardA
     tokens: Token[];
 }
 
+// takeCounterfeiterCard
+interface NotifTakeCounterfeiterCardArgs extends NotifNewPlayerCounterfeiterCardArgs {
+    fromDeck: boolean;
+    counterfeiterDeckCount: number;
+    counterfeiterDeckTop: CounterfeiterCard | null;
+}
+
 // takeRoyalCard
 interface NotifTakeRoyalCardArgs {
     playerId: number;

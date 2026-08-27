@@ -21,7 +21,7 @@ trait StateTrait {
         $canTakeColors = $color === MULTICOLOR || $args['canTakeAnyColorOrTwoOfColor'] ? [0, 1, 2 ,3 ,4 ,5 ,6] : [$color];
 
         if (!$this->array_some($board, fn($token) => in_array($token->color, $canTakeColors))) {
-            self::notifyAllPlayers('log', clienttranslate('Card ability is skipped, as there is no ${color_name} token on the board'), [
+            $this->bga->notify->all('log', clienttranslate('Card ability is skipped, as there is no ${color_name} token on the board'), [
                 'color_name' => $this->getColorName($color), // for logs
             ]);
 
@@ -37,7 +37,7 @@ trait StateTrait {
         $tokens = $this->getPlayerTokens($opponentId);
 
         if (!$this->array_some($tokens, fn($token) => $token->type == 2)) {
-            self::notifyAllPlayers('log', clienttranslate("Card ability is skipped, as your opponent doesn't have any Gem or Pearl"), [
+            $this->bga->notify->all('log', clienttranslate("Card ability is skipped, as your opponent doesn't have any Gem or Pearl"), [
             ]);
 
             $playerId = intval($this->getActivePlayerId());
@@ -108,7 +108,7 @@ trait StateTrait {
                     break;
             }
                 
-            self::notifyAllPlayers('win', $message, [
+            $this->bga->notify->all('win', $message, [
                 'playerId' => $playerId,
                 'player_name' => $this->getPlayerNameById($playerId),
                 'endReasons' => $endReasons,
@@ -120,7 +120,7 @@ trait StateTrait {
                 $this->setStat(1, 'endReason'.$endReason, $playerId);
             }
         } else if (boolval($this->getGameStateValue(PLAY_AGAIN))) {
-            self::notifyAllPlayers('log', clienttranslate('${player_name} takes another turn with played card effect'), [
+            $this->bga->notify->all('log', clienttranslate('${player_name} takes another turn with played card effect'), [
                 'playerId' => $playerId,
                 'player_name' => $this->getPlayerNameById($playerId),
             ]);
