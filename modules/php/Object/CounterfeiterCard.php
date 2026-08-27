@@ -21,7 +21,7 @@ const COUNTERFEITER_CARD_COST = [
     8 => [GLASSWARE => 1, BLUE => 1, BLACK => 1],
     9 => [GLASSWARE => 3, GOLD => 1],
     10 => [GLASSWARE => 2, BLACK => 1, RED => 1],
-    //11 => [GLASSWARE => 2, PEARL => 1],
+    11 => [GLASSWARE => 2, PEARL => 1],
     12 => [GLASSWARE => 2, WHITE => 1, PEARL => 1],
     13 => [GLASSWARE => 2, GREEN => 1, BLUE => 1],
     14 => [GLASSWARE => 2, GOLD => 1],

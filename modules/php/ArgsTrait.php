@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Bga\Games\SplendorDuel;
 
+use Bga\GameFrameworkPrototype\Helpers\Arrays;
+
 trait ArgsTrait {
     
 //////////////////////////////////////////////////////////////////////////////
@@ -174,6 +176,8 @@ trait ArgsTrait {
                 $possiblePowers[] = 9;
             }
             
+            $opponentTokensWithoutGold = $this->getPlayerTokensByColor($this->getOpponentId($playerId));
+            $opponentTokensWithoutGold[-1] = 0;
             if (
                 $this->counterfeiterCards->playerHasCounterfeiterCard($playerId, 10) && // pay scroll + glassware token to play again
                 $this->getPlayerPrivileges($playerId) >= 1 && 
@@ -181,6 +185,16 @@ trait ArgsTrait {
                 !boolval($this->getGameStateValue(PLAY_AGAIN)) // ignore if there's already a new turn incoming
             ) {
                 $possiblePowers[] = 10;
+            }
+            
+            if (
+                $this->counterfeiterCards->playerHasCounterfeiterCard($playerId, 11) && // pay scroll + glassware token to steal a non-gold token from the opponent
+                $this->getPlayerPrivileges($playerId) >= 1 && 
+                count($glasswareTokens) >= 1 &&
+                !$this->globals->get(COUNTERFEITER11_USED, false) && // check it wasn't already used during this turn
+                Arrays::some($opponentTokensWithoutGold, fn($count) => $count > 0) // opponent has stealable tokens
+            ) {
+                $possiblePowers[] = 11;
             }
             
             if (

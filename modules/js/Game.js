@@ -1360,6 +1360,7 @@ class Game {
                     [
                         [9, _("Spend ${number} Glassware token(s) to take a Royal card").replace('${number}', 1 + args.playerRoyalCardCount)],
                         [10, _("Spend a Glassware token and a Privilege to play a new turn")],
+                        [11, _("Spend a Glassware token and a Privilege to take an opponent token")],
                         [17, _("Spend 2 Glassware tokens to reserve a deck card")],
                     ].forEach(([powerId, buttonLabel]) => {
                         if (args.possiblePowers.includes(powerId)) {

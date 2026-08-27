@@ -463,6 +463,21 @@ trait ActionTrait {
                 ]);
                 $this->setGameStateValue(PLAY_AGAIN, 1);
                 break;
+            case 11:
+                $this->spendPrivileges($playerId, 1);
+                $tokens = array_slice($glasswareTokens, 0, 1);
+                $this->tokens->moveCards(Arrays::map($tokens, fn($token) => $token->id), 'bag');
+                $this->bga->notify->all('discardTokens', clienttranslate('${player_name} spends ${spent_tokens} and a Privilege to take a token from their opponent'), [
+                    'playerId' => $playerId,
+                    'player_name' => $this->getPlayerNameById($playerId),
+                    'tokens' => $tokens,
+                    'spent_tokens' => $this->getTokensNames($tokens), // for logs
+                    'preserve' => ['tokens'],
+                    'i18n' => ['spent_tokens'],
+                ]);
+                $this->globals->set(COUNTERFEITER11_USED, true);
+                $this->gamestate->jumpToState(ST_PLAYER_TAKE_OPPONENT_TOKEN);
+                return;
             case 17:
                 $tokens = array_slice($glasswareTokens, 0, 2);
                 $this->tokens->moveCards(Arrays::map($tokens, fn($token) => $token->id), 'bag');
@@ -523,14 +538,19 @@ trait ActionTrait {
 
         $playerTokens = $this->getPlayerTokens($opponentId);
         $token = array_find($playerTokens, fn($token) => $token->id == $id);
-        if ($token == null) {
-            throw new UserException("You must take a token from your opponent");
+        if ($token == null || $token->type == 1) {
+            throw new UserException("You must take a non-gold token from your opponent");
         }
 
         $this->applyTakeTokens($playerId, [$token]);
 
         $this->incStat(1, 'ability5');
         $this->incStat(1, 'ability5', $playerId);
+
+        if ($this->globals->get(COUNTERFEITER11_USED, false)) {
+            $this->gamestate->jumpToState(ST_PLAYER_BEFORE_END_TURN);
+            return;
+        }
 
         $id = intval($this->getGameStateValue(PLAYED_CARD));
         $card = $id > 0 ? $this->getCardFromDb($this->cards->getCard($id)) : null;

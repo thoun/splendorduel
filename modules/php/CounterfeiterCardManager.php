@@ -37,9 +37,6 @@ class CounterfeiterCardManager extends ItemManager {
     public function setup() {
         $counterfeiterCards = [];
         for ($i = 1; $i <= 17; $i++) {
-            if ($i == 11) {
-                continue;
-            }
             $counterfeiterCards[] = ['location' => 'deck', 'type' => $i ];
         }
 

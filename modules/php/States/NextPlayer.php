@@ -19,7 +19,7 @@ class NextPlayer extends \Bga\GameFramework\States\GameState {
 
     public function onEnteringState(int $activePlayerId): int|string {
         $this->bga->tableStats->inc('roundNumber', 1);
-        $this->game->globals->delete(\ROYAL_CARDS_WITH_COUNTERFEITER_POWER, \RESERVE_FROM_DECK, \COUNTERFEITER13_USED);
+        $this->game->globals->delete(\ROYAL_CARDS_WITH_COUNTERFEITER_POWER, \RESERVE_FROM_DECK, \COUNTERFEITER11_USED, \COUNTERFEITER13_USED);
 
         $playerId = $activePlayerId;
 
