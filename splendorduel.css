@@ -518,7 +518,7 @@ body > .card {
   box-shadow: unset;
 }
 .splendorduel-card.bga-cards_selected-card:not(.bga-cards_disabled-card) {
-  box-shadow: 0 0 6px 6px orange;
+  box-shadow: 0 0 6px 6px orange !important;
 }
 .splendorduel-card.bga-cards_selected-card:not(.bga-cards_disabled-card) .card-side {
   box-shadow: unset;

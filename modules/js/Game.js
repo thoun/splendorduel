@@ -1345,6 +1345,9 @@ class Game {
                         this.bga.statusBar.addActionButton(_("Reserve selected cards"), () => this.bga.actions.performAction('actReserveCards', {
                             ids: this.selectedCards.map(card => card.id).join(',')
                         }), { id: 'reserve-cards-button', disabled: true });
+                        this.bga.statusBar.addActionButton(_('Reserve the top 2 cards from the selected deck'), () => this.bga.actions.performAction('actReserveCards', {
+                            ids: (args.deckCards?.[this.selectedCards[0].level]).join(',')
+                        }), { id: 'reserve-deck-top-two-cards-button', disabled: true, color: 'secondary' });
                     }
                     break;
                 case 'takeBoardToken':
@@ -1652,8 +1655,12 @@ class Game {
             this.selectedCards.push(card);
         }
         const button = document.getElementById(`reserve-cards-button`);
+        const deckTopTwoButton = document.getElementById('reserve-deck-top-two-cards-button');
         if (button) {
             button.disabled = this.selectedCards.length < 1 || this.selectedCards.length > 2;
+        }
+        if (deckTopTwoButton) {
+            deckTopTwoButton.disabled = this.selectedCards.length !== 1 || this.gamedatas.gamestate.args.deckCards?.[this.selectedCards[0].level].length < 2;
         }
     }
     onTableCardClick(card, selected) {

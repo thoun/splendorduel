@@ -150,8 +150,24 @@ trait ActionTrait {
     public function actReserveCards(#[IntArrayParam(min: 1, max: 2)] array $ids) {
         $playerId = intval($this->getActivePlayerId());
 
-        foreach ($ids as $id) {
-            $card = $this->getCardFromDb($this->cards->getCard($id));
+        if (count($ids) !== count(array_unique($ids))) {
+            throw new UserException('You must choose different cards');
+        }
+
+        $cards = array_map(fn($id) => $this->getCardFromDb($this->cards->getCard($id)), $ids);
+        foreach ($cards as $card) {
+            if (str_starts_with($card->location, 'deck')) {
+                $topCards = $this->getCardsFromDb($this->cards->getCardsOnTop(2, $card->location));
+                $topCardIds = array_map(fn($topCard) => $topCard->id, $topCards);
+                $nextTopCardId = $topCardIds[1] ?? null;
+
+                if (!in_array($card->id, $topCardIds) || ($card->id === $nextTopCardId && !in_array($topCardIds[0], $ids))) {
+                    throw new UserException('You must reserve the top cards of a deck');
+                }
+            }
+        }
+
+        foreach ($cards as $card) {
             $this->applyReserveCard($playerId, $card);
         }
 

@@ -78,15 +78,21 @@ trait ArgsTrait {
         $playerId = intval($this->getActivePlayerId());
 
         $canReserve = 1;
+        $deckCards = [];
         if (
             $this->counterfeiterCards->playerHasCounterfeiterCard($playerId, 15) && // reserve 2 cards
             intval($this->cards->countCardInLocation('reserved', $playerId)) < ($this->getPlayerMaxReserve($playerId) - 1)
         ) {
             $canReserve = 2;
+
+            foreach ([1, 2, 3] as $level) {
+                $deckCards[$level] = array_map(fn($card) => $card->id, $this->getCardsFromDb($this->cards->getCardsOnTop(2, 'deck'.$level)));
+            }
         }
 
         return [
             'canReserve' => $canReserve,
+            'deckCards' => $deckCards,
         ];
     }
 

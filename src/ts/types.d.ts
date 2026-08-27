@@ -52,6 +52,7 @@ export interface EnteringPlayActionArgs {
 
 export interface EnteringReserveCardArgs {
     canReserve: number;
+    deckCards: { [level: number]: number[] };
 }
 
 export interface EnteringPlaceJokerArgs {

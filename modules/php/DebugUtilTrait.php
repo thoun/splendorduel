@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\SplendorDuel;
 
+use Bga\GameFramework\Actions\Debug;
 use Bga\GameFramework\Components\Deck;
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
 
@@ -40,23 +41,27 @@ trait DebugUtilTrait {
         //$this->debugLastTurn();
     }
 
+    #[Debug(true)]
     function debug_Gold() {
-        $playerId = intval($this->getActivePlayerId());
+        $playerId = intval($this->getCurrentPlayerId());
         $tokens = $this->getTokensFromDb($this->tokens->getCardsOfType(1));
         $this->tokens->moveCards(Arrays::map($tokens, fn($token) => $token->id), 'player', $playerId);
     }
 
+    #[Debug(true)]
     function debug_Tokens() {
-        $playerId = intval($this->getActivePlayerId());
+        $playerId = intval($this->getCurrentPlayerId());
         $this->tokens->moveAllCardsInLocation('board', 'player', null, $playerId);
     }
 
+    #[Debug(true)]
     function debug_setRoyalCard(int $type) {
         $royalCard = $this->getRoyalCardsByLocation('deck')[0];
 
         $this->DbQuery("UPDATE royal_card SET card_type = $type WHERE card_id = ".$royalCard->id);
     }
 
+    #[Debug(true)]
     function debug_takeCard(int $playerId, int $id) {
         $card = $this->getCardById($id);
         $color = $card->color;
@@ -64,6 +69,7 @@ trait DebugUtilTrait {
         $this->DbQuery("UPDATE `card` SET card_location = 'player$playerId-$color' WHERE card_id = ".$card->id);
     }
 
+    #[Debug(true)]
     function debug_takeCounterfeiterCard(int $playerId, int $type) {
         $card = $this->counterfeiterCards->getItemsByFieldName('type', [$type], 1)[0];
         return $this->counterfeiterCards->moveItem($card, 'player', $playerId);
