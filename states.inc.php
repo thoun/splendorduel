@@ -1,4 +1,7 @@
 <?php
+
+use Bga\Games\SplendorDuel\States\EndScore;
+use Bga\Games\SplendorDuel\States\NextPlayer;
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
@@ -58,7 +61,7 @@ $playedCardTransitions = [
     "takeRoyalCard" => ST_PLAYER_TAKE_ROYAL_CARD,
 ];
 
-$playerActionsGameStates = [
+$machinestates = [
 
     ST_PLAYER_USE_PRIVILEGE => [
         "name" => "usePrivilege",
@@ -202,7 +205,7 @@ $playerActionsGameStates = [
             "actDiscardTokens",
         ],
         "transitions" => [
-            "next" => ST_NEXT_PLAYER,
+            "next" => NextPlayer::class,
         ]
     ],
 
@@ -233,33 +236,3 @@ $playerActionsGameStates = [
         ],
     ],
 ];
-
-$gameGameStates = [
-
-    ST_NEXT_PLAYER => [
-        "name" => "nextPlayer",
-        "description" => "",
-        "type" => "game",
-        "action" => "stNextPlayer",
-        "updateGameProgression" => true,
-        "transitions" => [
-            "nextPlayer" => ST_PLAYER_PLAY_ACTION,
-            "endScore" => ST_END_SCORE,
-        ],
-    ],
-
-    ST_END_SCORE => [
-        "name" => "endScore",
-        "description" => "",
-        "type" => "game",
-        "action" => "stEndScore",
-        "transitions" => [
-            "endGame" => ST_END_GAME,
-        ],
-    ],
-];
- 
-$machinestates = $playerActionsGameStates + $gameGameStates;
-
-
-

@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace Bga\Games\SplendorDuel;
 
-use Bga\GameFrameworkPrototype\Helpers\Arrays;
-
 trait StateTrait {
 
 //////////////////////////////////////////////////////////////////////////////
@@ -70,99 +68,4 @@ trait StateTrait {
         }
     }
 
-    function stNextPlayer() {    
-        $this->incStat(1, 'roundNumber');
-        $this->globals->delete(ROYAL_CARDS_WITH_COUNTERFEITER_POWER, RESERVE_FROM_DECK, COUNTERFEITER13_USED);
-
-        $playerId = intval($this->getActivePlayerId());
-
-        $this->refillCards();
-        if ($this->isCounterfeiterExpansion()) {
-            $this->counterfeiterCards->refill();
-        }
-
-        $endReasons = $this->getEndReasons($playerId);
-
-        if (count($endReasons) > 0) {
-            $this->DbQuery("UPDATE player SET `player_score` = 1 WHERE player_id = $playerId");
-
-            $royalCards = $this->getRoyalCardsByLocation('player', $playerId);
-            
-            $goal = null;
-            $message = null;
-            switch ($endReasons[0]) {
-                case 1:
-                    $goal = 20;
-                    $message = clienttranslate('${player_name} reached ${goal} points and wins the game!');
-                    break;
-                case 2:
-                    $goal = 10;
-                    if (Arrays::some($royalCards, fn($royalCard) => in_array(POWER_WIN_9CROWNS, $royalCard->power))) {
-                        $goal = 9;
-                    } 
-                    $message = clienttranslate('${player_name} reached ${goal} crowns and wins the game!');
-                    break;
-                case 3:
-                    $goal = 10;
-                    if (Arrays::some($royalCards, fn($royalCard) => in_array(POWER_WIN_9PTS_SAME_COLOR, $royalCard->power))) {
-                        $goal = 9;
-                    }
-                    $message = clienttranslate('${player_name} reached ${goal} points in a single column and wins the game!');
-                    break;
-            }
-                
-            $this->bga->notify->all('win', $message, [
-                'playerId' => $playerId,
-                'player_name' => $this->getPlayerNameById($playerId),
-                'endReasons' => $endReasons,
-                'goal' => $goal, // for logs
-            ]);
-
-            foreach ($endReasons as $endReason) {
-                $this->setStat(1, 'endReason'.$endReason);
-                $this->setStat(1, 'endReason'.$endReason, $playerId);
-            }
-        } else if (boolval($this->getGameStateValue(PLAY_AGAIN))) {
-            $this->bga->notify->all('log', clienttranslate('${player_name} takes another turn with played card effect'), [
-                'playerId' => $playerId,
-                'player_name' => $this->getPlayerNameById($playerId),
-            ]);
-
-            $this->setGameStateValue(PLAY_AGAIN, 0);
-            
-            $this->incStat(1, 'ability1');
-            $this->incStat(1, 'ability1', $playerId);
-        } else {
-            $playerAntiPlayingTurns = $this->getPlayerAntiPlayingTurns($playerId);
-            if ($playerAntiPlayingTurns > 0 && !$this->playerHasAllGoldAndPearls($playerId)) {
-                $this->DbQuery("UPDATE player SET player_anti_playing_turns = 0 WHERE player_id = $playerId");
-                $playerAntiPlayingTurns = 0;
-            }
-            if ($playerAntiPlayingTurns >= 3) {
-                $this->incStat(1, 'antiPlayingEndRound');
-            }
-
-            $this->activeNextPlayer();
-            $playerId = (int)$this->getActivePlayerId();
-
-            if ($this->playerHasAllGoldAndPearls($playerId)) {
-                // if the player has all 3 golds and 2 pearls at the beginning of his turn
-                $this->DbQuery("UPDATE player SET player_anti_playing_turns = player_anti_playing_turns + 1 WHERE player_id = $playerId");
-
-                if ($this->getPlayerAntiPlayingTurns($playerId) >= 3) {
-                    $this->incStat(1, 'antiPlayingStartRound');
-                }        
-            }
-        }
-
-        $this->giveExtraTime($playerId);
-
-        $this->setGameStateValue(PLAYER_REFILLED, 0);
-
-        $this->gamestate->nextState(count($endReasons) > 0 ? 'endScore' : 'nextPlayer');
-    }
-
-    function stEndScore() {
-        $this->gamestate->nextState('endGame');
-    }
 }
