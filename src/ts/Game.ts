@@ -352,7 +352,7 @@ export class Game {
         }
         
         if (args.number === -1) {
-            this.bga.statusBar.setTitle(this.bga.players.isCurrentPlayerActive() ? _('${you} must take all tokens of a color from the board') : _('${actplayer} must take a ${color_name} must take all tokens of a color from the board'));
+            this.bga.statusBar.setTitle(this.bga.players.isCurrentPlayerActive() ? _('${you} must take all tokens of a color from the board') : _('${actplayer} must take all tokens of a color from the board'));
         } else if (args.color === 9) {
             this.bga.statusBar.setTitle(this.bga.players.isCurrentPlayerActive() ? _('${you} must take 3 tokens of any color from the board') : _('${actplayer} must take 3 tokens of any color from the board'));
         }
