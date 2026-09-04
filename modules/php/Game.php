@@ -1083,7 +1083,7 @@ class Game extends \Bga\GameFramework\Table {
         $cards = $this->getCardsByLocation('player'.$playerId.'-%');
         $counterfeiterCardConversions = $this->counterfeiterCards->getConversions($playerId);
 
-        $possibleCards = $this->counterfeiterCards->getItemsInLocation('table');
+        $possibleCards = $this->counterfeiterCards->getTable();
 
         $buyableCards = [];
         $reducedCosts = [];

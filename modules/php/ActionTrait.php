@@ -277,8 +277,8 @@ trait ActionTrait {
     public function actBuyCounterfeiterCard(int $id, #[IntArrayParam] array $tokensIds) {
         $playerId = intval($this->getActivePlayerId());
 
-        $card = $this->counterfeiterCards->getItemById($id);
-        if ($card->location !== 'table') {
+        $card = $this->counterfeiterCards->items->getItemById($id);
+        if ($card === null || $card->location !== 'table') {
             throw new UserException("You must purchase a Counterfeiter card from the table ");
         }
 
@@ -301,11 +301,7 @@ trait ActionTrait {
                 clienttranslate('${player_name} purchases a Counterfeiter card with ${spent_tokens}') :
                 clienttranslate('${player_name} purchases a Counterfeiter card for free');
 
-        $location = 'player';
-        $locationArg = $playerId;
-        $card->location = $location;
-        $card->locationArg = $locationArg;
-        $this->counterfeiterCards->moveItem($card, $location, $locationArg);
+        $this->counterfeiterCards->items->moveItem($card, ['player', $playerId]);
 
         $this->tokens->moveCards($tokensIds, 'bag');
 
@@ -334,25 +330,27 @@ trait ActionTrait {
     public function actTakeCounterfeiterCard(int $id) {
         $playerId = intval($this->getActivePlayerId());
 
-        $card = $this->counterfeiterCards->getItemById($id);
-        if ($card->location !== 'table' && ($card->location !== 'deck' || $card->id !== $this->counterfeiterCards->getItemOnTop('deck')?->id)) {
+        $card = $this->counterfeiterCards->items->getItemById($id);
+        if ($card === null) {
+            throw new UserException("You must take a counterfeiter card from the table or the top of the deck");
+        }
+        if (
+            $card->location !== 'table'
+            && ($card->location !== 'deck' || $card->id !== $this->counterfeiterCards->items->getItemOnTop('deck')?->id)
+        ) {
             throw new UserException("You must take a counterfeiter card from the table or the top of the deck");
         }
         $fromDeck = $card->location === 'deck';
 
-        $location = 'player';
-        $locationArg = $playerId;
-        $card->location = $location;
-        $card->locationArg = $locationArg;
-        $this->counterfeiterCards->moveItem($card, $location, $locationArg);
+        $this->counterfeiterCards->items->moveItem($card, ['player', $playerId]);
         
         $this->bga->notify->all('takeCounterfeiterCard', clienttranslate('${player_name} takes a Counterfeiter card'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerNameById($playerId),
             'card' => $card,
             'fromDeck' => $fromDeck,
-            'counterfeiterDeckCount' => $this->counterfeiterCards->countItemsInLocation('deck'),
-            'counterfeiterDeckTop' => CounterfeiterCard::onlyId($this->counterfeiterCards->getItemOnTop('deck')),
+            'counterfeiterDeckCount' => $this->counterfeiterCards->items->countItemsInLocation('deck'),
+            'counterfeiterDeckTop' => CounterfeiterCard::onlyId($this->counterfeiterCards->items->getItemOnTop('deck')),
         ]);
 
         if ($card->crowns > 0) {

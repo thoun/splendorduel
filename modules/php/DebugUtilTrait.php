@@ -70,9 +70,11 @@ trait DebugUtilTrait {
     }
 
     #[Debug(true)]
-    function debug_takeCounterfeiterCard(int $playerId, int $type) {
-        $card = $this->counterfeiterCards->getItemsByFieldName('type', [$type], 1)[0];
-        return $this->counterfeiterCards->moveItem($card, 'player', $playerId);
+    function debug_takeCounterfeiterCard(int $playerId, int $type): void {
+        $card = $this->counterfeiterCards->items->getItemsByFieldName('type', $type, 1)->first();
+        if ($card !== null) {
+            $this->counterfeiterCards->items->moveItem($card, ['player', $playerId]);
+        }
     }
 
     public function debug_goToState(int $state = ST_NEXT_PLAYER) {

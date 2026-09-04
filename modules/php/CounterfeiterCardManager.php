@@ -3,68 +3,73 @@ declare(strict_types=1);
 
 namespace Bga\Games\SplendorDuel;
 
-require_once(__DIR__.'/framework-prototype/item/item-location.php');
-require_once(__DIR__.'/framework-prototype/item/item-manager.php');
-
+use Bga\GameFramework\Components\ItemManager\ItemLocation;
+use Bga\GameFramework\Components\ItemManager\ItemManager;
+use Bga\GameFramework\Helpers\Collection;
 use Bga\Games\SplendorDuel\Object\CounterfeiterCard;
-use Bga\GameFrameworkPrototype\Helpers\Arrays;
-use \Bga\GameFrameworkPrototype\Item\ItemManager;
-use \Bga\GameFrameworkPrototype\Item\ItemLocation;
 
-class CounterfeiterCardManager extends ItemManager {
+class CounterfeiterCardManager {
+    /** @var ItemManager<CounterfeiterCard> */
+    public ItemManager $items;
 
     function __construct(
-        protected $game,
+        protected Game $game,
     ) {
-        parent::__construct(
-            CounterfeiterCard::class, 
-            [
-                new ItemLocation('deck', true),
-                new ItemLocation('table', true),
-                new ItemLocation('player', true),
+        $this->items = $game->bga->itemManagerFactory->createItemManager(
+            CounterfeiterCard::class,
+            locations: [
+                new ItemLocation('deck'),
+                new ItemLocation('table'),
+                new ItemLocation('player'),
             ],
         );
     }
 
-    public function getTable(): array {
-        return $this->getItemsInLocation('table');
+    public function initDb(): void {
+        $this->items->initDb();
     }
 
-    public function getPlayer(int $playerId): array {
-        return $this->getItemsInLocation('player', $playerId);
+    /** @return Collection<CounterfeiterCard> */
+    public function getTable(): Collection {
+        return $this->items->getItemsInLocation('table');
     }
 
-    public function setup() {
+    /** @return Collection<CounterfeiterCard> */
+    public function getPlayer(int $playerId): Collection {
+        return $this->items->getItemsInLocation(['player', $playerId]);
+    }
+
+    public function setup(): void {
         $counterfeiterCards = [];
         for ($i = 1; $i <= 17; $i++) {
             $counterfeiterCards[] = ['location' => 'deck', 'type' => $i ];
         }
 
-        $this->createItems($counterfeiterCards);
-        $this->shuffle('deck');
+        $this->items->createItems($counterfeiterCards);
+        $this->items->shuffle('deck');
 
-        $this->pickItemsForLocation(3, 'deck', null, 'table');
+        $this->items->pickItems(3, 'deck', ['table', 0]);
     }
 
-    public function refill() {
-        $count = $this->countItemsInLocation('table');
+    public function refill(): void {
+        $count = $this->items->countItemsInLocation('table');
         if ($count < 3) {
-            $cards = $this->pickItemsForLocation(3 - $count, 'deck', null, 'table');
+            $cards = $this->items->pickItems(3 - $count, 'deck', ['table', 0]);
             $this->game->notify->all('refillCounterfeiterCards', '', [
-                'cards' => $cards,
-                'counterfeiterDeckCount' => $this->countItemsInLocation('deck'),
-                'counterfeiterDeckTop' => CounterfeiterCard::onlyId($this->getItemOnTop('deck')),
+                'cards' => $cards->values(),
+                'counterfeiterDeckCount' => $this->items->countItemsInLocation('deck'),
+                'counterfeiterDeckTop' => CounterfeiterCard::onlyId($this->items->getItemOnTop('deck')),
             ]);
         }
     }
 
-    public function fillResult(array &$result) {
-        $result['counterfeiterCards'] = $this->getTable();
-        $result['counterfeiterDeckCount'] = $this->countItemsInLocation('deck');
-        $result['counterfeiterDeckTop'] = CounterfeiterCard::onlyId($this->getItemOnTop('deck'));
+    public function fillResult(array &$result): void {
+        $result['counterfeiterCards'] = $this->getTable()->values();
+        $result['counterfeiterDeckCount'] = $this->items->countItemsInLocation('deck');
+        $result['counterfeiterDeckTop'] = CounterfeiterCard::onlyId($this->items->getItemOnTop('deck'));
 
         foreach ($result["players"] as $playerId => &$player) {
-            $player['counterfeiterCards'] = $this->getPlayer($playerId);
+            $player['counterfeiterCards'] = $this->getPlayer((int)$playerId)->values();
         }
     }
 
@@ -73,9 +78,9 @@ class CounterfeiterCardManager extends ItemManager {
             return false;
         }
         
-        $counterfeiterCards = $this->getPlayer($playerId);
-
-        return Arrays::some($counterfeiterCards, fn($card) => $card->type === $type);
+        return $this->getPlayer($playerId)->some(
+            fn(CounterfeiterCard $card) => $card->type === $type
+        );
     }
 
     public function getConversions(int $playerId): array {
@@ -83,9 +88,9 @@ class CounterfeiterCardManager extends ItemManager {
             return [];
         }
         
-        $counterfeiterCards = $this->getPlayer($playerId);
-        $counterfeiterCardsWithConversion = Arrays::filter($counterfeiterCards, fn($counterfeiterCard) => $counterfeiterCard->conversion !== null);
-
-        return Arrays::map($counterfeiterCardsWithConversion, fn($counterfeiterCard) => $counterfeiterCard->conversion);
+        return $this->getPlayer($playerId)
+            ->whereNot('conversion', null)
+            ->pluck('conversion')
+            ->values();
     }
 }

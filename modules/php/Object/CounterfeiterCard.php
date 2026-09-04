@@ -4,11 +4,10 @@ declare(strict_types=1);
 namespace Bga\Games\SplendorDuel\Object;
 
 require_once(__DIR__.'/../constants.inc.php');
-require_once(__DIR__.'/../framework-prototype/item/item.php');
-require_once(__DIR__.'/../framework-prototype/item/item-field.php');
 
-use \Bga\GameFrameworkPrototype\Item\Item;
-use \Bga\GameFrameworkPrototype\Item\ItemField;
+use Bga\GameFramework\Components\ItemManager\Item;
+use Bga\GameFramework\Components\ItemManager\ItemField;
+use Bga\GameFramework\Components\ItemManager\ItemFieldKind;
 
 const COUNTERFEITER_CARD_COST = [
     1 => [GLASSWARE => 1, GREEN => 2],
@@ -48,16 +47,16 @@ class CounterfeiterCardConversion {
 #[Item('counterfeiter_card')]
 class CounterfeiterCard {
     // required fields
-    #[ItemField(kind: 'id')]
+    #[ItemField(kind: ItemFieldKind::ID)]
     public int $id;
 
-    #[ItemField(kind: 'location')]
+    #[ItemField(kind: ItemFieldKind::LOCATION, locationIndex: 0)]
     public string $location;
 
-    #[ItemField(dbField: 'location_arg', kind: 'location_arg')]
+    #[ItemField(kind: ItemFieldKind::LOCATION, dbField: 'location_arg', locationIndex: 1)]
     public ?int $locationArg;
 
-    #[ItemField(kind: 'order')]
+    #[ItemField(kind: ItemFieldKind::ORDER)]
     public int $order;
 
     // custom fields
