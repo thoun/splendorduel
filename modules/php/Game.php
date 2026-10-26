@@ -950,92 +950,94 @@ class Game extends \Bga\GameFramework\Table {
         return $possiblePayments;
     }
 
-    function findPaymentWays(array $cost, array $playerTokens, array $converters, array $currentPayment = [], array $allWays = []): array {
-        // Base case: If the cost is fully paid, add the current way to the list
-        if (array_sum($cost) === 0) {
-            $allWays[] = $currentPayment;
-            return array_values(array_unique($allWays, SORT_REGULAR));
-            //return $allWays;
+    function findPaymentWays(array $cost, array $playerTokens, array $converters): array {
+        $payments = [];
+        $visited = [];
+        $this->collectPaymentWays($cost, $playerTokens, $converters, [], $payments, $visited);
+        return array_values($payments);
+    }
+
+    private function collectPaymentWays(
+        array $cost,
+        array $playerTokens,
+        array $converters,
+        array $currentPayment,
+        array &$payments,
+        array &$visited,
+    ): void {
+        $unpaidCost = array_filter($cost, fn($needed) => $needed > 0);
+        if (count($unpaidCost) === 0) {
+            // Different converter choices can result in the same token payment.
+            ksort($currentPayment);
+            $payments[json_encode($currentPayment)] = $currentPayment;
+            return;
         }
 
-        // Try to pay with GOLD tokens
-        if (isset($playerTokens[GOLD]) && $playerTokens[GOLD] > 0) {
-            foreach ($cost as $color => $needed) {
-                if ($needed > 0) {
-                    $newCost = $cost;
-                    $newCost[$color]--;
+        // The remaining tokens also determine the tokens already spent. Reaching
+        // this state in a different order cannot produce any additional payments.
+        $state = json_encode([$cost, $playerTokens, array_map(fn($converter) => $converter->repeat, $converters)]);
+        if (isset($visited[$state])) {
+            return;
+        }
+        $visited[$state] = true;
 
-                    $newTokens = $playerTokens;
-                    $newTokens[GOLD]--;
+        // Finish one color before moving to the next: payments for different
+        // colors can always be reordered, so we only need to explore one order.
+        $color = array_key_first($unpaidCost);
+        foreach ($this->getPaymentOptions($color, $playerTokens, $converters) as $option) {
+            $newCost = $cost;
+            $newCost[$color] -= min($option['value'], $cost[$color]);
 
-                    $newPayment = $currentPayment;
-                    $newPayment[GOLD] = ($newPayment[GOLD] ?? 0) + 1;
-                    
-                    // Recursive call
-                    $allWays = $this->findPaymentWays($newCost, $newTokens, $converters, $newPayment, $allWays);
-                }
+            $fromColor = $option['color'];
+            $newTokens = $playerTokens;
+            $newTokens[$fromColor] -= $option['tokens'];
+
+            $newPayment = $currentPayment;
+            $newPayment[$fromColor] = ($newPayment[$fromColor] ?? 0) + $option['tokens'];
+
+            $newConverters = $converters;
+            if ($option['converter'] !== null) {
+                $index = $option['converter'];
+                $newConverters[$index] = clone $newConverters[$index];
+                $newConverters[$index]->repeat--;
+            }
+
+            $this->collectPaymentWays($newCost, $newTokens, $newConverters, $newPayment, $payments, $visited);
+        }
+    }
+
+    /** @return array<array{color: int, tokens: int, value: int, converter: int|null}> */
+    private function getPaymentOptions(int $color, array $playerTokens, array $converters): array {
+        $options = [];
+
+        // A gold token or a matching token pays for one unit of this color.
+        foreach (array_unique([GOLD, $color]) as $fromColor) {
+            if (($playerTokens[$fromColor] ?? 0) > 0) {
+                $options[] = ['color' => $fromColor, 'tokens' => 1, 'value' => 1, 'converter' => null];
             }
         }
 
-        // Try to pay with player tokens of matching colors
-        foreach ($cost as $color => $needed) {
-            if ($needed > 0 && isset($playerTokens[$color]) && $playerTokens[$color] > 0) {
-                $newCost = $cost;
-                $newCost[$color]--;
-
-                $newTokens = $playerTokens;
-                $newTokens[$color]--;
-
-                $newPayment = $currentPayment;
-                $newPayment[$color] = ($newPayment[$color] ?? 0) + 1;
-                
-                // Recursive call
-                $allWays = $this->findPaymentWays($newCost, $newTokens, $converters, $newPayment, $allWays);
-            }
-        }
-
-        // Try to pay using converters
         foreach ($converters as $index => $converter) {
-            $toColorMulti = array_keys($converter->to)[0];
+            if ($converter->repeat <= 0) {
+                continue;
+            }
+
+            $toColor = array_key_first($converter->to);
+            $toColors = $toColor === MULTICOLOR ? [BLUE, WHITE, GREEN, BLACK, RED] : [$toColor];
+            if (!in_array($color, $toColors)) {
+                continue;
+            }
+
             $numberFrom = array_values($converter->from)[0];
             $numberTo = array_values($converter->to)[0];
-
-            $convertFromColors = [GOLD, array_keys($converter->from)[0]];
-            $convertToPossibleColors = $toColorMulti === MULTICOLOR ?
-                [BLUE, WHITE, GREEN, BLACK, RED] :
-                [$toColorMulti];
-
-            foreach ($convertFromColors as $fromColor) {
-                foreach ($convertToPossibleColors as $toColor) {
-                // Check if we can use this converter with current color
-                    if (
-                        isset($playerTokens[$fromColor]) && $playerTokens[$fromColor] >= $numberFrom && 
-                        $converter->repeat > 0 && 
-                        isset($cost[$toColor]) && $cost[$toColor] > 0
-                    ) {
-                        $newCost = $cost;
-                        $newCost[$toColor] -= min($numberTo, $cost[$toColor]);
-
-                        $newTokens = $playerTokens;
-                        $newTokens[$fromColor] -= $numberFrom;
-
-                        // A 'conversion' payment step
-                        $newPayment = $currentPayment;
-                        $newPayment[$fromColor] = ($newPayment[$fromColor] ?? 0) + $numberFrom;
-                        
-                        // Clone and update converter to track usage
-                        $newConverters = $converters;
-                        $newConverters[$index] = clone $newConverters[$index];
-                        $newConverters[$index]->repeat--;
-
-                        // Recursive call
-                        $allWays = $this->findPaymentWays($newCost, $newTokens, $newConverters, $newPayment, $allWays);
-                    }
+            foreach (array_unique([GOLD, array_key_first($converter->from)]) as $fromColor) {
+                if (($playerTokens[$fromColor] ?? 0) >= $numberFrom) {
+                    $options[] = ['color' => $fromColor, 'tokens' => $numberFrom, 'value' => $numberTo, 'converter' => $index];
                 }
             }
         }
 
-        return $allWays;
+        return $options;
     }
 
 
