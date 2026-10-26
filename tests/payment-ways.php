@@ -51,10 +51,20 @@ namespace {
         $game->findPaymentWays([BLUE => 1], [GOLD => 1, BLUE => 1], []));
     checkPayments('Gold cost requires gold', [],
         $game->findPaymentWays([GOLD => 1], [GLASSWARE => 2], [$converters[6], $converters[8]]));
-    checkPayments('Conversion can pay part of its output', [[GOLD => 1], [GLASSWARE => 2], [GOLD => 2]],
+    checkPayments('Conversion can pay part of its output', [[GOLD => 1], [GLASSWARE => 2], [GOLD => 2], [GOLD => 1, GLASSWARE => 1]],
         $game->findPaymentWays([BLUE => 1], [GOLD => 2, GLASSWARE => 2], [$converters[6]]));
-    checkPayments('Conversion inputs cannot mix gold and glassware', [],
+    checkPayments('Conversion inputs can mix gold and glassware', [[GOLD => 1, GLASSWARE => 1]],
         $game->findPaymentWays([BLUE => 3], [GOLD => 1, GLASSWARE => 1], [$converters[6]]));
+    checkPayments('Every converter input combination is offered', [
+        [GLASSWARE => 2], [GOLD => 1, GLASSWARE => 1], [GOLD => 2],
+        [GOLD => 1, GLASSWARE => 2], [GOLD => 2, GLASSWARE => 1], [GOLD => 2, GLASSWARE => 2],
+    ], $game->findPaymentWays([BLACK => 3], [GOLD => 2, GLASSWARE => 2], [$converters[6]]));
+    checkPayments('Mixed conversion preserves gold for an explicit gold cost', [[GOLD => 2, GLASSWARE => 1]],
+        $game->findPaymentWays([BLACK => 3, GOLD => 1], [GOLD => 2, GLASSWARE => 1], [$converters[6]]));
+    checkPayments('Mixed conversion still requires two inputs', [],
+        $game->findPaymentWays([BLACK => 3], [GOLD => 1], [$converters[6]]));
+    checkPayments('Mixed conversion still respects its usage limit', [],
+        $game->findPaymentWays([BLACK => 3, BLUE => 3], [GOLD => 2, GLASSWARE => 2], [$converters[6]]));
     checkPayments('Multicolor conversion excludes pearls', [],
         $game->findPaymentWays([PEARL => 1], [GLASSWARE => 2], [$converters[6], $converters[8]]));
     checkPayments('Pearl conversion', [[GLASSWARE => 1]],
@@ -84,7 +94,7 @@ namespace {
             $steps = [];
             foreach (array_unique([GOLD, $color]) as $from) {
                 if (($tokens[$from] ?? 0) > 0) {
-                    $steps[] = [$from, 1, 1, null];
+                    $steps[] = [[$from => 1], 1, null];
                 }
             }
             foreach ($converters as $index => $converter) {
@@ -94,25 +104,30 @@ namespace {
                     continue;
                 }
                 $input = array_values($converter->from)[0];
-                foreach ([GOLD, array_key_first($converter->from)] as $from) {
-                    if (($tokens[$from] ?? 0) >= $input) {
-                        $steps[] = [$from, $input, array_values($converter->to)[0], $index];
+                $from = array_key_first($converter->from);
+                for ($matching = 0; $matching <= $input; $matching++) {
+                    $gold = $input - $matching;
+                    if (($tokens[$from] ?? 0) >= $matching && ($tokens[GOLD] ?? 0) >= $gold) {
+                        $spent = array_filter([$from => $matching, GOLD => $gold]);
+                        $steps[] = [$spent, array_values($converter->to)[0], $index];
                     }
                 }
             }
 
-            foreach ($steps as [$from, $input, $output, $index]) {
+            foreach ($steps as [$spent, $output, $index]) {
                 $remainingCost = $cost;
                 $remainingCost[$color] = max(0, $needed - $output);
                 $remainingTokens = $tokens;
-                $remainingTokens[$from] -= $input;
                 $remainingConverters = $converters;
                 if ($index !== null) {
                     $remainingConverters[$index] = clone $remainingConverters[$index];
                     $remainingConverters[$index]->repeat--;
                 }
                 $nextPayment = $payment;
-                $nextPayment[$from] = ($nextPayment[$from] ?? 0) + $input;
+                foreach ($spent as $from => $input) {
+                    $remainingTokens[$from] -= $input;
+                    $nextPayment[$from] = ($nextPayment[$from] ?? 0) + $input;
+                }
                 array_push($payments, ...exhaustivePayments($remainingCost, $remainingTokens, $remainingConverters, $nextPayment));
             }
         }

@@ -988,12 +988,12 @@ class Game extends \Bga\GameFramework\Table {
             $newCost = $cost;
             $newCost[$color] -= min($option['value'], $cost[$color]);
 
-            $fromColor = $option['color'];
             $newTokens = $playerTokens;
-            $newTokens[$fromColor] -= $option['tokens'];
-
             $newPayment = $currentPayment;
-            $newPayment[$fromColor] = ($newPayment[$fromColor] ?? 0) + $option['tokens'];
+            foreach ($option['tokens'] as $fromColor => $count) {
+                $newTokens[$fromColor] -= $count;
+                $newPayment[$fromColor] = ($newPayment[$fromColor] ?? 0) + $count;
+            }
 
             $newConverters = $converters;
             if ($option['converter'] !== null) {
@@ -1006,14 +1006,14 @@ class Game extends \Bga\GameFramework\Table {
         }
     }
 
-    /** @return array<array{color: int, tokens: int, value: int, converter: int|null}> */
+    /** @return array<array{tokens: array<int, int>, value: int, converter: int|null}> */
     private function getPaymentOptions(int $color, array $playerTokens, array $converters): array {
         $options = [];
 
         // A gold token or a matching token pays for one unit of this color.
         foreach (array_unique([GOLD, $color]) as $fromColor) {
             if (($playerTokens[$fromColor] ?? 0) > 0) {
-                $options[] = ['color' => $fromColor, 'tokens' => 1, 'value' => 1, 'converter' => null];
+                $options[] = ['tokens' => [$fromColor => 1], 'value' => 1, 'converter' => null];
             }
         }
 
@@ -1030,10 +1030,19 @@ class Game extends \Bga\GameFramework\Table {
 
             $numberFrom = array_values($converter->from)[0];
             $numberTo = array_values($converter->to)[0];
-            foreach (array_unique([GOLD, array_key_first($converter->from)]) as $fromColor) {
-                if (($playerTokens[$fromColor] ?? 0) >= $numberFrom) {
-                    $options[] = ['color' => $fromColor, 'tokens' => $numberFrom, 'value' => $numberTo, 'converter' => $index];
+            $fromColor = array_key_first($converter->from);
+
+            // Gold may replace any number of the required glassware tokens,
+            // including just one of the two inputs for the 2-to-3 converter.
+            $maxGold = min($numberFrom, $playerTokens[GOLD] ?? 0);
+            for ($gold = 0; $gold <= $maxGold; $gold++) {
+                $matching = $numberFrom - $gold;
+                if (($playerTokens[$fromColor] ?? 0) < $matching) {
+                    continue;
                 }
+
+                $tokens = array_filter([$fromColor => $matching, GOLD => $gold]);
+                $options[] = ['tokens' => $tokens, 'value' => $numberTo, 'converter' => $index];
             }
         }
 
